@@ -21,11 +21,12 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-2xl font-bold text-ink-1 tracking-tight">σ 매매 신호</h1>
-          <p className="mt-2 text-sm text-ink-3">Rolling 252일 표준편차 기반 레버리지 ETF 지정가 매매 대시보드</p>
+        <div className="mb-6">
+          <h2 className="text-base font-semibold text-ink-2">
+            2<span className="normal-case">σ</span> 전략
+          </h2>
+          <p className="mt-1 text-xs text-ink-4">Rolling 252일 표준편차 기반 레버리지 ETF 지정가 매매</p>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {results.map(({ ticker, latest, error }) => (
             <TickerCard key={ticker.slug} ticker={ticker} latest={latest} error={error} />
