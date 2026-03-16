@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getTicker } from '@/lib/tickers'
 import { buildHistory, buildLatestSignal } from '@/lib/calc'
-import type { ClosePrice } from '@/lib/types'
+import { fetchCloses } from '@/lib/fetchCloses'
 import PriceBlock from '@/components/PriceBlock'
 import SignalCards from '@/components/SignalCards'
 import SigmaChart from '@/components/SigmaChart'
@@ -12,20 +12,12 @@ interface Props {
   params: Promise<{ ticker: string }>
 }
 
-async function getCloses(slug: string): Promise<ClosePrice[]> {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  const res = await fetch(`${base}/api/stock/${slug}`, { next: { revalidate: 3600 } })
-  if (!res.ok) throw new Error(`${slug.toUpperCase()} 데이터 로드 실패`)
-  const { closes } = await res.json()
-  return closes
-}
-
 export default async function TickerPage({ params }: Props) {
   const { ticker: slug } = await params
   const ticker = getTicker(slug)
   if (!ticker) notFound()
 
-  const closes = await getCloses(ticker.slug)
+  const closes = await fetchCloses(ticker.slug)
   const history = buildHistory(closes)
   const latestSignal = buildLatestSignal(closes)
   if (!latestSignal) throw new Error('σ 계산에 필요한 데이터가 부족합니다')
