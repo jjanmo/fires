@@ -1,0 +1,49 @@
+'use client'
+
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import TradeJournal from './TradeJournal'
+import { useLivePrice } from '@/hooks/useLivePrice'
+
+interface Props {
+  ticker: string
+  currentPrice: number  // 서버 사이드 초기값 (fallback)
+  children: ReactNode
+}
+
+const TABS = [
+  { key: 'dashboard', label: '대시보드' },
+  { key: 'journal',   label: '매매일지' },
+] as const
+
+type TabKey = typeof TABS[number]['key']
+
+export default function TickerTabs({ ticker, currentPrice, children }: Props) {
+  const [tab, setTab] = useState<TabKey>('dashboard')
+  const { price: livePrice } = useLivePrice(ticker.toUpperCase(), currentPrice)
+
+  return (
+    <div>
+      <div className="flex gap-1 mb-6 bg-tab-bar rounded-xl p-1 border border-edge">
+        {TABS.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+              tab === t.key
+                ? 'bg-tab-active text-ink-1 shadow-sm'
+                : 'text-ink-3 hover:text-ink-2'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className={tab === 'dashboard' ? '' : 'hidden'}>{children}</div>
+      <div className={tab === 'journal' ? '' : 'hidden'}>
+        <TradeJournal ticker={ticker} currentPrice={livePrice} />
+      </div>
+    </div>
+  )
+}
