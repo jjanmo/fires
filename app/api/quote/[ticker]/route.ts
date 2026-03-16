@@ -1,12 +1,26 @@
 import { NextResponse } from 'next/server'
 
+type MarketState = 'REGULAR' | 'PRE' | 'POST' | 'CLOSED'
+
+function resolveMarketState(ctp: {
+  pre:     { start: number; end: number }
+  regular: { start: number; end: number }
+  post:    { start: number; end: number }
+}): MarketState {
+  const now = Math.floor(Date.now() / 1000)
+  if (now >= ctp.regular.start && now < ctp.regular.end) return 'REGULAR'
+  if (now >= ctp.pre.start     && now < ctp.pre.end)     return 'PRE'
+  if (now >= ctp.post.start    && now < ctp.post.end)    return 'POST'
+  return 'CLOSED'
+}
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
   const { ticker } = await params
   const symbol = ticker.toUpperCase()
-  const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=price`
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`
 
   try {
     const res = await fetch(url, {
@@ -16,16 +30,18 @@ export async function GET(
     if (!res.ok) return NextResponse.json({ error: 'Yahoo Finance 요청 실패' }, { status: 502 })
 
     const json = await res.json()
-    const p = json?.quoteSummary?.result?.[0]?.price
-    if (!p) return NextResponse.json({ error: '데이터 파싱 실패' }, { status: 502 })
+    const meta = json?.chart?.result?.[0]?.meta
+    if (!meta) return NextResponse.json({ error: '데이터 파싱 실패' }, { status: 502 })
 
-    return NextResponse.json({
-      price:       p.regularMarketPrice?.raw               ?? null,
-      change:      p.regularMarketChange?.raw               ?? null,
-      changePct:   (p.regularMarketChangePercent?.raw ?? 0) * 100,
-      prevClose:   p.regularMarketPreviousClose?.raw        ?? null,
-      marketState: p.marketState                            ?? 'CLOSED',
-    })
+    const price     = meta.regularMarketPrice     ?? null
+    const prevClose = meta.chartPreviousClose     ?? meta.previousClose ?? null
+    const change    = price != null && prevClose != null ? price - prevClose : null
+    const changePct = price != null && prevClose != null ? ((price - prevClose) / prevClose) * 100 : 0
+    const marketState = meta.currentTradingPeriod
+      ? resolveMarketState(meta.currentTradingPeriod)
+      : 'CLOSED'
+
+    return NextResponse.json({ price, change, changePct, prevClose, marketState })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
   }
