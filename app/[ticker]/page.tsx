@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { getTicker } from '@/lib/tickers'
 import { buildHistory, buildLatestSignal } from '@/lib/calc'
 import { fetchCloses } from '@/lib/fetchCloses'
@@ -10,6 +11,16 @@ import TickerTabs from '@/components/TickerTabs'
 
 interface Props {
   params: Promise<{ ticker: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { ticker: slug } = await params
+  const ticker = getTicker(slug)
+  if (!ticker) return {}
+  return {
+    title: ticker.symbol,
+    description: ticker.description,
+  }
 }
 
 export default async function TickerPage({ params }: Props) {
