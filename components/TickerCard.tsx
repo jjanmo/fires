@@ -1,14 +1,14 @@
-import Link from 'next/link'
-import type { HistoryRow, TickerInfo } from '@/lib/types'
+import Link from 'next/link';
+import type { HistoryRow, TickerInfo } from '@/lib/types';
 
 interface Props {
-  ticker: TickerInfo
-  latest: HistoryRow | null
-  error?: string
+  ticker: TickerInfo;
+  latest: HistoryRow | null;
+  error?: string;
 }
 
 export default function TickerCard({ ticker, latest, error }: Props) {
-  const returnSign = latest?.actualReturn != null ? (latest.actualReturn >= 0 ? '+' : '') : ''
+  const returnSign = latest?.actualReturn != null ? (latest.actualReturn >= 0 ? '+' : '') : '';
 
   return (
     <Link
@@ -23,12 +23,17 @@ export default function TickerCard({ ticker, latest, error }: Props) {
           <p className="mt-1 text-[11px] text-ink-3 leading-snug max-w-[180px]">{ticker.description}</p>
         </div>
         {latest && (
-          <span className={`text-xs font-mono px-2 py-1 rounded-md ${
-            latest.actualReturn == null        ? 'text-ink-3 bg-inset' :
-            latest.actualReturn < latest.s2d   ? 'text-buy-val bg-buy-badge' :
-            latest.actualReturn > latest.s2u   ? 'text-sell-val bg-sell-badge' :
-                                                  'text-ink-3 bg-inset'
-          }`}>
+          <span
+            className={`text-xs font-mono px-2 py-1 rounded-md ${
+              latest.actualReturn == null
+                ? 'text-ink-3 bg-inset'
+                : latest.actualReturn < latest.s2d
+                ? 'text-buy-val bg-buy-badge'
+                : latest.actualReturn > latest.s2u
+                ? 'text-sell-val bg-sell-badge'
+                : 'text-ink-3 bg-inset'
+            }`}
+          >
             {latest.actualReturn != null ? `${returnSign}${latest.actualReturn.toFixed(2)}%` : '—'}
           </span>
         )}
@@ -46,12 +51,16 @@ export default function TickerCard({ ticker, latest, error }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
-              <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">2σ 매수가</p>
+              <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
+                2<span className="normal-case">σ</span> 매수가
+              </p>
               <p className="text-lg font-semibold tabular-nums text-buy-val">${latest.buyPrice.toFixed(2)}</p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{latest.s2d.toFixed(2)}%</p>
             </div>
             <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
-              <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">2σ 매도가</p>
+              <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
+                2<span className="normal-case">σ</span> 매도가
+              </p>
               <p className="text-lg font-semibold tabular-nums text-sell-val">${latest.sellPrice.toFixed(2)}</p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{latest.s2u.toFixed(2)}%</p>
             </div>
@@ -63,5 +72,5 @@ export default function TickerCard({ ticker, latest, error }: Props) {
         <span className="text-ink-4 group-hover:text-ink-2 transition-colors text-sm">→</span>
       </div>
     </Link>
-  )
+  );
 }

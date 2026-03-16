@@ -1,6 +1,8 @@
 import type { HistoryRow } from '@/lib/types';
 
-interface Props { rows: HistoryRow[] }
+interface Props {
+  rows: HistoryRow[];
+}
 
 export default function HistoryTable({ rows }: Props) {
   return (
@@ -18,14 +20,18 @@ export default function HistoryTable({ rows }: Props) {
               <th className="px-3 py-3 text-right font-medium">종가</th>
               <th className="px-3 py-3 text-right font-medium text-sell-val">고가</th>
               <th className="px-3 py-3 text-right font-medium">등락률</th>
-              <th className="px-3 py-3 text-right font-medium text-buy-val">2시그마 매수가</th>
-              <th className="px-3 py-3 text-right font-medium text-sell-val">2시그마 매도가</th>
+              <th className="px-3 py-3 text-right font-medium text-buy-val">
+                2<span className="normal-case">σ</span> 매수가
+              </th>
+              <th className="px-3 py-3 text-right font-medium text-sell-val">
+                2<span className="normal-case">σ</span> 매도가
+              </th>
               <th className="px-4 py-3 text-right font-medium">신호</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => {
-              const isBuy  = row.triggered === 'buy';
+              const isBuy = row.triggered === 'buy';
               const isSell = row.triggered === 'sell';
               return (
                 <tr
@@ -37,9 +43,13 @@ export default function HistoryTable({ rows }: Props) {
                   <td className="px-4 py-2.5 font-mono text-ink-3 text-[11px] whitespace-nowrap">{row.date}</td>
 
                   {/* 저가 */}
-                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                    isBuy ? 'text-buy-val font-semibold' : 'text-ink-2'
-                  }`}>${row.low.toFixed(2)}</td>
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                      isBuy ? 'text-buy-val font-semibold' : 'text-ink-2'
+                    }`}
+                  >
+                    ${row.low.toFixed(2)}
+                  </td>
 
                   {/* 시가 */}
                   <td className="px-3 py-2.5 text-right font-mono text-ink-2 tabular-nums text-[12px]">
@@ -52,29 +62,42 @@ export default function HistoryTable({ rows }: Props) {
                   </td>
 
                   {/* 고가 */}
-                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                    isSell ? 'text-sell-val font-semibold' : 'text-ink-2'
-                  }`}>${row.high.toFixed(2)}</td>
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                      isSell ? 'text-sell-val font-semibold' : 'text-ink-2'
+                    }`}
+                  >
+                    ${row.high.toFixed(2)}
+                  </td>
 
                   {/* 등락률 */}
-                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[11px] ${
-                    row.actualReturn == null ? 'text-ink-4' :
-                    row.actualReturn >= 0    ? 'text-gain' : 'text-loss'
-                  }`}>
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[11px] ${
+                      row.actualReturn == null ? 'text-ink-4' : row.actualReturn >= 0 ? 'text-gain' : 'text-loss'
+                    }`}
+                  >
                     {row.actualReturn != null
                       ? `${row.actualReturn >= 0 ? '+' : ''}${row.actualReturn.toFixed(2)}%`
                       : '—'}
                   </td>
 
                   {/* 매수 한도 */}
-                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                    isBuy ? 'text-buy-val font-semibold' : 'text-buy-text'
-                  }`}>${row.buyPrice.toFixed(2)}</td>
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                      isBuy ? 'text-buy-val font-semibold' : 'text-buy-text'
+                    }`}
+                  >
+                    ${row.buyPrice.toFixed(2)}
+                  </td>
 
                   {/* 매도 한도 */}
-                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                    isSell ? 'text-sell-val font-semibold' : 'text-sell-text'
-                  }`}>${row.sellPrice.toFixed(2)}</td>
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                      isSell ? 'text-sell-val font-semibold' : 'text-sell-text'
+                    }`}
+                  >
+                    ${row.sellPrice.toFixed(2)}
+                  </td>
 
                   {/* 신호 배지 */}
                   <td className="px-4 py-2.5 text-right">
