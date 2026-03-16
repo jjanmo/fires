@@ -1,1 +1,127 @@
 @import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ────────────────────────────────────────────────────────
+   라이트 모드 (기본값)
+──────────────────────────────────────────────────────── */
+:root {
+  /* 배경 */
+  --c-canvas:     #f8fafc;
+  --c-card:       #ffffff;
+  --c-inset:      #f1f5f9;
+  --c-field:      #f1f5f9;
+  --c-tab-bar:    #f1f5f9;
+  --c-tab-active: #ffffff;
+
+  /* 테두리 */
+  --c-edge:       #e2e8f0;
+  --c-edge-hi:    #cbd5e1;
+
+  /* 텍스트 계층 */
+  --c-ink-1:      #0f172a;
+  --c-ink-2:      #334155;
+  --c-ink-3:      #64748b;
+  --c-ink-4:      #94a3b8;
+
+  /* 매수 */
+  --c-buy-bg:     #f0fdf4;
+  --c-buy-badge:  #dcfce7;
+  --c-buy-edge:   #86efac;
+  --c-buy-text:   #15803d;
+  --c-buy-val:    #16a34a;
+
+  /* 매도 */
+  --c-sell-bg:    #eff6ff;
+  --c-sell-badge: #dbeafe;
+  --c-sell-edge:  #93c5fd;
+  --c-sell-text:  #1d4ed8;
+  --c-sell-val:   #2563eb;
+
+  /* 손익 */
+  --c-gain:       #16a34a;
+  --c-loss:       #dc2626;
+
+  /* 행 호버 */
+  --c-row-hover:  #f1f5f9;
+}
+
+/* ────────────────────────────────────────────────────────
+   다크 모드
+──────────────────────────────────────────────────────── */
+.dark {
+  --c-canvas:     #0f172a;
+  --c-card:       #1e293b;
+  --c-inset:      #0f172a;
+  --c-field:      #334155;
+  --c-tab-bar:    #1e293b;
+  --c-tab-active: #334155;
+
+  --c-edge:       #334155;
+  --c-edge-hi:    #475569;
+
+  --c-ink-1:      #ffffff;
+  --c-ink-2:      #e2e8f0;
+  --c-ink-3:      #94a3b8;
+  --c-ink-4:      #64748b;
+
+  --c-buy-bg:     rgba(20, 83, 45, 0.30);
+  --c-buy-badge:  rgba(34, 197, 94, 0.20);
+  --c-buy-edge:   rgba(34, 197, 94, 0.40);
+  --c-buy-text:   #86efac;
+  --c-buy-val:    #4ade80;
+
+  --c-sell-bg:    rgba(30, 58, 138, 0.30);
+  --c-sell-badge: rgba(59, 130, 246, 0.20);
+  --c-sell-edge:  rgba(59, 130, 246, 0.40);
+  --c-sell-text:  #93c5fd;
+  --c-sell-val:   #60a5fa;
+
+  --c-gain:       #4ade80;
+  --c-loss:       #f87171;
+
+  --c-row-hover:  rgba(51, 65, 85, 0.30);
+}
+
+/* ────────────────────────────────────────────────────────
+   시맨틱 유틸리티 클래스
+   @layer utilities 안에 정의하면 hover:, focus: 등
+   모든 Tailwind 변형(variant)이 자동으로 작동합니다.
+──────────────────────────────────────────────────────── */
+@layer utilities {
+  /* ── 배경 ── */
+  .bg-canvas     { background-color: var(--c-canvas); }
+  .bg-card       { background-color: var(--c-card); }
+  .bg-inset      { background-color: var(--c-inset); }
+  .bg-field      { background-color: var(--c-field); }
+  .bg-tab-bar    { background-color: var(--c-tab-bar); }
+  .bg-tab-active { background-color: var(--c-tab-active); }
+  .bg-buy-bg     { background-color: var(--c-buy-bg); }
+  .bg-buy-badge  { background-color: var(--c-buy-badge); }
+  .bg-sell-bg    { background-color: var(--c-sell-bg); }
+  .bg-sell-badge { background-color: var(--c-sell-badge); }
+  .bg-row-hover  { background-color: var(--c-row-hover); }
+
+  /* ── 테두리 색상 ── */
+  .border-edge      { border-color: var(--c-edge); }
+  .border-edge-hi   { border-color: var(--c-edge-hi); }
+  .border-buy-edge  { border-color: var(--c-buy-edge); }
+  .border-sell-edge { border-color: var(--c-sell-edge); }
+
+  /* ── 텍스트 ── */
+  .text-ink-1    { color: var(--c-ink-1); }
+  .text-ink-2    { color: var(--c-ink-2); }
+  .text-ink-3    { color: var(--c-ink-3); }
+  .text-ink-4    { color: var(--c-ink-4); }
+  .text-buy-text { color: var(--c-buy-text); }
+  .text-buy-val  { color: var(--c-buy-val); }
+  .text-sell-text { color: var(--c-sell-text); }
+  .text-sell-val  { color: var(--c-sell-val); }
+  .text-gain     { color: var(--c-gain); }
+  .text-loss     { color: var(--c-loss); }
+}
+
+/* ── 스크롤바 ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--c-canvas); }
+::-webkit-scrollbar-thumb  { background: var(--c-edge-hi); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-ink-4); }
