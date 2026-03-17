@@ -1,29 +1,94 @@
 export default function TickerLoading() {
   return (
-    <main className="min-h-screen bg-[#0a0c10] px-4 py-10 sm:px-6">
-      <div className="max-w-3xl mx-auto space-y-5 animate-pulse">
-        {/* PriceBlock 스켈레톤 */}
-        <div className="space-y-2">
-          <div className="h-3 w-12 bg-[#1e2128] rounded" />
-          <div className="h-12 w-40 bg-[#1e2128] rounded" />
-          <div className="h-3 w-24 bg-[#1a1d24] rounded" />
+    <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
+      <div className="max-w-4xl mx-auto space-y-5">
+
+        {/* PriceBlock */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="skeleton h-3 w-10" />
+              <div className="skeleton h-4 w-16 rounded-full" />
+            </div>
+            <div className="skeleton h-10 w-44 mb-2" />
+            <div className="skeleton h-4 w-28" />
+          </div>
+          <div className="skeleton h-3 w-32" />
         </div>
 
-        {/* SignalCards 스켈레톤 */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-32 bg-[#111318] rounded-2xl border border-[#1e2128]" />
-          <div className="h-32 bg-[#111318] rounded-2xl border border-[#1e2128]" />
+        {/* TickerTabs */}
+        <div className="flex gap-2">
+          <div className="skeleton h-8 w-24 rounded-lg" />
+          <div className="skeleton h-8 w-20 rounded-lg" />
         </div>
 
-        {/* SigmaDetail 스켈레톤 */}
-        <div className="h-24 bg-[#111318] rounded-2xl border border-[#1e2128]" />
+        {/* SignalCards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="rounded-2xl border border-edge bg-sk-card p-5 space-y-3">
+              <div className="skeleton h-3 w-40" />
+              <div className="skeleton h-8 w-28" />
+              <div className="skeleton h-3 w-52" />
+              <div className="pt-3 mt-1 border-t border-edge space-y-1.5">
+                <div className="skeleton h-3 w-20" />
+                <div className="skeleton h-4 w-24" />
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* Chart 스켈레톤 */}
-        <div className="h-64 bg-[#111318] rounded-2xl border border-[#1e2128]" />
+        {/* SigmaChart */}
+        <div className="rounded-2xl border border-edge bg-sk-card p-5">
+          <div className="skeleton h-3 w-40 mb-1" />
+          <div className="skeleton h-3 w-20 mb-4" />
+          {/* 차트 영역 */}
+          <div className="skeleton h-48 w-full rounded-lg" />
+          {/* 5열 요약 */}
+          <div className="grid grid-cols-5 gap-1 mt-4 pt-3 border-t border-edge text-center">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <div className="skeleton h-2.5 w-8" />
+                <div className="skeleton h-3 w-12" />
+                <div className="skeleton h-2.5 w-8" />
+              </div>
+            ))}
+          </div>
+          {/* 구간 설명 */}
+          <div className="mt-4 pt-4 border-t border-edge space-y-3">
+            <div className="skeleton h-3 w-20 mb-1" />
+            {[52, 64, 56, 48].map((w, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <div className="skeleton h-3 w-3 mt-0.5 shrink-0" />
+                <div className={`skeleton h-3 w-${w}`} style={{ width: `${w * 4}px` }} />
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* Table 스켈레톤 */}
-        <div className="h-80 bg-[#111318] rounded-2xl border border-[#1e2128]" />
+        {/* HistoryTable */}
+        <div className="rounded-2xl border border-edge bg-sk-card overflow-hidden">
+          <div className="px-5 py-4 border-b border-edge">
+            <div className="skeleton h-3 w-32" />
+          </div>
+          <div className="p-4 space-y-2">
+            {/* 헤더 행 */}
+            <div className="flex gap-2 px-1 pb-2 border-b border-edge">
+              {[16, 12, 12, 12, 12, 12, 16, 16, 12].map((w, i) => (
+                <div key={i} className="skeleton h-2.5 flex-1" style={{ maxWidth: `${w * 4}px` }} />
+              ))}
+            </div>
+            {/* 데이터 행 */}
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex gap-2 px-1 py-1">
+                {[16, 12, 12, 12, 12, 12, 16, 16, 10].map((w, j) => (
+                  <div key={j} className="skeleton h-3 flex-1" style={{ maxWidth: `${w * 4}px` }} />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </main>
-  )
+  );
 }

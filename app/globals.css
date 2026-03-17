@@ -101,6 +101,7 @@
   .bg-sell-bg    { background-color: var(--c-sell-bg); }
   .bg-sell-badge { background-color: var(--c-sell-badge); }
   .bg-row-hover  { background-color: var(--c-row-hover); }
+  .bg-sk-card    { background-color: var(--sk-card); }
 
   /* ── 테두리 색상 ── */
   .border-edge      { border-color: var(--c-edge); }
@@ -119,6 +120,35 @@
   .text-sell-val  { color: var(--c-sell-val); }
   .text-gain     { color: var(--c-gain); }
   .text-loss     { color: var(--c-loss); }
+}
+
+/* ── 스켈레톤 shimmer ── */
+:root {
+  --sk-base:  #1e293b;
+  --sk-hi:    #3e5472;
+  --sk-card:  #1a2436;
+}
+.light {
+  --sk-base:  #c8d3de;
+  --sk-hi:    #eef3f8;
+  --sk-card:  #f1f5f9;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--sk-base)   0%,
+    var(--sk-hi)    50%,
+    var(--sk-base) 100%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 0.375rem;
 }
 
 /* ── 스크롤바 ── */
