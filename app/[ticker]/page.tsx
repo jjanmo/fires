@@ -35,7 +35,7 @@ export default async function TickerPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
-      <div className="max-w-3xl mx-auto space-y-5">
+      <div className="max-w-4xl mx-auto space-y-5">
         {/* 항상 표시 — 현재 가격 + 신호 상태 */}
         <PriceBlock ticker={ticker} latest={latestSignal} />
 
