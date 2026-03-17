@@ -1,24 +1,21 @@
 'use client';
 
+import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 export default function ThemeToggle() {
-  const [dark, setDark] = useState(true);
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setDark(localStorage.getItem('theme') !== 'light');
-  }, []);
+  useEffect(() => setMounted(true), []);
 
-  const toggle = () => {
-    const next = !dark;
-    setDark(next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-    document.documentElement.classList.toggle('light', !next);
-  };
+  if (!mounted) return <div className="w-8 h-8" />;
+
+  const dark = resolvedTheme !== 'light';
 
   return (
     <button
-      onClick={toggle}
+      onClick={() => setTheme(dark ? 'light' : 'dark')}
       title={dark ? '라이트 모드로 전환' : '다크 모드로 전환'}
       className="w-8 h-8 flex items-center justify-center rounded-lg text-ink-4 hover:text-ink-1 hover:bg-inset transition-colors text-base"
     >
