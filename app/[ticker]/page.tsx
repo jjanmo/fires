@@ -1,37 +1,41 @@
-import { notFound } from 'next/navigation'
-import type { Metadata } from 'next'
-import { getTicker } from '@/lib/tickers'
-import { buildHistory, buildLatestSignal } from '@/lib/calc'
-import { fetchCloses } from '@/lib/fetchCloses'
-import PriceBlock from '@/components/PriceBlock'
-import SignalCards from '@/components/SignalCards'
-import SigmaChart from '@/components/SigmaChart'
-import HistoryTable from '@/components/HistoryTable'
-import TickerTabs from '@/components/TickerTabs'
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { getTicker, TICKERS } from '@/lib/tickers';
+import { buildHistory, buildLatestSignal } from '@/lib/calc';
+import { fetchCloses } from '@/lib/fetchCloses';
+import PriceBlock from '@/components/PriceBlock';
+import SignalCards from '@/components/SignalCards';
+import SigmaChart from '@/components/SigmaChart';
+import HistoryTable from '@/components/HistoryTable';
+import TickerTabs from '@/components/TickerTabs';
 
 interface Props {
-  params: Promise<{ ticker: string }>
+  params: Promise<{ ticker: string }>;
 }
 
+export function generateStaticParams() {
+  return TICKERS.map((t) => ({ ticker: t.slug }));
+}
+// @TODO 정적 페이지 생성 말고 다른 방법으로 처리하기
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { ticker: slug } = await params
-  const ticker = getTicker(slug)
-  if (!ticker) return {}
+  const { ticker: slug } = await params;
+  const ticker = getTicker(slug);
+  if (!ticker) return {};
   return {
     title: ticker.symbol,
     description: ticker.description,
-  }
+  };
 }
 
 export default async function TickerPage({ params }: Props) {
-  const { ticker: slug } = await params
-  const ticker = getTicker(slug)
-  if (!ticker) notFound()
+  const { ticker: slug } = await params;
+  const ticker = getTicker(slug);
+  if (!ticker) notFound();
 
-  const closes = await fetchCloses(ticker.slug)
-  const history = buildHistory(closes)
-  const latestSignal = buildLatestSignal(closes)
-  if (!latestSignal) throw new Error('σ 계산에 필요한 데이터가 부족합니다')
+  const closes = await fetchCloses(ticker.slug);
+  const history = buildHistory(closes);
+  const latestSignal = buildLatestSignal(closes);
+  if (!latestSignal) throw new Error('σ 계산에 필요한 데이터가 부족합니다');
 
   return (
     <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
@@ -49,5 +53,5 @@ export default async function TickerPage({ params }: Props) {
         </TickerTabs>
       </div>
     </main>
-  )
+  );
 }
