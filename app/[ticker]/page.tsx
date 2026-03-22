@@ -1,55 +1,66 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import { getTicker, TICKERS } from '@/entities/ticker';
-import { buildHistory, buildLatestSignal, fetchCloses } from '@/entities/sigma';
+import type { TickerInfo } from '@/entities/ticker';
+import { buildHistory, buildLatestSignal, fetchCloses, calcMdd } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
 import { SignalCards } from '@/widgets/signal-cards';
 import { SigmaChart } from '@/widgets/sigma-chart';
 import { HistoryTable } from '@/widgets/history-table';
 import { TickerTabs } from '@/widgets/ticker-tabs';
+import { MddTab } from '@/widgets/mdd-tab';
+import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
+import { createClient } from '@/shared/lib/supabase/server';
 
-interface Props {
-  params: Promise<{ ticker: string }>;
-}
 
-export function generateStaticParams() {
-  return TICKERS.map((t) => ({ ticker: t.slug }));
-}
-// @TODO 정적 페이지 생성 말고 다른 방법으로 처리하기
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function TickerPage({ params }: { params: Promise<{ ticker: string }> }) {
   const { ticker: slug } = await params;
-  const ticker = getTicker(slug);
-  if (!ticker) return {};
-  return {
-    title: ticker.symbol,
-    description: ticker.description,
+
+  const ticker: TickerInfo = {
+    symbol:      slug.toUpperCase(),
+    name:        slug.toUpperCase(),
+    slug:        slug.toLowerCase(),
+    description: '',
+    accentColor: 'text-ink-2',
+    borderColor: 'border-edge',
   };
-}
 
-export default async function TickerPage({ params }: Props) {
-  const { ticker: slug } = await params;
-  const ticker = getTicker(slug);
-  if (!ticker) notFound();
+  const [closes5y, closesMax] = await Promise.all([
+    fetchCloses(ticker.slug, '5y'),
+    fetchCloses(ticker.slug, 'max'),
+  ]);
 
-  const closes = await fetchCloses(ticker.slug);
-  const history = buildHistory(closes);
-  const latestSignal = buildLatestSignal(closes);
+  const history = buildHistory(closes5y);
+  const latestSignal = buildLatestSignal(closes5y);
   if (!latestSignal) throw new Error('σ 계산에 필요한 데이터가 부족합니다');
+  const mddResult = calcMdd(closesMax);
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const watchlistSymbols = user ? await getWatchlistSymbols(user.id) : [];
+  const isWatchlisted = watchlistSymbols.includes(ticker.symbol);
 
   return (
     <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-5">
-        {/* 항상 표시 — 현재 가격 + 신호 상태 */}
-        <PriceBlock ticker={ticker} latest={latestSignal} />
+        <div className="flex items-start justify-between gap-4">
+          <PriceBlock ticker={ticker} latest={latestSignal} />
+          {user && (
+            <div className="pt-1">
+              <WatchlistButton symbol={ticker.symbol} isWatchlisted={isWatchlisted} />
+            </div>
+          )}
+        </div>
 
-        {/* 탭: 대시보드 | 매매일지 */}
-        <TickerTabs ticker={ticker.slug} currentPrice={latestSignal.close}>
-          <div className="space-y-5">
-            <SignalCards latest={latestSignal} />
-            <SigmaChart latest={latestSignal} />
-            <HistoryTable rows={[...history].reverse().slice(0, 30)} />
-          </div>
-        </TickerTabs>
+        <TickerTabs
+          ticker={ticker.slug}
+          currentPrice={latestSignal.close}
+          sigmaContent={
+            <div className="space-y-5">
+              <SignalCards latest={latestSignal} />
+              <SigmaChart latest={latestSignal} />
+              <HistoryTable rows={[...history].reverse().slice(0, 30)} />
+            </div>
+          }
+          mddContent={<MddTab mdd={mddResult} />}
+        />
       </div>
     </main>
   );

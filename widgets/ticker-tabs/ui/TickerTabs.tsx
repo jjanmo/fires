@@ -6,20 +6,22 @@ import { TradeJournal } from '@/features/trade-journal'
 import { useLivePrice } from '@/shared/hooks'
 
 interface Props {
-  ticker: string
-  currentPrice: number  // 서버 사이드 초기값 (fallback)
-  children: ReactNode
+  ticker:       string
+  currentPrice: number
+  sigmaContent: ReactNode
+  mddContent:   ReactNode
 }
 
 const TABS = [
-  { key: 'dashboard', label: '대시보드' },
-  { key: 'journal',   label: '매매일지' },
+  { key: 'sigma',   label: '2σ 지표' },
+  { key: 'mdd',     label: 'MDD 지표' },
+  { key: 'journal', label: '매매일지' },
 ] as const
 
 type TabKey = typeof TABS[number]['key']
 
-export default function TickerTabs({ ticker, currentPrice, children }: Props) {
-  const [tab, setTab] = useState<TabKey>('dashboard')
+export default function TickerTabs({ ticker, currentPrice, sigmaContent, mddContent }: Props) {
+  const [tab, setTab] = useState<TabKey>('sigma')
   const { price: livePrice } = useLivePrice(ticker.toUpperCase(), currentPrice)
 
   return (
@@ -40,7 +42,8 @@ export default function TickerTabs({ ticker, currentPrice, children }: Props) {
         ))}
       </div>
 
-      <div className={tab === 'dashboard' ? '' : 'hidden'}>{children}</div>
+      <div className={tab === 'sigma'   ? '' : 'hidden'}>{sigmaContent}</div>
+      <div className={tab === 'mdd'     ? '' : 'hidden'}>{mddContent}</div>
       <div className={tab === 'journal' ? '' : 'hidden'}>
         <TradeJournal ticker={ticker} currentPrice={livePrice} />
       </div>

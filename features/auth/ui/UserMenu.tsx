@@ -14,13 +14,19 @@ const COLORS = [
   'bg-pink-500',
 ];
 
+function emailToColor(email: string | undefined): string {
+  if (!email) return COLORS[0];
+  const sum = email.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  return COLORS[sum % COLORS.length];
+}
+
 interface Props {
   email: string | undefined;
 }
 
 export default function UserMenu({ email }: Props) {
   const [open, setOpen] = useState(false);
-  const [color] = useState(() => COLORS[Math.floor(Math.random() * COLORS.length)]);
+  const color = emailToColor(email);
   const initial = email ? email[0].toUpperCase() : '?';
 
   return (
