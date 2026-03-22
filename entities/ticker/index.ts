@@ -1,3 +1,3 @@
 export type { TickerInfo } from './model/types'
-export { TICKERS, getTicker } from './model/tickers'
+export { getTickerColor } from './model/colors'
 export { default as TickerCard } from './ui/TickerCard'

@@ -14,7 +14,7 @@ export default function TickerCard({ ticker, latest, error }: Props) {
   return (
     <Link
       href={`/${ticker.slug}`}
-      className={`group block rounded-2xl border bg-card p-6 transition-all duration-200 hover:bg-inset hover:scale-[1.01] ${ticker.borderColor}`}
+      className={`group block rounded-2xl border bg-card p-5 transition-all duration-200 hover:bg-inset hover:scale-[1.01] ${ticker.borderColor}`}
     >
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -68,10 +68,6 @@ export default function TickerCard({ ticker, latest, error }: Props) {
           </div>
         </>
       )}
-
-      <div className="mt-4 flex justify-end">
-        <span className="text-ink-4 group-hover:text-ink-2 transition-colors text-sm">→</span>
-      </div>
     </Link>
   );
 }
