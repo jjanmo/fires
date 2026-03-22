@@ -43,3 +43,14 @@ next-env.d.ts
 # ai
 .claude
 .cursor
+.mcp.json
+
+# vscode
+.vscode
+
+# cursor
+.cursor
+.cursor.json
+.cursor.yaml
+.cursor.yml
+.cursor.yaml

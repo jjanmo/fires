@@ -19,7 +19,7 @@ export default function ThemeToggle() {
     <button
       onClick={() => setTheme(dark ? 'light' : 'dark')}
       title={dark ? '라이트 모드로 전환' : '다크 모드로 전환'}
-      className="w-8 h-8 flex items-center justify-center rounded-lg text-ink-4 hover:text-ink-1 hover:bg-inset transition-colors text-base"
+      className="w-8 h-8 flex items-center justify-center rounded-lg text-ink-4 hover:text-ink-1 hover:bg-inset transition-colors text-base cursor-pointer"
     >
       {dark ? '☀' : '☾'}
     </button>

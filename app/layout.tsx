@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ThemeToggle, ThemeProvider } from '@/shared/ui';
+import { ThemeToggle, ThemeProvider, Logo } from '@/shared/ui';
+import { UserMenu } from '@/features/auth';
+import { createClient } from '@/shared/lib/supabase/server';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,20 +14,23 @@ fires helps you grow and manage your investments —
 one spark at a time — until the day you no longer need to work.`,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className="bg-canvas antialiased">
         <ThemeProvider>
           <header className="border-b border-edge bg-canvas/80 backdrop-blur-md sticky top-0 z-10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
+            <div className="px-4 sm:px-6 max-w-4xl mx-auto h-12 flex items-center justify-between">
               <Link href="/" className="hover:opacity-80 transition-opacity">
-                <span className="text-xl font-bold tracking-tight bg-linear-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                  fires
-                </span>
+                <Logo size="sm" />
               </Link>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-ink-4 font-mono">v1.0</span>
+                {user && <UserMenu email={user.email} />}
                 <ThemeToggle />
               </div>
             </div>
