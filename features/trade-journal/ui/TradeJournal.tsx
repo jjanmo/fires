@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Trade, EnrichedTrade } from '@/lib/journal';
-import { calcStats, enrichTrades } from '@/lib/journal';
-import { useFxRate } from '@/hooks/useFxRate';
+import type { Trade, EnrichedTrade } from '../model/journal';
+import { calcStats, enrichTrades } from '../model/journal';
+import { useFxRate } from '@/shared/hooks';
 
 interface Props { ticker: string; currentPrice: number }
 
