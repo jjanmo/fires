@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getTicker, TICKERS } from '@/lib/tickers';
-import { buildHistory, buildLatestSignal } from '@/lib/calc';
-import { fetchCloses } from '@/lib/fetchCloses';
-import PriceBlock from '@/components/PriceBlock';
-import SignalCards from '@/components/SignalCards';
-import SigmaChart from '@/components/SigmaChart';
-import HistoryTable from '@/components/HistoryTable';
-import TickerTabs from '@/components/TickerTabs';
+import { getTicker, TICKERS } from '@/entities/ticker';
+import { buildHistory, buildLatestSignal, fetchCloses } from '@/entities/sigma';
+import { PriceBlock } from '@/widgets/price-block';
+import { SignalCards } from '@/widgets/signal-cards';
+import { SigmaChart } from '@/widgets/sigma-chart';
+import { HistoryTable } from '@/widgets/history-table';
+import { TickerTabs } from '@/widgets/ticker-tabs';
 
 interface Props {
   params: Promise<{ ticker: string }>;

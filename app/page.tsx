@@ -1,8 +1,6 @@
-import { TICKERS } from '@/lib/tickers';
-import { buildLatestSignal } from '@/lib/calc';
-import { fetchCloses } from '@/lib/fetchCloses';
-import type { HistoryRow } from '@/lib/types';
-import TickerCard from '@/components/TickerCard';
+import { TICKERS, TickerCard } from '@/entities/ticker';
+import { buildLatestSignal, fetchCloses } from '@/entities/sigma';
+import type { HistoryRow } from '@/entities/sigma';
 
 async function fetchTickerData(slug: string): Promise<{ latest: HistoryRow | null; error?: string }> {
   try {

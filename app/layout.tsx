@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import ThemeToggle from '@/components/ThemeToggle';
-import ThemeProvider from '@/components/ThemeProvider';
+import { ThemeToggle, ThemeProvider } from '@/shared/ui';
 import './globals.css';
 
 export const metadata: Metadata = {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { fetchCloses } from '@/lib/fetchCloses'
+import { fetchCloses } from '@/entities/sigma'
 
 export async function GET(
   _req: Request,
