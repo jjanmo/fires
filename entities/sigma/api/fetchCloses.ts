@@ -1,4 +1,4 @@
-import type { ClosePrice } from './types'
+import type { ClosePrice } from '../model/types'
 
 export async function fetchCloses(symbol: string): Promise<ClosePrice[]> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=2y`

@@ -54,17 +54,6 @@ export function calcOrderPrices(
  * closes[i]   = 기준일 (전날 종가로 지정가를 계산)
  *
  * 각 행의 의미:
- *   date / open / high / low / close  → 실행일의 실제 OHLC
- *   buyPrice / sellPrice              → 전날 종가 + σ로 계산된 지정가
- *   triggered                         → low ≤ buyPrice → 'buy', high ≥ sellPrice → 'sell'
- */
-/**
- * 전체 히스토리 빌드 — 각 행은 "실행일" 기준
- *
- * closes[i+1] = 실행일 (지정가가 활성화된 날)
- * closes[i]   = 기준일 (전날 종가로 지정가를 계산)
- *
- * 각 행의 의미:
  *   date / open / high / low / close  → 실행일의 실제 가격
  *   buyPrice / sellPrice              → 전날 종가 기준으로 계산된 당일 활성 지정가
  *   triggered                         → low ≤ buyPrice → 'buy', high ≥ sellPrice → 'sell'

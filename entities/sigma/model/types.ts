@@ -25,12 +25,3 @@ export interface HistoryRow extends SigmaResult {
   actualReturn: number | null   // 전날 종가 대비 당일 종가 등락률
   triggered:    'buy' | 'sell' | null  // low ≤ buyPrice → buy, high ≥ sellPrice → sell
 }
-
-export interface TickerInfo {
-  symbol: string        // "SOXL"
-  name: string          // "Direxion Daily Semiconductor Bull 3X ETF"
-  slug: string          // "soxl" — URL 경로
-  description: string   // 한줄 설명
-  accentColor: string   // Tailwind text color class
-  borderColor: string   // Tailwind border color class
-}

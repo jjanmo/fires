@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import type { HistoryRow, TickerInfo } from '@/lib/types';
+import type { HistoryRow } from '@/entities/sigma';
+import type { TickerInfo } from '../model/types';
 
 interface Props {
   ticker: TickerInfo;
