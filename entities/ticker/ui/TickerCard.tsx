@@ -14,7 +14,7 @@ export default function TickerCard({ ticker, latest, error }: Props) {
   return (
     <Link
       href={`/${ticker.slug}`}
-      className={`group block rounded-2xl border bg-card p-5 transition-all duration-200 hover:bg-inset hover:scale-[1.01] ${ticker.borderColor}`}
+      className={`group block rounded-2xl border bg-card p-5 transition-colors duration-200 hover:bg-white/5 ${ticker.borderColor}`}
     >
       <div className="flex items-start justify-between mb-4">
         <div>
