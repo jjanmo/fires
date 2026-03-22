@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import TradeJournal from './TradeJournal'
-import { useLivePrice } from '@/hooks/useLivePrice'
+import { TradeJournal } from '@/features/trade-journal'
+import { useLivePrice } from '@/shared/hooks'
 
 interface Props {
   ticker: string

@@ -1,7 +1,8 @@
 'use client';
 
-import { useLivePrice } from '@/hooks/useLivePrice';
-import type { HistoryRow, TickerInfo } from '@/lib/types';
+import { useLivePrice } from '@/shared/hooks';
+import type { HistoryRow } from '@/entities/sigma';
+import type { TickerInfo } from '@/entities/ticker';
 
 interface Props {
   ticker: TickerInfo;

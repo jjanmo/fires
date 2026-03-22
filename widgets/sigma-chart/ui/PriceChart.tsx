@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js'
 import { Line } from 'react-chartjs-2'
-import type { HistoryRow } from '@/lib/types'
+import type { HistoryRow } from '@/entities/sigma'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler)
 

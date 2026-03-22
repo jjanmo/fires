@@ -1,4 +1,4 @@
-import type { HistoryRow } from '@/lib/types';
+import type { HistoryRow } from '@/entities/sigma';
 
 
 interface Props {
