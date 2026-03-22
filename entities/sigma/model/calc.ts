@@ -1,4 +1,4 @@
-import type { ClosePrice, SigmaResult, HistoryRow } from './types'
+import type { ClosePrice, SigmaResult, HistoryRow, MddResult, MddPoint } from './types'
 
 /** 일간 등락률 배열 계산 (종가 기준) */
 export function calcDailyReturns(closes: ClosePrice[]): number[] {
@@ -35,6 +35,41 @@ export function calcRolling252(
   }
 }
 
+/** MDD + 수중 곡선 계산 (종가 기준, max range 데이터 권장) */
+export function calcMdd(closes: ClosePrice[]): MddResult {
+  if (!closes.length) throw new Error('No data')
+
+  // ── 1. ATH ──────────────────────────────────────────────────────
+  let athPrice     = closes[0].price
+  let athHighPrice = closes[0].high
+  for (const c of closes) {
+    if (c.price > athPrice)         athPrice     = c.price
+    if (c.high  > athHighPrice)     athHighPrice = c.high
+  }
+
+  // ── 2. 수중 곡선 & MDD ──────────────────────────────────────────
+  let rollingMax = closes[0].price
+  let mdd        = 0
+  const series: MddPoint[] = closes.map(c => {
+    if (c.price > rollingMax) rollingMax = c.price
+    const dd = +((c.price - rollingMax) / rollingMax * 100).toFixed(2)
+    if (dd < mdd) mdd = dd
+    return { date: c.date, dd }
+  })
+
+  const currentDD = series[series.length - 1].dd
+  const mddRatio  = mdd !== 0 ? +(currentDD / mdd * 100).toFixed(1) : 0
+
+  return {
+    mdd:              +mdd.toFixed(2),
+    currentDD:        +currentDD.toFixed(2),
+    mddRatio,
+    athPrice:         +athPrice.toFixed(2),
+    athHighPrice: +athHighPrice.toFixed(2),
+    series,
+  }
+}
+
 /** 종가 기준 지정가 계산 */
 export function calcOrderPrices(
   close: number,
@@ -49,14 +84,6 @@ export function calcOrderPrices(
 
 /**
  * 전체 히스토리 빌드 — 각 행은 "실행일" 기준
- *
- * closes[i+1] = 실행일 (지정가가 활성화된 날)
- * closes[i]   = 기준일 (전날 종가로 지정가를 계산)
- *
- * 각 행의 의미:
- *   date / open / high / low / close  → 실행일의 실제 가격
- *   buyPrice / sellPrice              → 전날 종가 기준으로 계산된 당일 활성 지정가
- *   triggered                         → low ≤ buyPrice → 'buy', high ≥ sellPrice → 'sell'
  */
 export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
   const returns = calcDailyReturns(closes)
@@ -64,7 +91,7 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
 
   closes.slice(1).forEach((today, i) => {
     const yesterday = closes[i]
-    const s = calcRolling252(returns, i)  // σ: 전날까지의 데이터 기준
+    const s = calcRolling252(returns, i)
     if (!s) return
 
     const orders = calcOrderPrices(yesterday.price, s)
@@ -90,16 +117,11 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
 
 /**
  * 최신 신호 계산 — 오늘 종가 기준 내일 지정가
- *
- * SignalCards / SigmaDetail / SplitPlanner 등 "내일 주문" 용도로 사용
- * - buyPrice / sellPrice: 오늘 종가 + 최신 σ로 계산한 내일 지정가
- * - triggered: 오늘 O/H/L/C가 어제 지정가를 건드렸는지 여부
  */
 export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
   const returns = calcDailyReturns(closes)
   const N = closes.length
 
-  // 내일 지정가용 σ — 오늘 등락률 포함 전체 데이터
   const sTomorrow = calcRolling252(returns, N - 1)
   if (!sTomorrow) return null
 
@@ -107,7 +129,6 @@ export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
   const orders = calcOrderPrices(latest.price, sTomorrow)
   const actualReturn: number | null = returns[N - 2] ?? null
 
-  // 오늘의 트리거 여부: 오늘 OHLC가 어제 계산한 지정가를 건드렸는지
   const sYesterday = N >= 2 ? calcRolling252(returns, N - 2) : null
   const prevOrders = sYesterday ? calcOrderPrices(closes[N - 2].price, sYesterday) : null
 

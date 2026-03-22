@@ -1,7 +1,7 @@
 import type { ClosePrice } from '../model/types'
 
-export async function fetchCloses(symbol: string): Promise<ClosePrice[]> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=2y`
+export async function fetchCloses(symbol: string, range: '1y' | '2y' | '5y' | 'max' = '5y'): Promise<ClosePrice[]> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=${range}`
 
   const res = await fetch(url, {
     headers: {
@@ -20,25 +20,40 @@ export async function fetchCloses(symbol: string): Promise<ClosePrice[]> {
   const result = json?.chart?.result?.[0]
   if (!result) throw new Error('Yahoo Finance 데이터 파싱 실패')
 
-  const timestamps: number[] = result.timestamp
-  const quote = result.indicators.quote[0]
-  const opens:  (number | null)[] = quote.open
-  const highs:  (number | null)[] = quote.high
-  const lows:   (number | null)[] = quote.low
-  const closes: (number | null)[] = quote.close
+  const timestamps: number[]          = result.timestamp
+  const quote                         = result.indicators.quote[0]
+  const rawOpens:  (number | null)[]  = quote.open
+  const rawHighs:  (number | null)[]  = quote.high
+  const rawLows:   (number | null)[]  = quote.low
+  const rawCloses: (number | null)[]  = quote.close
+  // adjclose: split + 배당 보정된 종가 (기준값)
+  const adjCloses: (number | null)[]  = result.indicators.adjclose?.[0]?.adjclose ?? []
 
   const raw = timestamps
-    .map((t, i) => ({
-      date:  new Date(t * 1000).toISOString().slice(0, 10),
-      open:  opens[i],
-      high:  highs[i],
-      low:   lows[i],
-      price: closes[i],
-    }))
-    .filter(
-      (r): r is ClosePrice =>
-        r.open !== null && r.high !== null && r.low !== null && r.price !== null
-    )
+    .map((t, i) => {
+      const rawClose = rawCloses[i]
+      const adjClose = adjCloses[i] ?? null
+
+      // adjclose가 없거나 rawClose가 0이면 제외
+      if (rawClose === null || rawClose === 0 || adjClose === null) return null
+
+      // 조정 비율: split/배당을 반영해 OHLC 전체를 동일한 스케일로 맞춤
+      const factor = adjClose / rawClose
+
+      const open  = rawOpens[i]
+      const high  = rawHighs[i]
+      const low   = rawLows[i]
+      if (open === null || high === null || low === null) return null
+
+      return {
+        date:  new Date(t * 1000).toISOString().slice(0, 10),
+        open:  +(open  * factor),
+        high:  +(high  * factor),
+        low:   +(low   * factor),
+        price: adjClose,  // 이미 보정된 값
+      } satisfies ClosePrice
+    })
+    .filter((r): r is ClosePrice => r !== null)
 
   // 같은 날짜 중복 시 마지막 항목(최신 데이터)만 유지
   const seen = new Map<string, ClosePrice>()
