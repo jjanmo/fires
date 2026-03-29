@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { TradeJournal } from "@/features/trade-journal";
+import type { Trade } from "@/features/trade-journal";
 import { useLivePrice } from "@/shared/hooks";
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   currentPrice: number;
   sigmaContent: ReactNode;
   mddContent: ReactNode;
+  initialTrades: Trade[];
 }
 
 const TABS = [
@@ -25,6 +27,7 @@ export default function TickerTabs({
   currentPrice,
   sigmaContent,
   mddContent,
+  initialTrades,
 }: Props) {
   const [tab, setTab] = useState<TabKey>("sigma");
   const { price: livePrice } = useLivePrice(ticker.toUpperCase(), currentPrice);
@@ -50,7 +53,7 @@ export default function TickerTabs({
       <div className={tab === "sigma" ? "" : "hidden"}>{sigmaContent}</div>
       <div className={tab === "mdd" ? "" : "hidden"}>{mddContent}</div>
       <div className={tab === "journal" ? "" : "hidden"}>
-        <TradeJournal ticker={ticker} currentPrice={livePrice} />
+        <TradeJournal ticker={ticker} currentPrice={livePrice} initialTrades={initialTrades} />
       </div>
     </div>
   );

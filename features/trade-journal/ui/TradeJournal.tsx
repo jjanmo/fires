@@ -1,23 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useTransition } from 'react';
 import type { Trade, EnrichedTrade } from '../model/journal';
 import { calcStats, enrichTrades } from '../model/journal';
+import { addTrade, deleteTrade } from '../actions';
 import { useFxRate } from '@/shared/hooks';
 
-interface Props { ticker: string; currentPrice: number }
+interface Props { ticker: string; currentPrice: number; initialTrades: Trade[] }
 
 const today = () => new Date().toISOString().slice(0, 10);
-const storageKey = (t: string) => `journal_${t}`;
-
-function loadTrades(ticker: string): Trade[] {
-  if (typeof window === 'undefined') return [];
-  try { return JSON.parse(localStorage.getItem(storageKey(ticker)) ?? '[]'); }
-  catch { return []; }
-}
-function saveTrades(ticker: string, trades: Trade[]) {
-  localStorage.setItem(storageKey(ticker), JSON.stringify(trades));
-}
 
 const fmtUSD = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const fmtKRW = (n: number) => `${Math.round(n).toLocaleString('ko-KR')}원`;
@@ -80,28 +71,37 @@ function TradeRow({ trade, fxRate, onDelete }: { trade: EnrichedTrade; fxRate: n
   );
 }
 
-export default function TradeJournal({ ticker, currentPrice }: Props) {
-  const [trades, setTrades] = useState<Trade[]>([]);
+export default function TradeJournal({ ticker, currentPrice, initialTrades }: Props) {
+  const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const { rate: fxRate, updatedAt, loading: fxLoading, refresh } = useFxRate();
   const [form, setForm] = useState({ type: 'buy' as 'buy' | 'sell', date: today(), qty: '', price: '', memo: '' });
-
-  useEffect(() => { setTrades(loadTrades(ticker)); }, [ticker]);
+  const [pending, startTransition] = useTransition();
 
   const handleAdd = useCallback(() => {
     const qty = parseFloat(form.qty);
     const price = parseFloat(form.price);
     if (!qty || !price || !form.date) return;
-    const updated = [...trades, { id: crypto.randomUUID(), date: form.date, type: form.type, qty, price, memo: form.memo.trim() }];
-    setTrades(updated);
-    saveTrades(ticker, updated);
+
+    const newTrade: Omit<Trade, 'id'> = { date: form.date, type: form.type, qty, price, memo: form.memo.trim() };
+    const optimisticId = crypto.randomUUID();
+
+    setTrades(prev => [...prev, { ...newTrade, id: optimisticId }]);
     setForm(f => ({ ...f, qty: '', price: '', memo: '', date: today() }));
-  }, [form, trades, ticker]);
+
+    startTransition(async () => {
+      const saved = await addTrade(ticker, newTrade);
+      if (saved) {
+        setTrades(prev => prev.map(t => t.id === optimisticId ? saved : t));
+      }
+    });
+  }, [form, ticker, startTransition]);
 
   const handleDelete = useCallback((id: string) => {
-    const updated = trades.filter(t => t.id !== id);
-    setTrades(updated);
-    saveTrades(ticker, updated);
-  }, [trades, ticker]);
+    setTrades(prev => prev.filter(t => t.id !== id));
+    startTransition(async () => {
+      await deleteTrade(ticker, id);
+    });
+  }, [ticker, startTransition]);
 
   const stats = calcStats(trades, currentPrice, fxRate);
   const enriched = enrichTrades(trades).reverse();
@@ -214,7 +214,8 @@ export default function TradeJournal({ ticker, currentPrice }: Props) {
 
         <button
           onClick={handleAdd}
-          className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+          disabled={pending}
+          className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-150 disabled:opacity-50 ${
             form.type === 'buy'
               ? 'bg-buy-badge text-buy-text border border-buy-edge hover:bg-buy-bg'
               : 'bg-sell-badge text-sell-text border border-sell-edge hover:bg-sell-bg'

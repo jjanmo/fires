@@ -7,6 +7,7 @@ import { HistoryTable } from '@/widgets/history-table';
 import { TickerTabs } from '@/widgets/ticker-tabs';
 import { MddTab } from '@/widgets/mdd-tab';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
+import { getTrades } from '@/features/trade-journal';
 import { createClient } from '@/shared/lib/supabase/server';
 
 
@@ -36,6 +37,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   const { data: { user } } = await supabase.auth.getUser();
   const watchlistSymbols = user ? await getWatchlistSymbols(user.id) : [];
   const isWatchlisted = watchlistSymbols.includes(ticker.symbol);
+  const initialTrades = await getTrades(ticker.slug);
 
   return (
     <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
@@ -60,6 +62,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
             </div>
           }
           mddContent={<MddTab mdd={mddResult} />}
+          initialTrades={initialTrades}
         />
       </div>
     </main>
