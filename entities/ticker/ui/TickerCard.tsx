@@ -10,6 +10,8 @@ interface Props {
 
 export default function TickerCard({ ticker, latest, error }: Props) {
   const returnSign = latest?.actualReturn != null ? (latest.actualReturn >= 0 ? '+' : '') : '';
+  const s1d = latest ? latest.mu - latest.sigma : 0;
+  const s1u = latest ? latest.mu + latest.sigma : 0;
 
   return (
     <Link
@@ -29,6 +31,8 @@ export default function TickerCard({ ticker, latest, error }: Props) {
               latest.actualReturn == null
                 ? 'text-ink-3 bg-inset'
                 : latest.actualReturn < latest.s2d
+                ? 'text-buy-val bg-buy-badge'
+                : latest.actualReturn < s1d
                 ? 'text-buy-val bg-buy-badge'
                 : latest.actualReturn > latest.s2u
                 ? 'text-sell-val bg-sell-badge'
@@ -50,13 +54,32 @@ export default function TickerCard({ ticker, latest, error }: Props) {
             <p className="text-[11px] text-ink-4 mt-1 font-mono">{latest.date}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* 매수 */}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
+              <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
+                1<span className="normal-case">σ</span> 매수가
+              </p>
+              <p className="text-lg font-semibold tabular-nums text-buy-val">${latest.s1BuyPrice.toFixed(2)}</p>
+              <p className="text-[10px] text-ink-3 font-mono mt-0.5">{s1d.toFixed(2)}%</p>
+            </div>
             <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매수가
               </p>
               <p className="text-lg font-semibold tabular-nums text-buy-val">${latest.buyPrice.toFixed(2)}</p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{latest.s2d.toFixed(2)}%</p>
+            </div>
+          </div>
+
+          {/* 매도 */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
+              <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
+                1<span className="normal-case">σ</span> 매도가
+              </p>
+              <p className="text-lg font-semibold tabular-nums text-sell-val">${latest.s1SellPrice.toFixed(2)}</p>
+              <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{s1u.toFixed(2)}%</p>
             </div>
             <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
