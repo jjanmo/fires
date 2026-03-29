@@ -62,6 +62,37 @@ export async function addTrade(
   }
 }
 
+export async function updateTrade(
+  ticker: string,
+  id: string,
+  fields: Partial<Omit<Trade, 'id'>>,
+): Promise<Trade | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data } = await supabase
+    .from('trades')
+    .update(fields)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select('id, date, type, qty, price, memo')
+    .single()
+
+  if (!data) return null
+
+  revalidatePath(`/${ticker.toLowerCase()}`)
+
+  return {
+    id:    data.id,
+    date:  data.date,
+    type:  data.type as 'buy' | 'sell',
+    qty:   Number(data.qty),
+    price: Number(data.price),
+    memo:  data.memo ?? '',
+  }
+}
+
 export async function deleteTrade(ticker: string, id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
