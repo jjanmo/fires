@@ -16,29 +16,46 @@ function nextTradingDate(dateStr: string): string {
 
 export default function SignalCards({ latest }: Props) {
   const dateLabel = nextTradingDate(latest.date);
+  const s1d = latest.mu - latest.sigma;
+  const s1u = latest.mu + latest.sigma;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 매수 카드 */}
       <div className="rounded-2xl bg-buy-bg border border-buy-edge p-5">
-        <p className="text-[11px] font-semibold text-buy-text uppercase tracking-widest mb-3">
-          {dateLabel} · 2<span className="normal-case">σ</span> 매수 지정가
+        <p className="text-[11px] font-semibold text-buy-text uppercase tracking-widest mb-4">
+          {dateLabel} · 매수 지정가
         </p>
-        <p className="text-3xl font-bold tabular-nums text-buy-val">${latest.buyPrice.toFixed(2)}</p>
-        <p className="text-xs text-ink-3 mt-2 font-mono">기준 등락률 {latest.s2d.toFixed(2)}% (평균 - 2<span className="normal-case">σ</span>)</p>
-        <div className="mt-4 pt-4 border-t border-buy-edge">
-          <p className="text-[11px] text-ink-3">1<span className="normal-case">σ</span> 참고 매수가</p>
-          <p className="text-sm text-ink-2 font-mono mt-0.5">${latest.s1BuyPrice.toFixed(2)}</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-[10px] text-ink-4 mb-1">1<span className="normal-case">σ</span> 매수가</p>
+            <p className="text-xl font-bold tabular-nums text-buy-val">${latest.s1BuyPrice.toFixed(2)}</p>
+            <p className="text-[10px] text-ink-4 mt-1 font-mono">{s1d.toFixed(2)}% (μ - 1<span className="normal-case">σ</span>)</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-ink-4 mb-1">2<span className="normal-case">σ</span> 매수가</p>
+            <p className="text-xl font-bold tabular-nums text-buy-val">${latest.buyPrice.toFixed(2)}</p>
+            <p className="text-[10px] text-ink-4 mt-1 font-mono">{latest.s2d.toFixed(2)}% (μ - 2<span className="normal-case">σ</span>)</p>
+          </div>
         </div>
       </div>
 
+      {/* 매도 카드 */}
       <div className="rounded-2xl bg-sell-bg border border-sell-edge p-5">
-        <p className="text-[11px] font-semibold text-sell-text uppercase tracking-widest mb-3">
-          {dateLabel} · 2<span className="normal-case">σ</span> 매도 지정가
+        <p className="text-[11px] font-semibold text-sell-text uppercase tracking-widest mb-4">
+          {dateLabel} · 매도 지정가
         </p>
-        <p className="text-3xl font-bold tabular-nums text-sell-val">${latest.sellPrice.toFixed(2)}</p>
-        <p className="text-xs text-ink-3 mt-2 font-mono">기준 등락률 +{latest.s2u.toFixed(2)}% (평균 + 2<span className="normal-case">σ</span>)</p>
-        <div className="mt-4 pt-4 border-t border-sell-edge">
-          <p className="text-[11px] text-ink-3">쿼터 매도 권장(25%)</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-[10px] text-ink-4 mb-1">1<span className="normal-case">σ</span> 매도가</p>
+            <p className="text-xl font-bold tabular-nums text-sell-val">${latest.s1SellPrice.toFixed(2)}</p>
+            <p className="text-[10px] text-ink-4 mt-1 font-mono">+{s1u.toFixed(2)}% (μ + 1<span className="normal-case">σ</span>)</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-ink-4 mb-1">2<span className="normal-case">σ</span> 매도가</p>
+            <p className="text-xl font-bold tabular-nums text-sell-val">${latest.sellPrice.toFixed(2)}</p>
+            <p className="text-[10px] text-ink-4 mt-1 font-mono">+{latest.s2u.toFixed(2)}% (μ + 2<span className="normal-case">σ</span>)</p>
+          </div>
         </div>
       </div>
     </div>

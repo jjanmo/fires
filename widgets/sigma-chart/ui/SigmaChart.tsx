@@ -104,9 +104,9 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
 
     // ── 3. 수직 기준선 ──
     { label: '2시그마↓', data: vLine(s2d, maxY), showLine: true, fill: false, borderColor: c.s2d, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
-    { label: '1시그마↓', data: vLine(s1d, maxY), showLine: true, fill: false, borderColor: c.s1d, borderWidth: 1,   pointRadius: 0, borderDash: [3, 3] },
+    { label: '1시그마↓', data: vLine(s1d, maxY), showLine: true, fill: false, borderColor: c.s1d, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
     { label: '평균(μ)', data: vLine(mu,  maxY), showLine: true, fill: false, borderColor: c.mu,  borderWidth: 1,   pointRadius: 0 },
-    { label: '1시그마↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 1,   pointRadius: 0, borderDash: [3, 3] },
+    { label: '1시그마↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
     { label: '2시그마↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
 
     // ── 4. 실제 등락률 마커 ──

@@ -31,9 +31,11 @@ export default function PriceChart({ history }: { history: HistoryRow[] }) {
           data={{
             labels: history.map(r => r.date.slice(5)),
             datasets: [
-              { label: '종가',     data: history.map(r => r.close),     borderColor: isDark ? '#a78bfa' : '#7c3aed', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-              { label: '2σ 매수가', data: history.map(r => r.buyPrice),  borderColor: isDark ? '#4ade80' : '#16a34a', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
-              { label: '2σ 매도가', data: history.map(r => r.sellPrice), borderColor: isDark ? '#60a5fa' : '#2563eb', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
+              { label: '종가',      data: history.map(r => r.close),       borderColor: isDark ? '#a78bfa' : '#7c3aed', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+              { label: '1σ 매수가', data: history.map(r => r.s1BuyPrice),  borderColor: isDark ? '#86efac' : '#4ade80', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
+              { label: '2σ 매수가', data: history.map(r => r.buyPrice),    borderColor: isDark ? '#4ade80' : '#16a34a', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
+              { label: '1σ 매도가', data: history.map(r => r.s1SellPrice), borderColor: isDark ? '#93c5fd' : '#60a5fa', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
+              { label: '2σ 매도가', data: history.map(r => r.sellPrice),   borderColor: isDark ? '#60a5fa' : '#2563eb', borderWidth: 1,   pointRadius: 0, tension: 0.3, borderDash: [4, 3] },
             ],
           }}
           options={{
