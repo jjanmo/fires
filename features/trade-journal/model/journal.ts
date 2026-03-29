@@ -10,6 +10,8 @@ export interface Trade {
 export interface TradeStats {
   totalShares:         number  // 현재 보유 수량
   avgCost:             number  // 평균 매수단가 (USD)
+  investedUSD:         number  // 매입금액 (USD)
+  valuationUSD:        number  // 평가금액 (USD)
   unrealizedPnlUSD:    number  // 미실현 손익 (USD)
   unrealizedPnlKRW:    number  // 미실현 손익 (원)
   unrealizedReturnPct: number  // 미실현 수익률 (%)
@@ -49,12 +51,15 @@ export function calcStats(
   }
 
   const avgCost             = totalShares > 0 ? totalCostUSD / totalShares : 0
+  const valuationUSD        = totalShares * currentPrice
   const unrealizedPnlUSD    = totalShares > 0 ? (currentPrice - avgCost) * totalShares : 0
   const unrealizedReturnPct = avgCost > 0 ? ((currentPrice - avgCost) / avgCost) * 100 : 0
 
   return {
     totalShares,
     avgCost,
+    investedUSD: totalCostUSD,
+    valuationUSD,
     unrealizedPnlUSD,
     unrealizedPnlKRW:    unrealizedPnlUSD * fxRate,
     unrealizedReturnPct,
