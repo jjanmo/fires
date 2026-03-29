@@ -25,13 +25,16 @@ export default function TickerLoading() {
         {/* SignalCards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="rounded-2xl border border-edge bg-sk-card p-5 space-y-3">
-              <div className="skeleton h-3 w-40" />
-              <div className="skeleton h-8 w-28" />
-              <div className="skeleton h-3 w-52" />
-              <div className="pt-3 mt-1 border-t border-edge space-y-1.5">
-                <div className="skeleton h-3 w-20" />
-                <div className="skeleton h-4 w-24" />
+            <div key={i} className="rounded-2xl border border-edge bg-sk-card p-5 space-y-4">
+              <div className="skeleton h-3 w-36" />
+              <div className="grid grid-cols-2 gap-4">
+                {[0, 1].map((j) => (
+                  <div key={j} className="space-y-1.5">
+                    <div className="skeleton h-2.5 w-16" />
+                    <div className="skeleton h-6 w-24" />
+                    <div className="skeleton h-2.5 w-28" />
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -73,14 +76,14 @@ export default function TickerLoading() {
           <div className="p-4 space-y-2">
             {/* 헤더 행 */}
             <div className="flex gap-2 px-1 pb-2 border-b border-edge">
-              {[16, 12, 12, 12, 12, 12, 16, 16, 12].map((w, i) => (
+              {[16, 12, 12, 12, 12, 12, 14, 14, 14, 14, 12].map((w, i) => (
                 <div key={i} className="skeleton h-2.5 flex-1" style={{ maxWidth: `${w * 4}px` }} />
               ))}
             </div>
             {/* 데이터 행 */}
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex gap-2 px-1 py-1">
-                {[16, 12, 12, 12, 12, 12, 16, 16, 10].map((w, j) => (
+                {[16, 12, 12, 12, 12, 12, 14, 14, 14, 14, 10].map((w, j) => (
                   <div key={j} className="skeleton h-3 flex-1" style={{ maxWidth: `${w * 4}px` }} />
                 ))}
               </div>

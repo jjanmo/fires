@@ -18,8 +18,8 @@ function CardSkeleton() {
         <div className="skeleton h-3 w-20 mt-1" />
       </div>
 
-      {/* 매수 / 매도 박스 — p-3 내부 3줄로 실제 높이 일치 */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* 매수 박스 (1σ / 2σ) */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
         {[0, 1].map((i) => (
           <div key={i} className="rounded-xl border border-edge bg-sk-card p-3">
             <div className="skeleton h-2.5 w-20 mb-1" />
@@ -29,9 +29,15 @@ function CardSkeleton() {
         ))}
       </div>
 
-      {/* 화살표 */}
-      <div className="mt-4 flex justify-end">
-        <div className="skeleton h-3 w-3" />
+      {/* 매도 박스 (1σ / 2σ) */}
+      <div className="grid grid-cols-2 gap-3">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-xl border border-edge bg-sk-card p-3">
+            <div className="skeleton h-2.5 w-20 mb-1" />
+            <div className="skeleton h-7 w-24" />
+            <div className="skeleton h-2.5 w-16 mt-0.5" />
+          </div>
+        ))}
       </div>
     </div>
   );
