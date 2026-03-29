@@ -15,13 +15,19 @@ export default function HistoryTable({ rows }: Props) {
           <thead>
             <tr className="text-[10px] text-ink-4 uppercase tracking-wider border-b border-edge">
               <th className="px-4 py-3 text-left font-medium">날짜</th>
-              <th className="px-3 py-3 text-right font-medium text-buy-val">저가</th>
-              <th className="px-3 py-3 text-right font-medium">시가</th>
               <th className="px-3 py-3 text-right font-medium">종가</th>
+              <th className="px-3 py-3 text-right font-medium">시가</th>
               <th className="px-3 py-3 text-right font-medium text-sell-val">고가</th>
+              <th className="px-3 py-3 text-right font-medium text-buy-val">저가</th>
               <th className="px-3 py-3 text-right font-medium">등락률</th>
               <th className="px-3 py-3 text-right font-medium text-buy-val">
+                1<span className="normal-case">σ</span> 매수가
+              </th>
+              <th className="px-3 py-3 text-right font-medium text-buy-val">
                 2<span className="normal-case">σ</span> 매수가
+              </th>
+              <th className="px-3 py-3 text-right font-medium text-sell-val">
+                1<span className="normal-case">σ</span> 매도가
               </th>
               <th className="px-3 py-3 text-right font-medium text-sell-val">
                 2<span className="normal-case">σ</span> 매도가
@@ -31,8 +37,8 @@ export default function HistoryTable({ rows }: Props) {
           </thead>
           <tbody>
             {rows.map((row, index) => {
-              const isBuy = row.triggered === 'buy';
-              const isSell = row.triggered === 'sell';
+              const isBuy  = row.triggered === 'buy-1s' || row.triggered === 'buy-2s';
+              const isSell = row.triggered === 'sell-2s';
               return (
                 <tr
                   key={`${row.date}-${index}`}
@@ -42,23 +48,14 @@ export default function HistoryTable({ rows }: Props) {
                 >
                   <td className="px-4 py-2.5 font-mono text-ink-3 text-[11px] whitespace-nowrap">{row.date}</td>
 
-                  {/* 저가 */}
-                  <td
-                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                      isBuy ? 'text-buy-val font-semibold' : 'text-ink-2'
-                    }`}
-                  >
-                    ${row.low.toFixed(2)}
+                  {/* 종가 */}
+                  <td className="px-3 py-2.5 text-right font-mono text-ink-1 tabular-nums text-[12px] font-medium">
+                    ${row.close.toFixed(2)}
                   </td>
 
                   {/* 시가 */}
                   <td className="px-3 py-2.5 text-right font-mono text-ink-2 tabular-nums text-[12px]">
                     ${row.open.toFixed(2)}
-                  </td>
-
-                  {/* 종가 */}
-                  <td className="px-3 py-2.5 text-right font-mono text-ink-1 tabular-nums text-[12px] font-medium">
-                    ${row.close.toFixed(2)}
                   </td>
 
                   {/* 고가 */}
@@ -68,6 +65,15 @@ export default function HistoryTable({ rows }: Props) {
                     }`}
                   >
                     ${row.high.toFixed(2)}
+                  </td>
+
+                  {/* 저가 */}
+                  <td
+                    className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                      isBuy ? 'text-buy-val font-semibold' : 'text-ink-2'
+                    }`}
+                  >
+                    ${row.low.toFixed(2)}
                   </td>
 
                   {/* 등락률 */}
@@ -81,19 +87,31 @@ export default function HistoryTable({ rows }: Props) {
                       : '—'}
                   </td>
 
-                  {/* 매수 한도 */}
+                  {/* 1σ 매수가 */}
+                  <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
+                    row.triggered === 'buy-1s' ? 'text-buy-val font-semibold' : 'text-buy-text'
+                  }`}>
+                    ${row.s1BuyPrice.toFixed(2)}
+                  </td>
+
+                  {/* 2σ 매수가 */}
                   <td
                     className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                      isBuy ? 'text-buy-val font-semibold' : 'text-buy-text'
+                      row.triggered === 'buy-2s' ? 'text-buy-val font-semibold' : 'text-buy-text'
                     }`}
                   >
                     ${row.buyPrice.toFixed(2)}
                   </td>
 
-                  {/* 매도 한도 */}
+                  {/* 1σ 매도가 */}
+                  <td className="px-3 py-2.5 text-right font-mono tabular-nums text-[12px] text-sell-text">
+                    ${row.s1SellPrice.toFixed(2)}
+                  </td>
+
+                  {/* 2σ 매도가 */}
                   <td
                     className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
-                      isSell ? 'text-sell-val font-semibold' : 'text-sell-text'
+                      row.triggered === 'sell-2s' ? 'text-sell-val font-semibold' : 'text-sell-text'
                     }`}
                   >
                     ${row.sellPrice.toFixed(2)}
@@ -101,14 +119,19 @@ export default function HistoryTable({ rows }: Props) {
 
                   {/* 신호 배지 */}
                   <td className="px-4 py-2.5 text-right">
-                    {isBuy && (
+                    {row.triggered === 'buy-1s' && (
                       <span className="text-[10px] font-semibold text-buy-text bg-buy-badge border border-buy-edge px-2 py-0.5 rounded-full whitespace-nowrap">
-                        저가 체결
+                        1σ 매수
                       </span>
                     )}
-                    {isSell && (
+                    {row.triggered === 'buy-2s' && (
+                      <span className="text-[10px] font-semibold text-buy-text bg-buy-badge border border-buy-edge px-2 py-0.5 rounded-full whitespace-nowrap">
+                        2σ 매수
+                      </span>
+                    )}
+                    {row.triggered === 'sell-2s' && (
                       <span className="text-[10px] font-semibold text-sell-text bg-sell-badge border border-sell-edge px-2 py-0.5 rounded-full whitespace-nowrap">
-                        고가 체결
+                        2σ 매도
                       </span>
                     )}
                   </td>
