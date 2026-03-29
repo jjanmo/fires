@@ -2,7 +2,7 @@ import type { TickerInfo } from '@/entities/ticker';
 import { buildHistory, buildLatestSignal, fetchCloses, calcMdd } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
 import { SignalCards } from '@/widgets/signal-cards';
-import { SigmaChart } from '@/widgets/sigma-chart';
+import { SigmaChart, DeclinePriceChart } from '@/widgets/sigma-chart';
 import { HistoryTable } from '@/widgets/history-table';
 import { TickerTabs } from '@/widgets/ticker-tabs';
 import { MddTab } from '@/widgets/mdd-tab';
@@ -58,6 +58,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
             <div className="space-y-5">
               <SignalCards latest={latestSignal} />
               <SigmaChart latest={latestSignal} />
+              <DeclinePriceChart history={history} />
               <HistoryTable rows={[...history].reverse().slice(0, 30)} />
             </div>
           }
