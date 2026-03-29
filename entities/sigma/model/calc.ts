@@ -74,11 +74,12 @@ export function calcMdd(closes: ClosePrice[]): MddResult {
 export function calcOrderPrices(
   close: number,
   s: SigmaResult
-): Pick<HistoryRow, 'buyPrice' | 'sellPrice' | 's1BuyPrice'> {
+): Pick<HistoryRow, 'buyPrice' | 'sellPrice' | 's1BuyPrice' | 's1SellPrice'> {
   return {
-    buyPrice:   +(close * (1 + s.s2d / 100)).toFixed(2),
-    sellPrice:  +(close * (1 + s.s2u / 100)).toFixed(2),
-    s1BuyPrice: +(close * (1 - s.sigma / 100)).toFixed(2),
+    buyPrice:    +(close * (1 + s.s2d / 100)).toFixed(2),
+    sellPrice:   +(close * (1 + s.s2u / 100)).toFixed(2),
+    s1BuyPrice:  +(close * (1 + (s.mu - s.sigma) / 100)).toFixed(2),
+    s1SellPrice: +(close * (1 + (s.mu + s.sigma) / 100)).toFixed(2),
   }
 }
 
@@ -107,8 +108,9 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
       ...orders,
       actualReturn,
       triggered:
-        today.low  <= orders.buyPrice  ? 'buy'  :
-        today.high >= orders.sellPrice ? 'sell' : null,
+        today.low  <= orders.buyPrice    ? 'buy-2s'  :
+        today.low  <= orders.s1BuyPrice  ? 'buy-1s'  :
+        today.high >= orders.sellPrice   ? 'sell-2s' : null,
     })
   })
 
@@ -132,10 +134,11 @@ export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
   const sYesterday = N >= 2 ? calcRolling252(returns, N - 2) : null
   const prevOrders = sYesterday ? calcOrderPrices(closes[N - 2].price, sYesterday) : null
 
-  const triggered: 'buy' | 'sell' | null =
-    prevOrders === null               ? null   :
-    latest.low  <= prevOrders.buyPrice  ? 'buy'  :
-    latest.high >= prevOrders.sellPrice ? 'sell' : null
+  const triggered: HistoryRow['triggered'] =
+    prevOrders === null                       ? null      :
+    latest.low  <= prevOrders.buyPrice        ? 'buy-2s'  :
+    latest.low  <= prevOrders.s1BuyPrice      ? 'buy-1s'  :
+    latest.high >= prevOrders.sellPrice       ? 'sell-2s' : null
 
   return {
     date:  latest.date,
