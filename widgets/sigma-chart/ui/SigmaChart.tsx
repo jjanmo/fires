@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Chart as ChartJS, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js';
+import type { Plugin } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import type { HistoryRow } from '@/entities/sigma';
 
@@ -9,24 +10,20 @@ import type { HistoryRow } from '@/entities/sigma';
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 const DARK = {
-  // 구간 면적 색상
-  tailFill:   'rgba( 74,222,128, 0.30)',  // ±2σ 바깥 (신호 구간)
-  innerFill:  'rgba( 74,222,128, 0.10)',  // ±1σ~±2σ
-  centerFill: 'rgba(167,139,250, 0.22)',  // ±1σ 중앙 (68%)
-  innerFillR: 'rgba( 96,165,250, 0.10)',  // 오른쪽 1σ~2σ
-  tailFillR:  'rgba( 96,165,250, 0.30)',  // 오른쪽 2σ 바깥
-  // 아웃라인 곡선
+  tailFill:   'rgba( 74,222,128, 0.30)',
+  innerFill:  'rgba( 74,222,128, 0.10)',
+  centerFill: 'rgba(167,139,250, 0.22)',
+  innerFillR: 'rgba( 96,165,250, 0.10)',
+  tailFillR:  'rgba( 96,165,250, 0.30)',
   curveLine: '#a78bfa',
-  // 수직선
   s2d: '#4ade80', s1d: '#86efac',
   mu: '#64748b',
   s1u: '#93c5fd', s2u: '#60a5fa',
-  // 실제 등락률
   actual: '#fbbf24',
-  // 차트
   grid: '#1e293b', ticks: '#94a3b8',
   tooltipBg: '#1e293b', tooltipBorder: '#475569',
   tooltipTitle: '#94a3b8', tooltipBody: '#e2e8f0',
+  labelText: '#e2e8f0', zonePctText: 'rgba(148,163,184,0.8)',
 };
 const LIGHT = {
   tailFill:   'rgba( 22,163, 74, 0.18)',
@@ -42,12 +39,15 @@ const LIGHT = {
   grid: '#f1f5f9', ticks: '#64748b',
   tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0',
   tooltipTitle: '#64748b', tooltipBody: '#0f172a',
+  labelText: '#334155', zonePctText: 'rgba(100,116,139,0.8)',
 };
+
+interface LineLabel { x: number; name: string; value: string; price: string; color: string }
+interface ZoneLabel { xLeft: number; xRight: number; pct: string }
 
 const pdf = (x: number, mu: number, sigma: number) =>
   Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
 
-/** xStart ~ xEnd 구간의 곡선 점 배열 생성 */
 function segment(mu: number, sigma: number, xStart: number, xEnd: number, n = 60) {
   const step = (xEnd - xStart) / n;
   return Array.from({ length: n + 1 }, (_, i) => {
@@ -65,6 +65,74 @@ function filledSegment(data: { x: number; y: number }[], color: string): any {
   return { data, showLine: true, fill: 'origin', backgroundColor: color, borderColor: 'transparent', borderWidth: 0, pointRadius: 0 };
 }
 
+function fmtPct(v: number): string {
+  return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+}
+
+/** 차트 위에 수직선 라벨 + 구간 비율을 직접 렌더링하는 플러그인 */
+function makeLabelPlugin(
+  lineLabels: LineLabel[],
+  zoneLabels: ZoneLabel[],
+  colors: typeof DARK,
+): Plugin<'scatter'> {
+  return {
+    id: 'sigmaLabels',
+    afterDraw(chart) {
+      const { ctx } = chart;
+      const xScale = chart.scales['x'];
+      const yScale = chart.scales['y'];
+      if (!xScale || !yScale) return;
+
+      const top = yScale.top;
+
+      ctx.save();
+
+      // ── 수직선 라벨: 이름 + 경계값 + 예측 가격 ──
+      for (const { x, name, value, price, color } of lineLabels) {
+        const px = xScale.getPixelForValue(x);
+        if (px < xScale.left || px > xScale.right) continue;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+
+        // 이름 (예: "2σ↓")
+        ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = color;
+        ctx.fillText(name, px, top - 24);
+
+        // 변동률 (예: "-14.32%")
+        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = colors.labelText;
+        ctx.fillText(value, px, top - 13);
+
+        // 예측 가격 (예: "$123.45")
+        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = color;
+        ctx.fillText(price, px, top - 3);
+      }
+
+      // ── 구간 비율 라벨 ──
+      for (const { xLeft, xRight, pct } of zoneLabels) {
+        const pxLeft = xScale.getPixelForValue(xLeft);
+        const pxRight = xScale.getPixelForValue(xRight);
+        const pxMid = (pxLeft + pxRight) / 2;
+
+        // 구간이 너무 좁으면 스킵
+        if (pxRight - pxLeft < 28) continue;
+
+        const midY = (yScale.top + yScale.bottom) / 2;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 11px ui-monospace, SFMono-Regular, monospace';
+        ctx.fillStyle = colors.zonePctText;
+        ctx.fillText(pct, pxMid, midY);
+      }
+
+      ctx.restore();
+    },
+  };
+}
+
 export default function SigmaChart({ latest }: { latest: HistoryRow }) {
   const [isDark, setIsDark] = useState(true);
 
@@ -76,24 +144,56 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
     return () => obs.disconnect();
   }, []);
 
-  const { mu, sigma, s2d, s2u, actualReturn } = latest;
+  const { mu, sigma, s2d, s2u, actualReturn, window: returns, buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
   const s1d = mu - sigma;
   const s1u = mu + sigma;
+  const muPrice = +(close * (1 + mu / 100)).toFixed(2);
+
+  // 실제 252일 데이터 기반 구간별 비율 계산
+  const total = returns.length;
+  const pctS2d = ((returns.filter(r => r <= s2d).length / total) * 100).toFixed(1) + '%';
+  const pctS1d = ((returns.filter(r => r > s2d && r <= s1d).length / total) * 100).toFixed(1) + '%';
+  const pctMid = ((returns.filter(r => r > s1d && r < s1u).length / total) * 100).toFixed(1) + '%';
+  const pctS1u = ((returns.filter(r => r >= s1u && r < s2u).length / total) * 100).toFixed(1) + '%';
+  const pctS2u = ((returns.filter(r => r >= s2u).length / total) * 100).toFixed(1) + '%';
+
   const far = mu - 3.8 * sigma;
   const farR = mu + 3.8 * sigma;
   const c = isDark ? DARK : LIGHT;
   const maxY = pdf(mu, mu, sigma);
 
+  const fmtPrice = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const lineLabels: LineLabel[] = [
+    { x: s2d, name: '2σ↓', value: fmtPct(s2d), price: '$' + fmtPrice(buyPrice),     color: c.s2d },
+    { x: s1d, name: '1σ↓', value: fmtPct(s1d), price: '$' + fmtPrice(s1BuyPrice),   color: c.s1d },
+    { x: mu,  name: 'μ',   value: fmtPct(mu),  price: '$' + fmtPrice(muPrice),       color: c.mu  },
+    { x: s1u, name: '1σ↑', value: fmtPct(s1u), price: '$' + fmtPrice(s1SellPrice),   color: c.s1u },
+    { x: s2u, name: '2σ↑', value: fmtPct(s2u), price: '$' + fmtPrice(sellPrice),     color: c.s2u },
+  ];
+
+  const zoneLabels: ZoneLabel[] = [
+    { xLeft: far, xRight: s2d, pct: pctS2d },
+    { xLeft: s2d, xRight: s1d, pct: pctS1d },
+    { xLeft: s1d, xRight: s1u, pct: pctMid  },
+    { xLeft: s1u, xRight: s2u, pct: pctS1u },
+    { xLeft: s2u, xRight: farR, pct: pctS2u },
+  ];
+
+  const labelPlugin = useMemo(
+    () => makeLabelPlugin(lineLabels, zoneLabels, c),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mu, sigma, s2d, s2u, isDark],
+  );
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const datasets: any[] = [
-    // ── 1. 5개 구간 면적 (아래에서부터 채워짐) ──
-    filledSegment(segment(mu, sigma, far,  s2d), c.tailFill),    // 왼쪽 꼬리 (≤ 2σ↓, 매수 신호)
-    filledSegment(segment(mu, sigma, s2d,  s1d), c.innerFill),   // 1σ~2σ 왼쪽
-    filledSegment(segment(mu, sigma, s1d,  s1u), c.centerFill),  // ±1σ 중앙 (68%)
-    filledSegment(segment(mu, sigma, s1u,  s2u), c.innerFillR),  // 1σ~2σ 오른쪽
-    filledSegment(segment(mu, sigma, s2u, farR), c.tailFillR),   // 오른쪽 꼬리 (≥ 2σ↑, 매도 신호)
+    filledSegment(segment(mu, sigma, far,  s2d), c.tailFill),
+    filledSegment(segment(mu, sigma, s2d,  s1d), c.innerFill),
+    filledSegment(segment(mu, sigma, s1d,  s1u), c.centerFill),
+    filledSegment(segment(mu, sigma, s1u,  s2u), c.innerFillR),
+    filledSegment(segment(mu, sigma, s2u, farR), c.tailFillR),
 
-    // ── 2. 아웃라인 곡선 (전체 윤곽선) ──
     {
       label: '정규분포',
       data: segment(mu, sigma, far, farR, 300),
@@ -102,14 +202,12 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
       pointRadius: 0,
     },
 
-    // ── 3. 수직 기준선 ──
-    { label: '2시그마↓', data: vLine(s2d, maxY), showLine: true, fill: false, borderColor: c.s2d, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
-    { label: '1시그마↓', data: vLine(s1d, maxY), showLine: true, fill: false, borderColor: c.s1d, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
-    { label: '평균(μ)', data: vLine(mu,  maxY), showLine: true, fill: false, borderColor: c.mu,  borderWidth: 1,   pointRadius: 0 },
-    { label: '1시그마↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
-    { label: '2시그마↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2,   pointRadius: 0, borderDash: [5, 4] },
+    { label: '2σ↓', data: vLine(s2d, maxY), showLine: true, fill: false, borderColor: c.s2d, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
+    { label: '1σ↓', data: vLine(s1d, maxY), showLine: true, fill: false, borderColor: c.s1d, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
+    { label: 'μ',    data: vLine(mu,  maxY), showLine: true, fill: false, borderColor: c.mu,  borderWidth: 1, pointRadius: 0 },
+    { label: '1σ↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
+    { label: '2σ↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
 
-    // ── 4. 실제 등락률 마커 ──
     ...(actualReturn != null ? [{
       label: '실제 등락률',
       data: [{ x: actualReturn, y: pdf(actualReturn, mu, sigma) }],
@@ -119,26 +217,21 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
     }] : []),
   ];
 
-  const summaryItems = [
-    { key: 's2d', label: <><>2<span className="normal-case">σ</span>↓</></>, val: s2d, color: c.s2d, pct: '2.3%' },
-    { key: 's1d', label: <><>1<span className="normal-case">σ</span>↓</></>, val: s1d, color: c.s1d, pct: '13.6%' },
-    { key: 'mu',  label: <>평균</>,             val: mu,  color: c.mu,  pct: '68.3%' },
-    { key: 's1u', label: <><>1<span className="normal-case">σ</span>↑</></>, val: s1u, color: c.s1u, pct: '13.6%' },
-    { key: 's2u', label: <><>2<span className="normal-case">σ</span>↑</></>, val: s2u, color: c.s2u, pct: '2.3%' },
-  ];
-
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
-      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-1"><span className="normal-case">σ</span> 통계 · 정규분포 (Rolling 252일)</p>
-      <p className="text-[11px] text-ink-4 mb-4">1<span className="normal-case">σ</span> = {sigma.toFixed(2)}%</p>
+      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">
+        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling 252일)
+      </p>
 
-      <div className="relative h-48">
+      <div className="relative h-64">
         <Scatter
           data={{ datasets }}
+          plugins={[labelPlugin]}
           options={{
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
+            layout: { padding: { top: 42 } },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -150,7 +243,6 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
                 borderColor: c.tooltipBorder,
                 borderWidth: 1,
                 padding: 10,
-                // 면적·아웃라인·수직선 제외, 실제 등락률 마커만 툴팁
                 filter: (item) => item.datasetIndex === datasets.length - 1 && actualReturn != null,
                 callbacks: {
                   title: () => '',
@@ -179,19 +271,6 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
         />
       </div>
 
-      {/* 요약 수치 행 */}
-      <div className="grid grid-cols-5 gap-1 mt-4 pt-3 border-t border-edge text-center">
-        {summaryItems.map(({ key, label, val, color, pct }) => (
-          <div key={key}>
-            <p className="text-[10px] text-ink-4 mb-0.5">{label}</p>
-            <p className="font-mono text-[11px] font-semibold tabular-nums" style={{ color }}>
-              {val > 0 ? '+' : ''}{val.toFixed(2)}%
-            </p>
-            <p className="text-[10px] text-ink-4 mt-0.5 tabular-nums">{pct}</p>
-          </div>
-        ))}
-      </div>
-
       {actualReturn != null && (
         <p className="text-[11px] font-mono mt-2.5 text-right" style={{ color: c.actual }}>
           ● 실제 등락률&nbsp;&nbsp;{actualReturn > 0 ? '+' : ''}{actualReturn.toFixed(2)}%
@@ -205,29 +284,29 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
           <div className="flex items-start gap-2">
             <span className="text-[11px] mt-0.5" style={{ color: c.s2d }}>■</span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s2d }}>2<span className="normal-case">σ</span> 이하 하락 (약 2.3%)</span>
-              {' '}— 매수 신호 구간. 252일 역사상 하위 2.3% 수준의 하락일. 당일 저가가 매수 지정가({(s2d).toFixed(2)}%)에 도달하면 신호 발동.
+              <span className="font-semibold" style={{ color: c.s2d }}>2<span className="normal-case">σ</span> 이하 하락 ({pctS2d})</span>
+              {' '}— 매수 신호 구간. 당일 저가가 매수 지정가({fmtPct(s2d)})에 도달하면 신호 발동.
             </p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[11px] mt-0.5" style={{ color: c.s1d }}>■</span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s1d }}>1<span className="normal-case">σ</span> ~ 2<span className="normal-case">σ</span> 하락 (약 13.6%)</span>
-              {' '}— 평균보다 낮은 하락이지만 신호 미발동 구간. 참고용 1<span className="normal-case">σ</span> 매수가({(s1d).toFixed(2)}%) 활용 가능.
+              <span className="font-semibold" style={{ color: c.s1d }}>1<span className="normal-case">σ</span> ~ 2<span className="normal-case">σ</span> 하락 ({pctS1d})</span>
+              {' '}— 평균보다 낮은 하락이지만 신호 미발동 구간. 참고용 1<span className="normal-case">σ</span> 매수가({fmtPct(s1d)}) 활용 가능.
             </p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[11px] mt-0.5" style={{ color: c.mu }}>■</span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold text-ink-2">평균 ±1<span className="normal-case">σ</span> 중앙 (약 68.3%)</span>
-              {' '}— 일반적인 변동 구간. 대부분의 거래일(약 2/3)이 이 범위 안에서 마감.
+              <span className="font-semibold text-ink-2">평균 ±1<span className="normal-case">σ</span> 중앙 ({pctMid})</span>
+              {' '}— 일반적인 변동 구간. 252일 중 대부분의 거래일이 이 범위 안에서 마감.
             </p>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-[11px] mt-0.5" style={{ color: c.s2u }}>■</span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s2u }}>2<span className="normal-case">σ</span> 이상 상승 (약 2.3%)</span>
-              {' '}— 매도 신호 구간. 당일 고가가 매도 지정가({(s2u).toFixed(2)}%)에 도달하면 신호 발동.
+              <span className="font-semibold" style={{ color: c.s2u }}>2<span className="normal-case">σ</span> 이상 상승 ({pctS2u})</span>
+              {' '}— 매도 신호 구간. 당일 고가가 매도 지정가({fmtPct(s2u)})에 도달하면 신호 발동.
             </p>
           </div>
           {actualReturn != null && (
