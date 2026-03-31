@@ -7,10 +7,11 @@ export interface ClosePrice {
 }
 
 export interface SigmaResult {
-  mu: number    // 평균 등락률 (%)
-  sigma: number // 1σ (%)
-  s2d: number   // 2σ 하락 기준 (%) — μ - 2σ
-  s2u: number   // 2σ 상승 기준 (%) — μ + 2σ
+  mu: number       // 평균 등락률 (%)
+  sigma: number    // 1σ (%)
+  s2d: number      // 2σ 하락 기준 (%) — μ - 2σ
+  s2u: number      // 2σ 상승 기준 (%) — μ + 2σ
+  window: number[] // 계산에 사용된 rolling 252일 등락률 배열
 }
 
 export interface MddPoint {

@@ -32,6 +32,7 @@ export function calcRolling252(
     sigma: +sigma.toFixed(4),
     s2d:   +(mu - 2 * sigma).toFixed(4),
     s2u:   +(mu + 2 * sigma).toFixed(4),
+    window,
   }
 }
 
