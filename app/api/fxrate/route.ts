@@ -1,20 +1,29 @@
 import { NextResponse } from 'next/server'
 
-const ER_API_URL = 'https://open.er-api.com/v6/latest/USD'
+const URL = 'https://query1.finance.yahoo.com/v8/finance/chart/KRW=X?interval=1d&range=1d'
 
 export async function GET() {
   try {
-    const res = await fetch(ER_API_URL, { next: { revalidate: 3600 } })
+    const res = await fetch(URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://finance.yahoo.com',
+        'Origin': 'https://finance.yahoo.com',
+      },
+      next: { revalidate: 300 },
+    })
+
     if (!res.ok) return NextResponse.json({ error: '환율 로드 실패' }, { status: 502 })
 
     const json = await res.json()
-    if (json.result !== 'success') return NextResponse.json({ error: '파싱 실패' }, { status: 502 })
+    const meta = json?.chart?.result?.[0]?.meta
+    if (!meta) return NextResponse.json({ error: '파싱 실패' }, { status: 502 })
 
     return NextResponse.json({
-      rate: json.rates?.KRW as number,
-      updatedAt: json.time_last_update_utc
-        ? new Date(json.time_last_update_utc as string).toISOString()
-        : '',
+      rate: meta.regularMarketPrice as number,
+      updatedAt: new Date(meta.regularMarketTime * 1000).toISOString(),
     })
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 })
