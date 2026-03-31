@@ -53,16 +53,17 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
 
         <TickerTabs
           ticker={ticker.slug}
+          symbol={ticker.symbol}
           currentPrice={latestSignal.close}
           sigmaContent={
             <div className="space-y-5">
-              <SignalCards latest={latestSignal} />
-              <SigmaChart latest={latestSignal} />
-              <DeclinePriceChart history={history} />
-              <HistoryTable rows={[...history].reverse().slice(0, 30)} />
+              <SignalCards latest={latestSignal} symbol={ticker.symbol} />
+              <SigmaChart latest={latestSignal} symbol={ticker.symbol} />
+              <DeclinePriceChart history={history} symbol={ticker.symbol} />
+              <HistoryTable rows={[...history].reverse().slice(0, 30)} symbol={ticker.symbol} />
             </div>
           }
-          mddContent={<MddTab mdd={mddResult} />}
+          mddContent={<MddTab mdd={mddResult} symbol={ticker.symbol} />}
           initialTrades={initialTrades}
         />
       </div>

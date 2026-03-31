@@ -39,7 +39,7 @@ export default async function HomePage() {
 
         <div>
           <h2 className="text-base font-semibold text-ink-2 mb-1">티커 검색</h2>
-          <p className="text-xs text-ink-4 mb-3">미국 주식·ETF 심볼을 입력하세요</p>
+          <p className="text-xs text-ink-4 mb-3">종목명 또는 심볼을 입력하세요 (국내·해외 모두 지원)</p>
           <TickerSearch />
         </div>
 

@@ -8,6 +8,7 @@ import { useLivePrice } from "@/shared/hooks";
 
 interface Props {
   ticker: string;
+  symbol: string;
   currentPrice: number;
   sigmaContent: ReactNode;
   mddContent: ReactNode;
@@ -24,6 +25,7 @@ type TabKey = (typeof TABS)[number]["key"];
 
 export default function TickerTabs({
   ticker,
+  symbol,
   currentPrice,
   sigmaContent,
   mddContent,
@@ -53,7 +55,7 @@ export default function TickerTabs({
       <div className={tab === "sigma" ? "" : "hidden"}>{sigmaContent}</div>
       <div className={tab === "mdd" ? "" : "hidden"}>{mddContent}</div>
       <div className={tab === "journal" ? "" : "hidden"}>
-        <TradeJournal ticker={ticker} currentPrice={livePrice} initialTrades={initialTrades} />
+        <TradeJournal ticker={ticker} symbol={symbol} currentPrice={livePrice} initialTrades={initialTrades} />
       </div>
     </div>
   );

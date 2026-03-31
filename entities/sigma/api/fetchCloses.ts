@@ -1,13 +1,9 @@
 import type { ClosePrice } from "../model/types";
+import { isKoreanTicker, isKrxMarketHours } from "@/shared/lib/ticker";
 
-/**
- * 현재 시각이 NYSE 정규장 시간인지 판단 (평일 09:30~16:00 ET)
- * > 미국 3대 거래소 모두 정규장 시간이 동일
- * DST 여부를 정확히 처리하기 위해 Intl.DateTimeFormat으로 ET 현지시각을 구함 (서머타임 고려됨)
- */
-function isMarketHours(): boolean {
+/** NYSE 정규장 시간인지 판단 (평일 09:30~16:00 ET) */
+function isNyseMarketHours(): boolean {
   const now = new Date();
-  // 주말 제외
   const weekday = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     weekday: "short",
@@ -24,8 +20,12 @@ function isMarketHours(): boolean {
   const [h, m] = timeET.split(":").map(Number);
   const minutes = h * 60 + m;
 
-  // 09:30 ~ 16:00 ET
   return minutes >= 9 * 60 + 30 && minutes < 16 * 60;
+}
+
+/** 심볼에 따라 해당 시장의 장중 여부를 판단 */
+function isMarketHours(symbol: string): boolean {
+  return isKoreanTicker(symbol) ? isKrxMarketHours() : isNyseMarketHours();
 }
 
 export async function fetchCloses(
@@ -43,7 +43,7 @@ export async function fetchCloses(
       Referer: "https://finance.yahoo.com",
       Origin: "https://finance.yahoo.com",
     },
-    next: { revalidate: isMarketHours() ? 60 : 3600 },
+    next: { revalidate: isMarketHours(symbol) ? 60 : 3600 },
   });
 
   if (!res.ok) throw new Error(`Yahoo Finance 요청 실패 (${res.status})`);
