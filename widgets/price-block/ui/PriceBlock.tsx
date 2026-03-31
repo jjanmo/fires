@@ -30,12 +30,12 @@ export default function PriceBlock({ ticker, latest }: Props) {
             {ticker.symbol}
           </span>
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.cls}`}>{badge.text}</span>
-          {(latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (
+          {marketState === 'REGULAR' && (latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-buy-badge text-buy-text border border-buy-edge">
               {latest.triggered === 'buy-2s' ? '2' : '1'}<span className="normal-case">σ</span> 매수 신호
             </span>
           )}
-          {latest.triggered === 'sell-2s' && (
+          {marketState === 'REGULAR' && latest.triggered === 'sell-2s' && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sell-badge text-sell-text border border-sell-edge">
               2<span className="normal-case">σ</span> 매도 신호
             </span>
