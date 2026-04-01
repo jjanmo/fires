@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { isKoreanQuery, searchKrStocks } from '@/shared/lib/kr-stocks'
 
 export interface SearchResult {
   symbol: string    // "005930.KS"
-  name: string      // "Samsung Electronics Co., Ltd."
-  exchange: string  // "KSE", "KOQ", "NMS", "NYQ" ...
+  name: string      // "삼성전자"
+  exchange: string  // "KSC", "KOQ", "NMS", "NYQ" ...
   type: string      // "S" (stock), "E" (ETF)
 }
 
@@ -14,6 +15,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ results: [] })
   }
 
+  // 한글 쿼리 → kr-stocks.json에서 검색 (Yahoo Finance는 한글 미지원)
+  if (isKoreanQuery(q)) {
+    const results = searchKrStocks(q)
+    return NextResponse.json({ results })
+  }
+
+  // 영문/코드 쿼리 → Yahoo Finance
   try {
     const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&listsCount=0&enableFuzzyQuery=true&lang=ko-KR&region=KR`
 
@@ -36,9 +44,9 @@ export async function GET(req: Request) {
       .filter((q: Record<string, unknown>) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
       .map((q: Record<string, unknown>) => ({
         symbol: q.symbol as string,
-        name: (q.shortname ?? q.longname ?? '') as string,
+        name:   (q.shortname ?? q.longname ?? '') as string,
         exchange: (q.exchange ?? '') as string,
-        type: q.quoteType === 'ETF' ? 'E' : 'S',
+        type:   q.quoteType === 'ETF' ? 'E' : 'S',
       }))
 
     return NextResponse.json({ results })
