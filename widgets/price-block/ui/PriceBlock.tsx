@@ -28,7 +28,7 @@ export default function PriceBlock({ ticker, latest }: Props) {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className={`text-xs font-semibold tracking-widest uppercase ${ticker.accentColor}`}>
-            {ticker.symbol}
+            {ticker.name}
           </span>
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.cls}`}>{badge.text}</span>
           {marketState === 'REGULAR' && (latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (

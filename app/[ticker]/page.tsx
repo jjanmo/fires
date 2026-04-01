@@ -9,14 +9,18 @@ import { MddTab } from '@/widgets/mdd-tab';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
 import { getTrades } from '@/features/trade-journal';
 import { createClient } from '@/shared/lib/supabase/server';
+import { getKrStockName } from '@/shared/lib/kr-stocks';
 
 
 export default async function TickerPage({ params }: { params: Promise<{ ticker: string }> }) {
   const { ticker: slug } = await params;
 
+  const symbol = slug.toUpperCase();
+  const krName = getKrStockName(symbol);
+
   const ticker: TickerInfo = {
-    symbol:      slug.toUpperCase(),
-    name:        slug.toUpperCase(),
+    symbol,
+    name:        krName ? `${krName}(${symbol})` : symbol,
     slug:        slug.toLowerCase(),
     description: '',
     accentColor: 'text-ink-2',
