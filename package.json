@@ -7,7 +7,8 @@
     "dev:proxy": "NODE_TLS_REJECT_UNAUTHORIZED=0 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:kr-stocks": "node scripts/generate-kr-stocks.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

@@ -1,0 +1,35 @@
+name: Update KR Stocks Mapping
+
+on:
+  schedule:
+    # 매일 01:00 UTC (한국시간 10:00 AM) - 장 시작 직후
+    - cron: '0 1 * * *'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate kr-stocks.json
+        run: node scripts/generate-kr-stocks.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f public/kr-stocks.json
+          if git diff --staged --quiet; then
+            echo "변경사항 없음, 스킵"
+          else
+            git commit -m "chore: KR 종목 매핑 자동 업데이트 $(date +'%Y-%m-%d')"
+            git push
+          fi

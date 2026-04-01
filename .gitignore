@@ -20,6 +20,9 @@
 # production
 /build
 
+# generated data (빌드 타임에 생성됨)
+/public/kr-stocks.json
+
 # misc
 .DS_Store
 *.pem
