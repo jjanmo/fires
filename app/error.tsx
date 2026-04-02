@@ -14,7 +14,7 @@ export default function GlobalError({
   }, [error])
 
   return (
-    <main className="min-h-screen bg-[#0a0c10] flex items-center justify-center px-4">
+    <main className="min-h-[calc(100vh-3rem)] bg-[#0a0c10] flex items-center justify-center px-4">
       <div className="text-center space-y-3">
         <p className="text-slate-400 text-sm">오류가 발생했습니다</p>
         <p className="text-slate-600 text-xs font-mono">{error.message}</p>

@@ -1,11 +1,32 @@
 import { NextResponse } from 'next/server'
-import { isKoreanQuery, searchKrStocks } from '@/shared/lib/kr-stocks'
+import { searchKrStocks } from '@/shared/lib/kr-stocks'
 
 export interface SearchResult {
   symbol: string    // "005930.KS"
   name: string      // "삼성전자"
   exchange: string  // "KSC", "KOQ", "NMS", "NYQ" ...
   type: string      // "S" (stock), "E" (ETF)
+}
+
+const fetchYahoo = async (q: string): Promise<SearchResult[]> => {
+  const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&listsCount=0&enableFuzzyQuery=true&lang=ko-KR&region=KR`
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/455.36',
+      Accept: 'application/json',
+    },
+    next: { revalidate: 300 },
+  })
+  if (!res.ok) return []
+  const json = await res.json()
+  return (json?.quotes ?? [])
+    .filter((item: Record<string, unknown>) => item.quoteType === 'EQUITY' || item.quoteType === 'ETF')
+    .map((item: Record<string, unknown>) => ({
+      symbol:   item.symbol as string,
+      name:     (item.shortname ?? item.longname ?? '') as string,
+      exchange: (item.exchange ?? '') as string,
+      type:     item.quoteType === 'ETF' ? 'E' : 'S',
+    }))
 }
 
 export async function GET(req: Request) {
@@ -15,42 +36,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ results: [] })
   }
 
-  // 한글 쿼리 → kr-stocks.json에서 검색 (Yahoo Finance는 한글 미지원)
-  if (isKoreanQuery(q)) {
-    const results = searchKrStocks(q)
-    return NextResponse.json({ results })
-  }
+  // 쿼리 종류와 무관하게 kr-stocks.json + Yahoo Finance 항상 병렬 검색
+  const [krSettled, yahooSettled] = await Promise.allSettled([
+    Promise.resolve(searchKrStocks(q)),
+    fetchYahoo(q),
+  ])
 
-  // 영문/코드 쿼리 → Yahoo Finance
-  try {
-    const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&listsCount=0&enableFuzzyQuery=true&lang=ko-KR&region=KR`
+  const kr    = krSettled.status    === 'fulfilled' ? krSettled.value    : []
+  const yahoo = yahooSettled.status === 'fulfilled' ? yahooSettled.value : []
 
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/455.36',
-        Accept: 'application/json',
-      },
-      next: { revalidate: 300 },
-    })
+  // kr-stocks 결과를 우선 배치, Yahoo에서 중복 심볼 제거 후 병합
+  const seen = new Set(kr.map((r) => r.symbol))
+  const merged = [...kr, ...yahoo.filter((r) => !seen.has(r.symbol))]
 
-    if (!res.ok) {
-      return NextResponse.json({ results: [] })
-    }
-
-    const json = await res.json()
-    const quotes = json?.quotes ?? []
-
-    const results: SearchResult[] = quotes
-      .filter((q: Record<string, unknown>) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
-      .map((q: Record<string, unknown>) => ({
-        symbol: q.symbol as string,
-        name:   (q.shortname ?? q.longname ?? '') as string,
-        exchange: (q.exchange ?? '') as string,
-        type:   q.quoteType === 'ETF' ? 'E' : 'S',
-      }))
-
-    return NextResponse.json({ results })
-  } catch {
-    return NextResponse.json({ results: [] })
-  }
+  return NextResponse.json({ results: merged.slice(0, 12) })
 }

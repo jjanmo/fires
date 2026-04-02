@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ThemeToggle, ThemeProvider, Logo } from '@/shared/ui';
+import { ThemeToggle, ThemeProvider, Logo, HeaderSearch } from '@/shared/ui';
 import { UserMenu } from '@/features/auth';
 import { createClient } from '@/shared/lib/supabase/server';
 import './globals.css';
@@ -30,6 +30,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Logo size="sm" />
               </Link>
               <div className="flex items-center gap-2">
+                <HeaderSearch />
                 {user && <UserMenu email={user.email} />}
                 <ThemeToggle />
               </div>

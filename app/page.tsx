@@ -2,7 +2,6 @@ import { TickerCard, getTickerColor } from '@/entities/ticker';
 import type { TickerInfo } from '@/entities/ticker';
 import { buildLatestSignal, fetchCloses } from '@/entities/sigma';
 import type { HistoryRow } from '@/entities/sigma';
-import { TickerSearch } from '@/features/ticker-search';
 import { getWatchlistSymbols } from '@/features/watchlist';
 import { createClient } from '@/shared/lib/supabase/server';
 
@@ -34,14 +33,8 @@ export default async function HomePage() {
   );
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
+    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 py-10 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-10">
-
-        <div>
-          <h2 className="text-base font-semibold text-ink-2 mb-1">티커 검색</h2>
-          <p className="text-xs text-ink-4 mb-3">종목 심볼을 입력하세요 (국내: 005930.KS / 해외: AAPL)</p>
-          <TickerSearch />
-        </div>
 
         {user && (
           <div>
@@ -59,7 +52,7 @@ export default async function HomePage() {
                 <p className="text-2xl mb-3">☆</p>
                 <p className="text-sm font-medium text-ink-2 mb-1">아직 추가된 종목이 없습니다</p>
                 <p className="text-xs text-ink-4 leading-relaxed">
-                  위 검색창에서 종목을 검색한 뒤<br />
+                  검색에서 종목을 찾은 뒤<br />
                   상세 페이지 우측 상단의 ★ 버튼을 눌러 추가하세요
                 </p>
               </div>
