@@ -44,7 +44,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   const initialTrades = await getTrades(ticker.slug);
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-10 sm:px-6">
+    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 py-10 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-5">
         <div className="flex items-start justify-between gap-4">
           <PriceBlock ticker={ticker} latest={latestSignal} />

@@ -17,7 +17,7 @@ export default function TickerError({ error, reset }: { error: Error & { digest?
     : '일시적인 서버 오류입니다. 잠시 후 다시 시도해 주세요.';
 
   return (
-    <main className="min-h-screen bg-canvas flex items-center justify-center px-4">
+    <main className="min-h-[calc(100vh-3rem)] bg-canvas flex items-center justify-center px-4">
       <div className="text-center space-y-3">
         <p className="text-4xl font-bold text-ink-4">{status ?? '오류'}</p>
         <p className="text-ink-2 font-medium">{title}</p>
