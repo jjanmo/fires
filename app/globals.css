@@ -134,6 +134,17 @@
   --sk-card:  #f1f5f9;
 }
 
+@keyframes header-search-expand {
+  from { max-width: 0; opacity: 0; }
+  to   { max-width: 16rem; opacity: 1; }
+}
+@layer utilities {
+  .animate-search-expand {
+    animation: header-search-expand 250ms ease-out forwards;
+    overflow: hidden;
+  }
+}
+
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position:  600px 0; }
