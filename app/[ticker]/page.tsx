@@ -9,14 +9,18 @@ import { MddTab } from '@/widgets/mdd-tab';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
 import { getTrades } from '@/features/trade-journal';
 import { createClient } from '@/shared/lib/supabase/server';
+import { getKrStockName } from '@/shared/lib/kr-stocks';
 
 
 export default async function TickerPage({ params }: { params: Promise<{ ticker: string }> }) {
   const { ticker: slug } = await params;
 
+  const symbol = slug.toUpperCase();
+  const krName = getKrStockName(symbol);
+
   const ticker: TickerInfo = {
-    symbol:      slug.toUpperCase(),
-    name:        slug.toUpperCase(),
+    symbol,
+    name:        krName ? `${krName}(${symbol})` : symbol,
     slug:        slug.toLowerCase(),
     description: '',
     accentColor: 'text-ink-2',
@@ -53,16 +57,17 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
 
         <TickerTabs
           ticker={ticker.slug}
+          symbol={ticker.symbol}
           currentPrice={latestSignal.close}
           sigmaContent={
             <div className="space-y-5">
-              <SignalCards latest={latestSignal} />
-              <SigmaChart latest={latestSignal} />
-              <DeclinePriceChart history={history} />
-              <HistoryTable rows={[...history].reverse().slice(0, 30)} />
+              <SignalCards latest={latestSignal} symbol={ticker.symbol} />
+              <SigmaChart latest={latestSignal} symbol={ticker.symbol} />
+              <DeclinePriceChart history={history} symbol={ticker.symbol} />
+              <HistoryTable rows={[...history].reverse().slice(0, 30)} symbol={ticker.symbol} />
             </div>
           }
-          mddContent={<MddTab mdd={mddResult} />}
+          mddContent={<MddTab mdd={mddResult} symbol={ticker.symbol} />}
           initialTrades={initialTrades}
         />
       </div>

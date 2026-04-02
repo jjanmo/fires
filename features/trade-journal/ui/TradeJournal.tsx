@@ -5,9 +5,11 @@ import type { Trade, EnrichedTrade } from "../model/journal";
 import { calcStats, enrichTrades } from "../model/journal";
 import { addTrade, updateTrade, deleteTrade } from "../actions";
 import { useFxRate } from "@/shared/hooks";
+import { isKoreanTicker, formatPrice as fmtTickerPrice } from "@/shared/lib/ticker";
 
 interface Props {
   ticker: string;
+  symbol: string;
   currentPrice: number;
   initialTrades: Trade[];
 }
@@ -28,10 +30,12 @@ const pnlCls = (n: number) =>
 /* ── 편집 가능한 테이블 Row ── */
 function TradeRow({
   trade,
+  symbol,
   onEdit,
   onDelete,
 }: {
   trade: EnrichedTrade;
+  symbol: string;
   onEdit: (id: string, fields: Partial<Omit<Trade, "id">>) => void;
   onDelete: (id: string) => void;
 }) {
@@ -164,7 +168,7 @@ function TradeRow({
         {fmtQty(trade.qty)}주
       </td>
       <td className="py-2.5 px-2 text-right font-mono text-ink-2 tabular-nums text-[12px]">
-        {fmtUSD(trade.price)}
+        {fmtTickerPrice(trade.price, symbol)}
       </td>
       <td className="py-2.5 px-2 text-ink-4 text-[11px] truncate text-right">
         {trade.memo || "—"}
@@ -194,9 +198,11 @@ function TradeRow({
 
 export default function TradeJournal({
   ticker,
+  symbol,
   currentPrice,
   initialTrades,
 }: Props) {
+  const isKR = isKoreanTicker(symbol);
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const { rate: fxRate, updatedAt, loading: fxLoading, refresh } = useFxRate();
   const [form, setForm] = useState({
@@ -260,7 +266,12 @@ export default function TradeJournal({
     [ticker, startTransition],
   );
 
-  const stats = calcStats(trades, currentPrice, fxRate);
+  // 국내주식: 이미 KRW이므로 fxRate=1, 해외주식: 실제 환율 적용
+  const effectiveFxRate = isKR ? 1 : fxRate;
+  const stats = calcStats(trades, currentPrice, effectiveFxRate);
+  // 국내주식 통화 포맷 헬퍼
+  const fmtAmt = (n: number) => isKR ? fmtKRW(n) : fmtUSD(n);
+  const fmtAmt4 = (n: number) => isKR ? fmtKRW(n) : fmtUSD4(n);
   const enriched = enrichTrades(trades).reverse();
 
   return (
@@ -290,8 +301,8 @@ export default function TradeJournal({
                 className={`text-[11px] font-mono tabular-nums mt-1 ${pnlCls(stats.unrealizedPnlUSD)}`}
               >
                 {sign(stats.unrealizedPnlUSD)}
-                {fmtUSD(stats.unrealizedPnlUSD)}
-                <span className="text-[10px] ml-1">({sign(stats.unrealizedPnlKRW)}{fmtKRW(stats.unrealizedPnlKRW)})</span>
+                {fmtAmt(stats.unrealizedPnlUSD)}
+                {!isKR && <span className="text-[10px] ml-1">({sign(stats.unrealizedPnlKRW)}{fmtKRW(stats.unrealizedPnlKRW)})</span>}
               </p>
             </div>
             <div className="rounded-2xl bg-card border border-edge p-5">
@@ -299,7 +310,7 @@ export default function TradeJournal({
                 평균단가
               </p>
               <p className="text-3xl font-bold tabular-nums text-ink-1 font-mono">
-                {fmtUSD4(stats.avgCost)}
+                {fmtAmt4(stats.avgCost)}
               </p>
               <p className="text-[11px] font-mono text-ink-4 mt-1">
                 {fmtQty(stats.totalShares)}주 보유
@@ -316,22 +327,26 @@ export default function TradeJournal({
                 평가금액
               </p>
               <p className="text-lg font-semibold tabular-nums text-ink-1 font-mono">
-                {fmtUSD(stats.valuationUSD)}
+                {fmtAmt(stats.valuationUSD)}
               </p>
-              <p className="text-[10px] font-mono tabular-nums text-ink-4 mt-1">
-                {fmtKRW(stats.valuationUSD * fxRate)}
-              </p>
+              {!isKR && (
+                <p className="text-[10px] font-mono tabular-nums text-ink-4 mt-1">
+                  {fmtKRW(stats.valuationUSD * fxRate)}
+                </p>
+              )}
             </div>
             <div className="rounded-2xl bg-card border border-edge p-5">
               <p className="text-[10px] text-ink-4 uppercase tracking-wider mb-1">
                 매입금액
               </p>
               <p className="text-lg font-semibold tabular-nums text-ink-1 font-mono">
-                {fmtUSD(stats.investedUSD)}
+                {fmtAmt(stats.investedUSD)}
               </p>
-              <p className="text-[10px] font-mono tabular-nums text-ink-4 mt-1">
-                {fmtKRW(stats.investedUSD * fxRate)}
-              </p>
+              {!isKR && (
+                <p className="text-[10px] font-mono tabular-nums text-ink-4 mt-1">
+                  {fmtKRW(stats.investedUSD * fxRate)}
+                </p>
+              )}
             </div>
             {stats.realizedPnlUSD !== 0 && (
               <div className="rounded-2xl bg-card border border-edge p-5">
@@ -342,37 +357,41 @@ export default function TradeJournal({
                   className={`text-lg font-semibold tabular-nums font-mono ${pnlCls(stats.realizedPnlUSD)}`}
                 >
                   {sign(stats.realizedPnlUSD)}
-                  {fmtUSD(stats.realizedPnlUSD)}
+                  {fmtAmt(stats.realizedPnlUSD)}
                 </p>
-                <p
-                  className={`text-[10px] font-mono tabular-nums mt-1 ${pnlCls(stats.realizedPnlKRW)}`}
-                >
-                  {sign(stats.realizedPnlKRW)}
-                  {fmtKRW(stats.realizedPnlKRW)}
-                </p>
+                {!isKR && (
+                  <p
+                    className={`text-[10px] font-mono tabular-nums mt-1 ${pnlCls(stats.realizedPnlKRW)}`}
+                  >
+                    {sign(stats.realizedPnlKRW)}
+                    {fmtKRW(stats.realizedPnlKRW)}
+                  </p>
+                )}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-2 justify-end">
-            <p className="text-[10px] text-ink-4 font-mono">
-              {fxRate.toLocaleString("ko-KR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-              원/$
-              {updatedAt &&
-                ` · ${new Date(updatedAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
-            </p>
-            <button
-              onClick={refresh}
-              disabled={fxLoading}
-              className="flex items-center gap-1 text-[10px] text-ink-3 hover:text-ink-1 disabled:opacity-40 transition-colors border border-edge rounded-md px-2 py-0.5"
-            >
-              <span className={fxLoading ? "animate-spin" : ""}>↻</span>
-              갱신
-            </button>
-          </div>
+          {!isKR && (
+            <div className="flex items-center gap-2 justify-end">
+              <p className="text-[10px] text-ink-4 font-mono">
+                {fxRate.toLocaleString("ko-KR", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                원/$
+                {updatedAt &&
+                  ` · ${new Date(updatedAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}`}
+              </p>
+              <button
+                onClick={refresh}
+                disabled={fxLoading}
+                className="flex items-center gap-1 text-[10px] text-ink-3 hover:text-ink-1 disabled:opacity-40 transition-colors border border-edge rounded-md px-2 py-0.5"
+              >
+                <span className={fxLoading ? "animate-spin" : ""}>↻</span>
+                갱신
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="rounded-2xl bg-card border border-edge p-8 text-center">
@@ -429,7 +448,7 @@ export default function TradeJournal({
             />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-[11px] text-ink-3">체결가 ($)</span>
+            <span className="text-[11px] text-ink-3">체결가 ({isKR ? '₩' : '$'})</span>
             <input
               type="number"
               step="0.01"
@@ -501,6 +520,7 @@ export default function TradeJournal({
                   <TradeRow
                     key={t.id}
                     trade={t}
+                    symbol={symbol}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                   />

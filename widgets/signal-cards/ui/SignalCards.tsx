@@ -1,8 +1,10 @@
 import type { HistoryRow } from '@/entities/sigma';
+import { formatPrice } from '@/shared/lib/ticker';
 
 
 interface Props {
   latest: HistoryRow;
+  symbol: string;
 }
 
 /** 주말을 건너뛴 다음 거래일 — "M월 D일" 형식 */
@@ -14,7 +16,7 @@ function nextTradingDate(dateStr: string): string {
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
-export default function SignalCards({ latest }: Props) {
+export default function SignalCards({ latest, symbol }: Props) {
   const dateLabel = nextTradingDate(latest.date);
   const s1d = latest.mu - latest.sigma;
   const s1u = latest.mu + latest.sigma;
@@ -29,12 +31,12 @@ export default function SignalCards({ latest }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-[10px] text-ink-4 mb-1">1<span className="normal-case">σ</span> 매수가</p>
-            <p className="text-xl font-bold tabular-nums text-buy-val">${latest.s1BuyPrice.toFixed(2)}</p>
+            <p className="text-xl font-bold tabular-nums text-buy-val">{formatPrice(latest.s1BuyPrice, symbol)}</p>
             <p className="text-[10px] text-ink-4 mt-1 font-mono">{s1d.toFixed(2)}% (μ - 1<span className="normal-case">σ</span>)</p>
           </div>
           <div>
             <p className="text-[10px] text-ink-4 mb-1">2<span className="normal-case">σ</span> 매수가</p>
-            <p className="text-xl font-bold tabular-nums text-buy-val">${latest.buyPrice.toFixed(2)}</p>
+            <p className="text-xl font-bold tabular-nums text-buy-val">{formatPrice(latest.buyPrice, symbol)}</p>
             <p className="text-[10px] text-ink-4 mt-1 font-mono">{latest.s2d.toFixed(2)}% (μ - 2<span className="normal-case">σ</span>)</p>
           </div>
         </div>
@@ -48,12 +50,12 @@ export default function SignalCards({ latest }: Props) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-[10px] text-ink-4 mb-1">1<span className="normal-case">σ</span> 매도가</p>
-            <p className="text-xl font-bold tabular-nums text-sell-val">${latest.s1SellPrice.toFixed(2)}</p>
+            <p className="text-xl font-bold tabular-nums text-sell-val">{formatPrice(latest.s1SellPrice, symbol)}</p>
             <p className="text-[10px] text-ink-4 mt-1 font-mono">+{s1u.toFixed(2)}% (μ + 1<span className="normal-case">σ</span>)</p>
           </div>
           <div>
             <p className="text-[10px] text-ink-4 mb-1">2<span className="normal-case">σ</span> 매도가</p>
-            <p className="text-xl font-bold tabular-nums text-sell-val">${latest.sellPrice.toFixed(2)}</p>
+            <p className="text-xl font-bold tabular-nums text-sell-val">{formatPrice(latest.sellPrice, symbol)}</p>
             <p className="text-[10px] text-ink-4 mt-1 font-mono">+{latest.s2u.toFixed(2)}% (μ + 2<span className="normal-case">σ</span>)</p>
           </div>
         </div>

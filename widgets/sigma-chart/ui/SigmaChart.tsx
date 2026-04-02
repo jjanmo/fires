@@ -5,6 +5,7 @@ import { Chart as ChartJS, LinearScale, PointElement, LineElement, Tooltip, Fill
 import type { Plugin } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import type { HistoryRow } from '@/entities/sigma';
+import { formatPrice } from '@/shared/lib/ticker';
 
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Filler);
@@ -133,7 +134,7 @@ function makeLabelPlugin(
   };
 }
 
-export default function SigmaChart({ latest }: { latest: HistoryRow }) {
+export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; symbol: string }) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -162,14 +163,12 @@ export default function SigmaChart({ latest }: { latest: HistoryRow }) {
   const c = isDark ? DARK : LIGHT;
   const maxY = pdf(mu, mu, sigma);
 
-  const fmtPrice = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
   const lineLabels: LineLabel[] = [
-    { x: s2d, name: '2σ↓', value: fmtPct(s2d), price: '$' + fmtPrice(buyPrice),     color: c.s2d },
-    { x: s1d, name: '1σ↓', value: fmtPct(s1d), price: '$' + fmtPrice(s1BuyPrice),   color: c.s1d },
-    { x: mu,  name: 'μ',   value: fmtPct(mu),  price: '$' + fmtPrice(muPrice),       color: c.mu  },
-    { x: s1u, name: '1σ↑', value: fmtPct(s1u), price: '$' + fmtPrice(s1SellPrice),   color: c.s1u },
-    { x: s2u, name: '2σ↑', value: fmtPct(s2u), price: '$' + fmtPrice(sellPrice),     color: c.s2u },
+    { x: s2d, name: '2σ↓', value: fmtPct(s2d), price: formatPrice(buyPrice, symbol),     color: c.s2d },
+    { x: s1d, name: '1σ↓', value: fmtPct(s1d), price: formatPrice(s1BuyPrice, symbol),   color: c.s1d },
+    { x: mu,  name: 'μ',   value: fmtPct(mu),  price: formatPrice(muPrice, symbol),       color: c.mu  },
+    { x: s1u, name: '1σ↑', value: fmtPct(s1u), price: formatPrice(s1SellPrice, symbol),   color: c.s1u },
+    { x: s2u, name: '2σ↑', value: fmtPct(s2u), price: formatPrice(sellPrice, symbol),     color: c.s2u },
   ];
 
   const zoneLabels: ZoneLabel[] = [

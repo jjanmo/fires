@@ -13,6 +13,7 @@ import {
 import 'chartjs-adapter-date-fns'
 import { Line } from 'react-chartjs-2'
 import type { HistoryRow } from '@/entities/sigma'
+import { formatPrice, currencySymbol } from '@/shared/lib/ticker'
 
 ChartJS.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -34,7 +35,7 @@ function classifyDecline(actualReturn: number | null): number {
   return -1
 }
 
-export default function DeclinePriceChart({ history }: { history: HistoryRow[] }) {
+export default function DeclinePriceChart({ history, symbol }: { history: HistoryRow[]; symbol: string }) {
   const [isDark, setIsDark] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
 
@@ -180,11 +181,11 @@ export default function DeclinePriceChart({ history }: { history: HistoryRow[] }
                     const raw = ctx.raw as { x?: string; y?: number }
                     const price = raw?.y ?? 0
                     if (ctx.dataset.label === '종가') {
-                      return ` 종가: $${price.toFixed(2)}`
+                      return ` 종가: ${formatPrice(price, symbol)}`
                     }
                     const row = yearData.find(r => r.date === raw?.x)
                     const ret = row?.actualReturn
-                    return ` ${ctx.dataset.label}: $${price.toFixed(2)} (${ret != null ? ret.toFixed(2) : '?'}%)`
+                    return ` ${ctx.dataset.label}: ${formatPrice(price, symbol)} (${ret != null ? ret.toFixed(2) : '?'}%)`
                   },
                 },
               },
@@ -209,7 +210,7 @@ export default function DeclinePriceChart({ history }: { history: HistoryRow[] }
                 ticks: {
                   color: c.ticks,
                   font: { size: 10 },
-                  callback: v => `$${v}`,
+                  callback: v => `${currencySymbol(symbol)}${v}`,
                 },
                 grid: { color: c.grid },
               },

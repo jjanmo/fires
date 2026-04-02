@@ -1,10 +1,12 @@
 import type { HistoryRow } from '@/entities/sigma';
+import { formatPrice } from '@/shared/lib/ticker';
 
 interface Props {
   rows: HistoryRow[];
+  symbol: string;
 }
 
-export default function HistoryTable({ rows }: Props) {
+export default function HistoryTable({ rows, symbol }: Props) {
   return (
     <div className="rounded-2xl bg-card border border-edge overflow-hidden">
       <div className="px-5 py-4 border-b border-edge">
@@ -50,12 +52,12 @@ export default function HistoryTable({ rows }: Props) {
 
                   {/* 종가 */}
                   <td className="px-3 py-2.5 text-right font-mono text-ink-1 tabular-nums text-[12px] font-medium">
-                    ${row.close.toFixed(2)}
+                    {formatPrice(row.close, symbol)}
                   </td>
 
                   {/* 시가 */}
                   <td className="px-3 py-2.5 text-right font-mono text-ink-2 tabular-nums text-[12px]">
-                    ${row.open.toFixed(2)}
+                    {formatPrice(row.open, symbol)}
                   </td>
 
                   {/* 고가 */}
@@ -64,7 +66,7 @@ export default function HistoryTable({ rows }: Props) {
                       isSell ? 'text-sell-val font-semibold' : 'text-ink-2'
                     }`}
                   >
-                    ${row.high.toFixed(2)}
+                    {formatPrice(row.high, symbol)}
                   </td>
 
                   {/* 저가 */}
@@ -73,7 +75,7 @@ export default function HistoryTable({ rows }: Props) {
                       isBuy ? 'text-buy-val font-semibold' : 'text-ink-2'
                     }`}
                   >
-                    ${row.low.toFixed(2)}
+                    {formatPrice(row.low, symbol)}
                   </td>
 
                   {/* 등락률 */}
@@ -91,7 +93,7 @@ export default function HistoryTable({ rows }: Props) {
                   <td className={`px-3 py-2.5 text-right font-mono tabular-nums text-[12px] ${
                     row.triggered === 'buy-1s' ? 'text-buy-val font-semibold' : 'text-buy-text'
                   }`}>
-                    ${row.s1BuyPrice.toFixed(2)}
+                    {formatPrice(row.s1BuyPrice, symbol)}
                   </td>
 
                   {/* 2σ 매수가 */}
@@ -100,12 +102,12 @@ export default function HistoryTable({ rows }: Props) {
                       row.triggered === 'buy-2s' ? 'text-buy-val font-semibold' : 'text-buy-text'
                     }`}
                   >
-                    ${row.buyPrice.toFixed(2)}
+                    {formatPrice(row.buyPrice, symbol)}
                   </td>
 
                   {/* 1σ 매도가 */}
                   <td className="px-3 py-2.5 text-right font-mono tabular-nums text-[12px] text-sell-text">
-                    ${row.s1SellPrice.toFixed(2)}
+                    {formatPrice(row.s1SellPrice, symbol)}
                   </td>
 
                   {/* 2σ 매도가 */}
@@ -114,7 +116,7 @@ export default function HistoryTable({ rows }: Props) {
                       row.triggered === 'sell-2s' ? 'text-sell-val font-semibold' : 'text-sell-text'
                     }`}
                   >
-                    ${row.sellPrice.toFixed(2)}
+                    {formatPrice(row.sellPrice, symbol)}
                   </td>
 
                   {/* 신호 배지 */}

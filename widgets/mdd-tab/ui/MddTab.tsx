@@ -4,9 +4,10 @@ import DrawdownChart from './DrawdownChart'
 
 interface Props {
   mdd: MddResult
+  symbol: string
 }
 
-export default function MddTab({ mdd }: Props) {
+export default function MddTab({ mdd, symbol }: Props) {
   return (
     <div className="space-y-5">
       <DrawdownGauge
@@ -15,6 +16,7 @@ export default function MddTab({ mdd }: Props) {
         mddRatio={mdd.mddRatio}
         athPrice={mdd.athPrice}
         athHighPrice={mdd.athHighPrice}
+        symbol={symbol}
       />
       <DrawdownChart
         series={mdd.series}

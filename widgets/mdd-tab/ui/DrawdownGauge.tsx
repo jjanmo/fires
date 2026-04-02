@@ -1,12 +1,15 @@
+import { formatPrice } from '@/shared/lib/ticker'
+
 interface Props {
   mdd:          number
   currentDD:    number
   mddRatio:     number   // 게이지 바 위치 계산용
   athPrice:     number
   athHighPrice: number
+  symbol:       string
 }
 
-export default function DrawdownGauge({ mdd, currentDD, mddRatio, athPrice, athHighPrice }: Props) {
+export default function DrawdownGauge({ mdd, currentDD, mddRatio, athPrice, athHighPrice, symbol }: Props) {
   const fillPct = Math.min(Math.max(mddRatio, 0), 100)
 
   return (
@@ -43,9 +46,9 @@ export default function DrawdownGauge({ mdd, currentDD, mddRatio, athPrice, athH
       {/* ATH 정보 */}
       <div className="mt-3 border-t border-edge pt-3 text-[11px] text-ink-4">
         <span>
-          고점 가격 <span className="text-ink-2 font-mono">${athPrice.toLocaleString()}</span>
+          고점 가격 <span className="text-ink-2 font-mono">{formatPrice(athPrice, symbol)}</span>
           {athHighPrice > athPrice && (
-            <span className="ml-1">(장중 최고 <span className="font-mono">${athHighPrice.toLocaleString()}</span>)</span>
+            <span className="ml-1">(장중 최고 <span className="font-mono">{formatPrice(athHighPrice, symbol)}</span>)</span>
           )}
         </span>
       </div>
