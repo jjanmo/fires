@@ -57,3 +57,5 @@ next-env.d.ts
 .cursor.yaml
 .cursor.yml
 .cursor.yaml
+
+public/kr-stocks.json
