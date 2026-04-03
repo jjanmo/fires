@@ -7,7 +7,7 @@ import { formatPrice, formatChange } from '@/shared/lib/ticker';
 
 interface Props {
   ticker: TickerInfo;
-  latest: HistoryRow;
+  latest: HistoryRow | null;
 }
 
 const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
@@ -18,7 +18,7 @@ const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
 };
 
 export default function PriceBlock({ ticker, latest }: Props) {
-  const { price, change, changePct, marketState, loading } = useLivePrice(ticker.symbol, latest.close);
+  const { price, change, changePct, marketState, loading } = useLivePrice(ticker.symbol, latest?.close ?? 0);
 
   const isPositive = changePct >= 0;
   const badge = MARKET_BADGE[marketState] ?? MARKET_BADGE.CLOSED;
@@ -27,18 +27,18 @@ export default function PriceBlock({ ticker, latest }: Props) {
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className={`text-xs font-semibold tracking-widest uppercase ${ticker.accentColor}`}>
-            {ticker.name}
-          </span>
+          <span className={`text-xs font-semibold tracking-widest uppercase ${ticker.accentColor}`}>{ticker.name}</span>
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.cls}`}>{badge.text}</span>
-          {marketState === 'REGULAR' && (latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (
+          {latest && marketState === 'REGULAR' && (latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-buy-badge text-buy-text border border-buy-edge">
-              {latest.triggered === 'buy-2s' ? '2' : '1'}<span className="normal-case">σ</span> 매수 신호
+              {latest.triggered === 'buy-2s' ? '2' : '1'}
+              <span className="normal-case">σ</span> 매수 신호
             </span>
           )}
-          {marketState === 'REGULAR' && latest.triggered === 'sell-2s' && (
+          {latest && marketState === 'REGULAR' && (latest.triggered === 'sell-1s' || latest.triggered === 'sell-2s') && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sell-badge text-sell-text border border-sell-edge">
-              2<span className="normal-case">σ</span> 매도 신호
+              {latest.triggered === 'sell-2s' ? '2' : '1'}
+              <span className="normal-case">σ</span> 매도 신호
             </span>
           )}
         </div>
@@ -53,16 +53,15 @@ export default function PriceBlock({ ticker, latest }: Props) {
 
         <p className={`mt-1 text-sm font-mono ${isPositive ? 'text-gain' : 'text-loss'}`}>
           {isPositive ? '+' : ''}
-          {changePct.toFixed(2)}%
-          <span className="text-ink-4 ml-1.5">
-            ({formatChange(change, ticker.symbol)})
-          </span>
+          {changePct.toFixed(2)}%<span className="text-ink-4 ml-1.5">({formatChange(change, ticker.symbol)})</span>
         </p>
       </div>
 
-      <div className="text-right">
-        <p className="text-[11px] text-ink-3 font-mono">{latest.date} 종가 기준</p>
-      </div>
+      {latest && (
+        <div className="text-right">
+          <p className="text-[11px] text-ink-3 font-mono">{latest.date} 종가 기준</p>
+        </div>
+      )}
     </div>
   );
 }
