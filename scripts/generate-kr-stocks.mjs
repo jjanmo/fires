@@ -95,7 +95,7 @@ async function main() {
 
   const results = await Promise.allSettled([
     fetchStocks('stockMkt').then(d => ({ source: 'KOSPI',  suffix: '.KS', data: d })),
-    fetchStocks('')        .then(d => ({ source: 'KOSDAQ', suffix: '.KQ', data: d })),
+    fetchStocks('kosdaqMkt').then(d => ({ source: 'KOSDAQ', suffix: '.KQ', data: d })),
     fetchEtfs()            .then(d => ({ source: 'ETF',    suffix: '.KS', data: d })),
   ]);
 
