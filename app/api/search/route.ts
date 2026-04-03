@@ -49,5 +49,5 @@ export async function GET(req: Request) {
   const seen = new Set(kr.map((r) => r.symbol))
   const merged = [...kr, ...yahoo.filter((r) => !seen.has(r.symbol))]
 
-  return NextResponse.json({ results: merged.slice(0, 12) })
+  return NextResponse.json({ results: merged.slice(0, 24) })
 }

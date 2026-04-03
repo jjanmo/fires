@@ -32,22 +32,21 @@ export function isKoreanQuery(query: string): boolean {
 const ETF_PREFIX = /^(TIGER|KODEX|KBSTAR|ACE|ARIRANG|HANARO|KOSEF|KINDEX|TIMEFOLIO|TIME|PLUS|SOL|RISE|TREX)\s/i;
 
 /** 종목명으로 검색 (한글·영문 모두, 대소문자 무시) → 최대 limit개 반환 */
-export function searchKrStocks(query: string, limit = 8) {
+export function searchKrStocks(query: string, limit = 24) {
   const map = load();
   const q = query.trim().toLowerCase();
   const results: Array<{ symbol: string; name: string; exchange: string; type: string }> = [];
 
   for (const [name, symbol] of Object.entries(map)) {
     if (results.length >= limit) break;
-    if (name.toLowerCase().includes(q)) {
-      const isKosdaq = symbol.endsWith('.KQ');
-      results.push({
-        symbol,
-        name,
-        exchange: isKosdaq ? 'KOQ' : 'KSC',
-        type: ETF_PREFIX.test(name) ? 'E' : 'S',
-      });
-    }
+    if (!name.toLowerCase().includes(q)) continue;
+    const isKosdaq = symbol.endsWith('.KQ');
+    results.push({
+      symbol,
+      name,
+      exchange: isKosdaq ? 'KOQ' : 'KSC',
+      type: ETF_PREFIX.test(name) ? 'E' : 'S',
+    });
   }
 
   return results;

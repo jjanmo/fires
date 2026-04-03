@@ -43,6 +43,31 @@ export function formatChange(change: number, symbol: string): string {
 }
 
 /**
+ * 현재 시각이 NYSE 정규장 시간인지 판단 (평일 09:30~16:00 ET)
+ */
+export function isNyseMarketHours(): boolean {
+  const now = new Date()
+
+  const weekday = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+  }).format(now)
+  if (weekday === 'Sun' || weekday === 'Sat') return false
+
+  const timeET = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  }).format(now)
+
+  const [h, m] = timeET.split(':').map(Number)
+  const minutes = h * 60 + m
+
+  return minutes >= 9 * 60 + 30 && minutes < 16 * 60
+}
+
+/**
  * 현재 시각이 한국 거래소 정규장 시간인지 판단 (평일 09:00~15:30 KST)
  */
 export function isKrxMarketHours(): boolean {
