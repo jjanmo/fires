@@ -1,3 +1,6 @@
+export const ROLLING_WINDOWS = [252, 120, 60, 20] as const
+export type RollingWindow = (typeof ROLLING_WINDOWS)[number]
+
 export interface ClosePrice {
   date:  string  // "2024-08-05"
   open:  number  // 시가

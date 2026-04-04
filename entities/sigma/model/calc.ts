@@ -11,11 +11,12 @@ export function calcDailyReturns(closes: ClosePrice[]): number[] {
 }
 
 /**
- * Rolling 252일 σ 계산
+ * Rolling σ 계산
  * targetIndex: returns 배열 기준 인덱스 — 이 값은 window에 포함하지 않음
+ * windowSize: 롤링 기간 (기본 252일)
  */
-export function calcRolling252(returnsArr: number[], targetIndex: number): SigmaResult | null {
-  const start = Math.max(0, targetIndex - 252);
+export function calcRolling252(returnsArr: number[], targetIndex: number, windowSize = 252): SigmaResult | null {
+  const start = Math.max(0, targetIndex - windowSize);
   const window = returnsArr.slice(start, targetIndex);
 
   if (window.length < 20) return null;
@@ -124,17 +125,18 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
 
 /**
  * 최신 신호 계산 — 오늘 종가 기준 내일 지정가
+ * windowSize: 롤링 기간 (기본 252일)
  */
-export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
+export function buildLatestSignal(closes: ClosePrice[], windowSize = 252): HistoryRow | null {
   const returns = calcDailyReturns(closes);
   const N = closes.length;
 
   // sTomorrow: 오늘 등락률(returns[N-2]) 포함 → 내일 지정가 계산용
-  const sTomorrow = calcRolling252(returns, N - 1);
+  const sTomorrow = calcRolling252(returns, N - 1, windowSize);
   if (!sTomorrow) return null;
 
   // sYesterday: 오늘 등락률 제외 → 차트 분포 렌더링용 (actualReturn과 독립적인 분포)
-  const sYesterday = N >= 2 ? calcRolling252(returns, N - 2) : null;
+  const sYesterday = N >= 2 ? calcRolling252(returns, N - 2, windowSize) : null;
 
   const latest = closes[N - 1];
   const orders = calcOrderPrices(latest.price, sTomorrow);

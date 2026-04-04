@@ -137,7 +137,7 @@ function makeLabelPlugin(
   };
 }
 
-export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; symbol: string }) {
+export default function SigmaChart({ latest, symbol, windowSize = 252 }: { latest: HistoryRow; symbol: string; windowSize?: number }) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -239,7 +239,7 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
       <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">
-        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling 252일)
+        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling {windowSize}일)
       </p>
 
       <div className="relative h-64">
@@ -333,7 +333,7 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
             <span className="text-[11px] mt-0.5" style={{ color: c.mu }}>■</span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
               <span className="font-semibold text-ink-2">평균 ±1<span className="normal-case">σ</span> 중앙 ({pctMid})</span>
-              {' '}— 일반적인 변동 구간. 252일 중 대부분의 거래일이 이 범위 안에서 마감.
+              {' '}— 일반적인 변동 구간. {windowSize}일 중 대부분의 거래일이 이 범위 안에서 마감.
             </p>
           </div>
           <div className="flex items-start gap-2">
