@@ -65,7 +65,7 @@ function SearchContent() {
   );
 
   return (
-    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 py-10 sm:px-6">
+    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* 로딩 */}
