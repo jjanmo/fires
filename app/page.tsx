@@ -4,6 +4,7 @@ import { buildLatestSignal, fetchCloses } from '@/entities/sigma';
 import type { HistoryRow } from '@/entities/sigma';
 import { getWatchlistSymbols } from '@/features/watchlist';
 import { createClient } from '@/shared/lib/supabase/server';
+import { getKrStockName } from '@/shared/lib/kr-stocks';
 
 async function fetchTickerData(slug: string): Promise<{ latest: HistoryRow | null; error?: string }> {
   try {
@@ -23,7 +24,7 @@ export default async function HomePage() {
     watchlistSymbols.map(async (symbol, index) => {
       const ticker: TickerInfo = {
         symbol:      symbol.toUpperCase(),
-        name:        symbol.toUpperCase(),
+        name:        getKrStockName(symbol) ?? symbol.toUpperCase(),
         slug:        symbol.toLowerCase(),
         description: '',
         ...getTickerColor(index),

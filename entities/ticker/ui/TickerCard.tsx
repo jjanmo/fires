@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { HistoryRow } from '@/entities/sigma';
 import type { TickerInfo } from '../model/types';
-import { formatPrice } from '@/shared/lib/ticker';
+import { formatPrice, isKoreanTicker } from '@/shared/lib/ticker';
 
 interface Props {
   ticker: TickerInfo;
@@ -22,7 +22,7 @@ export default function TickerCard({ ticker, latest, error }: Props) {
       <div className="flex items-start justify-between mb-4">
         <div>
           <span className={`text-xs font-semibold tracking-widest uppercase ${ticker.accentColor}`}>
-            {ticker.symbol}
+            {isKoreanTicker(ticker.symbol) ? ticker.name.replace(/\(.*\)$/, '') : ticker.symbol}
           </span>
           <p className="mt-1 text-[11px] text-ink-3 leading-snug max-w-[180px]">{ticker.description}</p>
         </div>
@@ -61,14 +61,18 @@ export default function TickerCard({ ticker, latest, error }: Props) {
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-buy-val">{formatPrice(latest.s1BuyPrice, ticker.symbol)}</p>
+              <p className="text-lg font-semibold tabular-nums text-buy-val">
+                {formatPrice(latest.s1BuyPrice, ticker.symbol)}
+              </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{s1d.toFixed(2)}%</p>
             </div>
             <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-buy-val">{formatPrice(latest.buyPrice, ticker.symbol)}</p>
+              <p className="text-lg font-semibold tabular-nums text-buy-val">
+                {formatPrice(latest.buyPrice, ticker.symbol)}
+              </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{latest.s2d.toFixed(2)}%</p>
             </div>
           </div>
@@ -79,14 +83,18 @@ export default function TickerCard({ ticker, latest, error }: Props) {
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-sell-val">{formatPrice(latest.s1SellPrice, ticker.symbol)}</p>
+              <p className="text-lg font-semibold tabular-nums text-sell-val">
+                {formatPrice(latest.s1SellPrice, ticker.symbol)}
+              </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{s1u.toFixed(2)}%</p>
             </div>
             <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-sell-val">{formatPrice(latest.sellPrice, ticker.symbol)}</p>
+              <p className="text-lg font-semibold tabular-nums text-sell-val">
+                {formatPrice(latest.sellPrice, ticker.symbol)}
+              </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{latest.s2u.toFixed(2)}%</p>
             </div>
           </div>

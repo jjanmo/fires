@@ -6,6 +6,7 @@ import type { Plugin } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
 import type { HistoryRow } from '@/entities/sigma';
 import { formatPrice } from '@/shared/lib/ticker';
+import { useLivePrice } from '@/shared/hooks';
 
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Filler);
@@ -21,6 +22,7 @@ const DARK = {
   mu: '#64748b',
   s1u: '#93c5fd', s2u: '#60a5fa',
   actual: '#fbbf24',
+  prevReturn: '#94a3b8',
   grid: '#1e293b', ticks: '#94a3b8',
   tooltipBg: '#1e293b', tooltipBorder: '#475569',
   tooltipTitle: '#94a3b8', tooltipBody: '#e2e8f0',
@@ -37,6 +39,7 @@ const LIGHT = {
   mu: '#94a3b8',
   s1u: '#93c5fd', s2u: '#2563eb',
   actual: '#d97706',
+  prevReturn: '#94a3b8',
   grid: '#f1f5f9', ticks: '#64748b',
   tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0',
   tooltipTitle: '#64748b', tooltipBody: '#0f172a',
@@ -145,7 +148,15 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
     return () => obs.disconnect();
   }, []);
 
-  const { mu, sigma, s2d, s2u, actualReturn, window: returns, buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
+  const { actualReturn, buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
+  const { changePct, marketState } = useLivePrice(symbol, close);
+  const isRegular = marketState === 'REGULAR';
+  // 라이브 등락률: 본장 중에만 노란 점으로 표시
+  const liveReturn = isRegular ? changePct : null;
+
+  // 차트 분포는 prevSigma(오늘 등락률 제외)를 우선 사용 — 없으면 sTomorrow로 fallback
+  const chartSigma = latest.prevSigma ?? latest;
+  const { mu, sigma, s2d, s2u, window: returns } = chartSigma;
   const s1d = mu - sigma;
   const s1u = mu + sigma;
   const muPrice = +(close * (1 + mu / 100)).toFixed(2);
@@ -207,9 +218,18 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
     { label: '1σ↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
     { label: '2σ↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
 
+    // 어제 종가 등락률 — 회색 점으로 항상 표시 (분포의 기준점)
     ...(actualReturn != null ? [{
-      label: '실제 등락률',
+      label: '전일 등락률',
       data: [{ x: actualReturn, y: pdf(actualReturn, mu, sigma) }],
+      showLine: false, fill: false,
+      borderColor: c.prevReturn, backgroundColor: c.prevReturn,
+      borderWidth: 2, pointRadius: 6, pointHoverRadius: 8,
+    }] : []),
+    // 오늘 라이브 등락률 — 본장 중에만 노란 점으로 표시
+    ...(liveReturn != null ? [{
+      label: '오늘 등락률',
+      data: [{ x: liveReturn, y: pdf(liveReturn, mu, sigma) }],
       showLine: false, fill: false,
       borderColor: c.actual, backgroundColor: c.actual,
       borderWidth: 2, pointRadius: 7, pointHoverRadius: 9,
@@ -242,10 +262,18 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
                 borderColor: c.tooltipBorder,
                 borderWidth: 1,
                 padding: 10,
-                filter: (item) => item.datasetIndex === datasets.length - 1 && actualReturn != null,
+                filter: (item) => {
+                  const last = datasets.length - 1;
+                  const prev = datasets.length - (liveReturn != null ? 2 : 1);
+                  return item.datasetIndex === last || item.datasetIndex === prev;
+                },
                 callbacks: {
                   title: () => '',
-                  label: (ctx) => `실제 등락률: ${(ctx.parsed.x ?? 0).toFixed(2)}%`,
+                  label: (ctx) => {
+                    const label = (ctx.dataset as { label?: string }).label ?? '';
+                    const x = ctx.parsed.x ?? 0;
+                    return `${label}: ${x >= 0 ? '+' : ''}${x.toFixed(2)}%`;
+                  },
                 },
               },
             },
@@ -270,11 +298,18 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
         />
       </div>
 
-      {actualReturn != null && (
-        <p className="text-[11px] font-mono mt-2.5 text-right" style={{ color: c.actual }}>
-          ● 실제 등락률&nbsp;&nbsp;{actualReturn > 0 ? '+' : ''}{actualReturn.toFixed(2)}%
-        </p>
-      )}
+      <div className="flex justify-end gap-4 mt-2.5">
+        {actualReturn != null && (
+          <p className="text-[11px] font-mono" style={{ color: c.prevReturn }}>
+            ● 전일 등락률&nbsp;&nbsp;{actualReturn > 0 ? '+' : ''}{actualReturn.toFixed(2)}%
+          </p>
+        )}
+        {liveReturn != null && (
+          <p className="text-[11px] font-mono" style={{ color: c.actual }}>
+            ● 오늘 등락률&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}{liveReturn.toFixed(2)}%
+          </p>
+        )}
+      </div>
 
       {/* 구간 설명 */}
       <div className="mt-4 pt-4 border-t border-edge space-y-2">
@@ -310,12 +345,23 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
           </div>
           {actualReturn != null && (
             <div className="flex items-start gap-2">
+              <span className="text-[11px] mt-0.5" style={{ color: c.prevReturn }}>●</span>
+              <p className="text-[11px] text-ink-3 leading-relaxed">
+                <span className="font-semibold" style={{ color: c.prevReturn }}>회색 점 (전일 종가 등락률)</span>
+                {' '}— 어제 종가가 분포 기준으로 어느 위치에서 마감됐는지 확인.
+                {actualReturn <= s2d && ' 전일 매수 신호 구간 진입.'}
+                {actualReturn >= s2u && ' 전일 매도 신호 구간 진입.'}
+              </p>
+            </div>
+          )}
+          {liveReturn != null && (
+            <div className="flex items-start gap-2">
               <span className="text-[11px] mt-0.5" style={{ color: c.actual }}>●</span>
               <p className="text-[11px] text-ink-3 leading-relaxed">
-                <span className="font-semibold" style={{ color: c.actual }}>황색 점 (오늘 실제 등락률)</span>
-                {' '}— 곡선 위 위치로 오늘 등락률이 전체 분포에서 어느 구간에 해당하는지 확인.
-                {actualReturn <= s2d && ' 현재 매수 신호 구간 진입.'}
-                {actualReturn >= s2u && ' 현재 매도 신호 구간 진입.'}
+                <span className="font-semibold" style={{ color: c.actual }}>황색 점 (오늘 실시간 등락률)</span>
+                {' '}— 본장 중 현재 등락률이 분포에서 어느 구간에 해당하는지 확인.
+                {liveReturn <= s2d && ' 현재 매수 신호 구간 진입.'}
+                {liveReturn >= s2u && ' 현재 매도 신호 구간 진입.'}
               </p>
             </div>
           )}

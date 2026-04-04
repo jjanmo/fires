@@ -1,27 +1,6 @@
 import type { ClosePrice } from "../model/types";
-import { isKoreanTicker, isKrxMarketHours } from "@/shared/lib/ticker";
-
-/** NYSE 정규장 시간인지 판단 (평일 09:30~16:00 ET) */
-function isNyseMarketHours(): boolean {
-  const now = new Date();
-  const weekday = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    weekday: "short",
-  }).format(now);
-  if (weekday === "Sun" || weekday === "Sat") return false;
-
-  const timeET = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: false,
-  }).format(now);
-
-  const [h, m] = timeET.split(":").map(Number);
-  const minutes = h * 60 + m;
-
-  return minutes >= 9 * 60 + 30 && minutes < 16 * 60;
-}
+import { isKoreanTicker, isKrxMarketHours, isNyseMarketHours } from "@/shared/lib/ticker";
+import { AppError } from "@/shared/lib/app-error";
 
 /** 심볼에 따라 해당 시장의 장중 여부를 판단 */
 function isMarketHours(symbol: string): boolean {
@@ -46,11 +25,15 @@ export async function fetchCloses(
     next: { revalidate: isMarketHours(symbol) ? 60 : 3600 },
   });
 
-  if (!res.ok) throw new Error(`Yahoo Finance 요청 실패 (${res.status})`);
+  if (!res.ok) {
+    throw res.status === 404
+      ? new AppError('SYMBOL_NOT_FOUND')
+      : new AppError('FETCH_FAILED')
+  }
 
   const json = await res.json();
   const result = json?.chart?.result?.[0];
-  if (!result) throw new Error("Yahoo Finance 데이터 파싱 실패");
+  if (!result) throw new AppError('SYMBOL_NOT_FOUND');
 
   const timestamps: number[] = result.timestamp;
   const quote = result.indicators.quote[0];

@@ -39,5 +39,7 @@ export interface HistoryRow extends SigmaResult {
   s1BuyPrice:   number          // 이날 활성화된 1σ 매수 지정가
   s1SellPrice:  number          // 이날 활성화된 1σ 매도 지정가
   actualReturn: number | null   // 전날 종가 대비 당일 종가 등락률
-  triggered:    'buy-2s' | 'buy-1s' | 'sell-2s' | null
+  triggered:    'buy-2s' | 'buy-1s' | 'sell-2s' | 'sell-1s' | null
+  /** buildLatestSignal 전용 — 오늘 등락률을 제외한 분포(차트 렌더링용) */
+  prevSigma:    SigmaResult | null
 }

@@ -17,10 +17,10 @@ export default function HistoryTable({ rows, symbol }: Props) {
           <thead>
             <tr className="text-[10px] text-ink-4 uppercase tracking-wider border-b border-edge">
               <th className="px-4 py-3 text-left font-medium">날짜</th>
-              <th className="px-3 py-3 text-right font-medium">종가</th>
               <th className="px-3 py-3 text-right font-medium">시가</th>
               <th className="px-3 py-3 text-right font-medium text-sell-val">고가</th>
               <th className="px-3 py-3 text-right font-medium text-buy-val">저가</th>
+              <th className="px-3 py-3 text-right font-medium">종가</th>
               <th className="px-3 py-3 text-right font-medium">등락률</th>
               <th className="px-3 py-3 text-right font-medium text-buy-val">
                 1<span className="normal-case">σ</span> 매수가
@@ -40,7 +40,7 @@ export default function HistoryTable({ rows, symbol }: Props) {
           <tbody>
             {rows.map((row, index) => {
               const isBuy  = row.triggered === 'buy-1s' || row.triggered === 'buy-2s';
-              const isSell = row.triggered === 'sell-2s';
+              const isSell = row.triggered === 'sell-2s' || row.triggered === 'sell-1s';
               return (
                 <tr
                   key={`${row.date}-${index}`}
@@ -49,11 +49,6 @@ export default function HistoryTable({ rows, symbol }: Props) {
                   }`}
                 >
                   <td className="px-4 py-2.5 font-mono text-ink-3 text-[11px] whitespace-nowrap">{row.date}</td>
-
-                  {/* 종가 */}
-                  <td className="px-3 py-2.5 text-right font-mono text-ink-1 tabular-nums text-[12px] font-medium">
-                    {formatPrice(row.close, symbol)}
-                  </td>
 
                   {/* 시가 */}
                   <td className="px-3 py-2.5 text-right font-mono text-ink-2 tabular-nums text-[12px]">
@@ -76,6 +71,11 @@ export default function HistoryTable({ rows, symbol }: Props) {
                     }`}
                   >
                     {formatPrice(row.low, symbol)}
+                  </td>
+
+                  {/* 종가 */}
+                  <td className="px-3 py-2.5 text-right font-mono text-ink-1 tabular-nums text-[12px] font-medium">
+                    {formatPrice(row.close, symbol)}
                   </td>
 
                   {/* 등락률 */}
@@ -129,6 +129,11 @@ export default function HistoryTable({ rows, symbol }: Props) {
                     {row.triggered === 'buy-2s' && (
                       <span className="text-[10px] font-semibold text-buy-text bg-buy-badge border border-buy-edge px-2 py-0.5 rounded-full whitespace-nowrap">
                         2σ 매수
+                      </span>
+                    )}
+                    {row.triggered === 'sell-1s' && (
+                      <span className="text-[10px] font-semibold text-sell-text bg-sell-badge border border-sell-edge px-2 py-0.5 rounded-full whitespace-nowrap">
+                        1σ 매도
                       </span>
                     )}
                     {row.triggered === 'sell-2s' && (
