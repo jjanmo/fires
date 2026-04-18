@@ -100,19 +100,19 @@ function makeLabelPlugin(
         ctx.textBaseline = 'bottom';
 
         // 이름 (예: "2σ↓")
-        ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = 'bold 12px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = color;
-        ctx.fillText(name, px, top - 24);
+        ctx.fillText(name, px, top - 27);
 
         // 변동률 (예: "-14.32%")
-        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = colors.labelText;
-        ctx.fillText(value, px, top - 13);
+        ctx.fillText(value, px, top - 14);
 
         // 예측 가격 (예: "$123.45")
-        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = color;
-        ctx.fillText(price, px, top - 3);
+        ctx.fillText(price, px, top - 2);
       }
 
       // ── 구간 비율 라벨 ──
@@ -127,7 +127,7 @@ function makeLabelPlugin(
         const midY = (yScale.top + yScale.bottom) / 2;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = 'bold 11px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = 'bold 13px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = colors.zonePctText;
         ctx.fillText(pct, pxMid, midY);
       }
@@ -137,7 +137,7 @@ function makeLabelPlugin(
   };
 }
 
-export default function SigmaChart({ latest, symbol, windowSize = 252 }: { latest: HistoryRow; symbol: string; windowSize?: number }) {
+export default function SigmaChart({ latest, symbol, windowSize = 252, xMin, xMax }: { latest: HistoryRow; symbol: string; windowSize?: number; xMin?: number; xMax?: number }) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -167,8 +167,9 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
   const pctS1u = ((returns.filter(r => r >= s1u && r < s2u).length / total) * 100).toFixed(1) + '%';
   const pctS2u = ((returns.filter(r => r >= s2u).length / total) * 100).toFixed(1) + '%';
 
-  const far = mu - 3.8 * sigma;
-  const farR = mu + 3.8 * sigma;
+  // X축 고정 범위 — 전달받은 값 우선, 없으면 현재 창의 3.8σ로 fallback
+  const far  = xMin ?? mu - 3.8 * sigma;
+  const farR = xMax ?? mu + 3.8 * sigma;
   const c = isDark ? DARK : LIGHT;
   const maxY = pdf(mu, mu, sigma);
 
@@ -232,7 +233,7 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
         <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling {windowSize}일)
       </p>
 
-      <div className="relative h-64">
+      <div className="relative h-80">
         <Scatter
           data={{ datasets }}
           plugins={[labelPlugin]}
@@ -240,7 +241,7 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            layout: { padding: { top: 42 } },
+            layout: { padding: { top: 52 } },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -268,9 +269,11 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
             scales: {
               x: {
                 type: 'linear',
+                min: far,
+                max: farR,
                 ticks: {
                   color: c.ticks,
-                  font: { size: 10 },
+                  font: { size: 12 },
                   callback: (v) => `${(v as number).toFixed(1)}%`,
                   maxTicksLimit: 9,
                 },
