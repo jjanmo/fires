@@ -148,7 +148,7 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
     return () => obs.disconnect();
   }, []);
 
-  const { actualReturn, buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
+  const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
   const { changePct, marketState } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
   // 라이브 등락률: 본장 중에만 노란 점으로 표시
@@ -218,14 +218,6 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
     { label: '1σ↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
     { label: '2σ↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
 
-    // 어제 종가 등락률 — 회색 점으로 항상 표시 (분포의 기준점)
-    ...(actualReturn != null ? [{
-      label: '전일 등락률',
-      data: [{ x: actualReturn, y: pdf(actualReturn, mu, sigma) }],
-      showLine: false, fill: false,
-      borderColor: c.prevReturn, backgroundColor: c.prevReturn,
-      borderWidth: 2, pointRadius: 6, pointHoverRadius: 8,
-    }] : []),
     // 오늘 라이브 등락률 — 본장 중에만 노란 점으로 표시
     ...(liveReturn != null ? [{
       label: '오늘 등락률',
@@ -263,9 +255,7 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
                 borderWidth: 1,
                 padding: 10,
                 filter: (item) => {
-                  const last = datasets.length - 1;
-                  const prev = datasets.length - (liveReturn != null ? 2 : 1);
-                  return item.datasetIndex === last || item.datasetIndex === prev;
+                  return item.datasetIndex === datasets.length - 1;
                 },
                 callbacks: {
                   title: () => '',
@@ -298,18 +288,13 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
         />
       </div>
 
-      <div className="flex justify-end gap-4 mt-2.5">
-        {actualReturn != null && (
-          <p className="text-[11px] font-mono" style={{ color: c.prevReturn }}>
-            ● 전일 등락률&nbsp;&nbsp;{actualReturn > 0 ? '+' : ''}{actualReturn.toFixed(2)}%
-          </p>
-        )}
-        {liveReturn != null && (
+      {liveReturn != null && (
+        <div className="flex justify-end mt-2.5">
           <p className="text-[11px] font-mono" style={{ color: c.actual }}>
             ● 오늘 등락률&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}{liveReturn.toFixed(2)}%
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 구간 설명 */}
       <div className="mt-4 pt-4 border-t border-edge space-y-2">
@@ -343,17 +328,6 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
               {' '}— 매도 신호 구간. 당일 고가가 매도 지정가({fmtPct(s2u)})에 도달하면 신호 발동.
             </p>
           </div>
-          {actualReturn != null && (
-            <div className="flex items-start gap-2">
-              <span className="text-[11px] mt-0.5" style={{ color: c.prevReturn }}>●</span>
-              <p className="text-[11px] text-ink-3 leading-relaxed">
-                <span className="font-semibold" style={{ color: c.prevReturn }}>회색 점 (전일 종가 등락률)</span>
-                {' '}— 어제 종가가 분포 기준으로 어느 위치에서 마감됐는지 확인.
-                {actualReturn <= s2d && ' 전일 매수 신호 구간 진입.'}
-                {actualReturn >= s2u && ' 전일 매도 신호 구간 진입.'}
-              </p>
-            </div>
-          )}
           {liveReturn != null && (
             <div className="flex items-start gap-2">
               <span className="text-[11px] mt-0.5" style={{ color: c.actual }}>●</span>
