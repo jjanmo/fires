@@ -68,26 +68,20 @@ export default function TickerLoading() {
           </div>
         </div>
 
-        {/* HistoryTable */}
+        {/* OhlcChart */}
         <div className="rounded-2xl border border-edge bg-sk-card overflow-hidden">
           <div className="px-5 py-4 border-b border-edge">
-            <div className="skeleton h-3 w-32" />
+            <div className="skeleton h-3 w-40" />
           </div>
-          <div className="p-4 space-y-2">
-            {/* 헤더 행 */}
-            <div className="flex gap-2 px-1 pb-2 border-b border-edge">
-              {[16, 12, 12, 12, 12, 12, 14, 14, 14, 14, 12].map((w, i) => (
-                <div key={i} className="skeleton h-2.5 flex-1" style={{ maxWidth: `${w * 4}px` }} />
+          <div className="p-3">
+            <div className="flex items-end gap-1 h-[280px] px-2">
+              {[55,32,48,61,38,52,44,67,29,58,41,70,35,50,63,28,46,59,33,54,42,65,37,56,48,30,62,45,53,40].map((wick, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+                  <div className="skeleton w-px" style={{ height: `${wick}%` }} />
+                  <div className="skeleton w-full" style={{ height: `${Math.round(wick * 0.45)}%` }} />
+                </div>
               ))}
             </div>
-            {/* 데이터 행 */}
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex gap-2 px-1 py-1">
-                {[16, 12, 12, 12, 12, 12, 14, 14, 14, 14, 10].map((w, j) => (
-                  <div key={j} className="skeleton h-3 flex-1" style={{ maxWidth: `${w * 4}px` }} />
-                ))}
-              </div>
-            ))}
           </div>
         </div>
 

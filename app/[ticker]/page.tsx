@@ -1,9 +1,7 @@
 import type { TickerInfo } from '@/entities/ticker';
-import { buildHistory, buildLatestSignal, fetchCloses, calcMdd } from '@/entities/sigma';
+import { buildHistory, buildLatestSignal, fetchCloses, calcMdd, ROLLING_WINDOWS } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
-import { SignalCards } from '@/widgets/signal-cards';
-import { SigmaChart, DeclinePriceChart } from '@/widgets/sigma-chart';
-import { HistoryTable } from '@/widgets/history-table';
+import { SigmaTabContent, DeclinePriceChart } from '@/widgets/sigma-chart';
 import { TickerTabs } from '@/widgets/ticker-tabs';
 import { MddTab } from '@/widgets/mdd-tab';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
@@ -27,10 +25,15 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   };
 
   const [closes5y, closesMax] = await Promise.all([fetchCloses(ticker.slug, '5y'), fetchCloses(ticker.slug, 'max')]);
-  console.log({ closes5y, closesMax });
 
   const history = buildHistory(closes5y);
-  const latestSignal = buildLatestSignal(closes5y);
+
+  // 4가지 롤링 기간별 최신 신호 — 서버에서 pre-compute
+  const signalsByWindow = Object.fromEntries(
+    ROLLING_WINDOWS.map((w) => [w, buildLatestSignal(closes5y, w)])
+  ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildLatestSignal>>;
+
+  const latestSignal = signalsByWindow[252];
 
   const mddResult = calcMdd(closesMax);
 
@@ -43,7 +46,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   const initialTrades = await getTrades(ticker.slug);
 
   return (
-    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 py-10 sm:px-6">
+    <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-5">
         <div className="flex items-start justify-between gap-4">
           <PriceBlock ticker={ticker} latest={latestSignal} />
@@ -76,10 +79,8 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
                     </p>
                   </div>
                 )}
-                <SignalCards latest={latestSignal} symbol={ticker.symbol} />
-                <SigmaChart latest={latestSignal} symbol={ticker.symbol} />
+                <SigmaTabContent signalsByWindow={signalsByWindow} symbol={ticker.symbol} />
                 <DeclinePriceChart history={history} symbol={ticker.symbol} />
-                <HistoryTable rows={[...history].reverse().slice(0, 30)} symbol={ticker.symbol} />
               </div>
             )
           }

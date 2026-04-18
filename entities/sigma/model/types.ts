@@ -1,3 +1,6 @@
+export const ROLLING_WINDOWS = [252, 120, 60, 20] as const
+export type RollingWindow = (typeof ROLLING_WINDOWS)[number]
+
 export interface ClosePrice {
   date:  string  // "2024-08-05"
   open:  number  // 시가
@@ -40,6 +43,4 @@ export interface HistoryRow extends SigmaResult {
   s1SellPrice:  number          // 이날 활성화된 1σ 매도 지정가
   actualReturn: number | null   // 전날 종가 대비 당일 종가 등락률
   triggered:    'buy-2s' | 'buy-1s' | 'sell-2s' | 'sell-1s' | null
-  /** buildLatestSignal 전용 — 오늘 등락률을 제외한 분포(차트 렌더링용) */
-  prevSigma:    SigmaResult | null
 }

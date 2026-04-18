@@ -11,11 +11,12 @@ export function calcDailyReturns(closes: ClosePrice[]): number[] {
 }
 
 /**
- * Rolling 252일 σ 계산
+ * Rolling σ 계산
  * targetIndex: returns 배열 기준 인덱스 — 이 값은 window에 포함하지 않음
+ * windowSize: 롤링 기간 (기본 252일)
  */
-export function calcRolling252(returnsArr: number[], targetIndex: number): SigmaResult | null {
-  const start = Math.max(0, targetIndex - 252);
+export function calcRolling252(returnsArr: number[], targetIndex: number, windowSize = 252): SigmaResult | null {
+  const start = Math.max(0, targetIndex - windowSize);
   const window = returnsArr.slice(start, targetIndex);
 
   if (window.length < 20) return null;
@@ -105,7 +106,6 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
       ...s,
       ...orders,
       actualReturn,
-      prevSigma: null,
       triggered:
         today.low <= orders.buyPrice
           ? 'buy-2s'
@@ -124,34 +124,27 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
 
 /**
  * 최신 신호 계산 — 오늘 종가 기준 내일 지정가
+ * windowSize: 롤링 기간 (기본 252일)
  */
-export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
+export function buildLatestSignal(closes: ClosePrice[], windowSize = 252): HistoryRow | null {
   const returns = calcDailyReturns(closes);
   const N = closes.length;
 
-  // sTomorrow: 오늘 등락률(returns[N-2]) 포함 → 내일 지정가 계산용
-  const sTomorrow = calcRolling252(returns, N - 1);
-  if (!sTomorrow) return null;
-
-  // sYesterday: 오늘 등락률 제외 → 차트 분포 렌더링용 (actualReturn과 독립적인 분포)
-  const sYesterday = N >= 2 ? calcRolling252(returns, N - 2) : null;
+  const s = calcRolling252(returns, N - 1, windowSize);
+  if (!s) return null;
 
   const latest = closes[N - 1];
-  const orders = calcOrderPrices(latest.price, sTomorrow);
+  const orders = calcOrderPrices(latest.price, s);
   const actualReturn: number | null = returns[N - 2] ?? null;
 
-  const prevOrders = sYesterday ? calcOrderPrices(closes[N - 2].price, sYesterday) : null;
-
   const triggered: HistoryRow['triggered'] =
-    prevOrders === null
-      ? null
-      : latest.low <= prevOrders.buyPrice
+    latest.low <= orders.buyPrice
       ? 'buy-2s'
-      : latest.low <= prevOrders.s1BuyPrice
+      : latest.low <= orders.s1BuyPrice
       ? 'buy-1s'
-      : latest.high >= prevOrders.sellPrice
+      : latest.high >= orders.sellPrice
       ? 'sell-2s'
-      : latest.high >= prevOrders.s1SellPrice
+      : latest.high >= orders.s1SellPrice
       ? 'sell-1s'
       : null;
 
@@ -161,10 +154,9 @@ export function buildLatestSignal(closes: ClosePrice[]): HistoryRow | null {
     high: latest.high,
     low: latest.low,
     close: latest.price,
-    ...sTomorrow,
+    ...s,
     ...orders,
     actualReturn,
-    prevSigma: sYesterday,
     triggered,
   };
 }
