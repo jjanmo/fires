@@ -154,9 +154,7 @@ export default function SigmaChart({ latest, symbol, windowSize = 252 }: { lates
   // 라이브 등락률: 본장 중에만 노란 점으로 표시
   const liveReturn = isRegular ? changePct : null;
 
-  // 차트 분포는 prevSigma(오늘 등락률 제외)를 우선 사용 — 없으면 sTomorrow로 fallback
-  const chartSigma = latest.prevSigma ?? latest;
-  const { mu, sigma, s2d, s2u, window: returns } = chartSigma;
+  const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
   const s1u = mu + sigma;
   const muPrice = +(close * (1 + mu / 100)).toFixed(2);
