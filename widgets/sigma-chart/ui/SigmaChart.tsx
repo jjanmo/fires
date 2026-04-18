@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chart as ChartJS, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js';
 import type { Plugin } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
@@ -73,15 +73,19 @@ function fmtPct(v: number): string {
   return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
 }
 
-/** 차트 위에 수직선 라벨 + 구간 비율을 직접 렌더링하는 플러그인 */
+type PluginData = { lineLabels: LineLabel[]; zoneLabels: ZoneLabel[]; colors: typeof DARK };
+
+/**
+ * 차트 위에 수직선 라벨 + 구간 비율을 직접 렌더링하는 플러그인.
+ * ref를 통해 최신 데이터를 읽으므로 인스턴스를 재생성하지 않아도 항상 최신 값을 반영한다.
+ */
 function makeLabelPlugin(
-  lineLabels: LineLabel[],
-  zoneLabels: ZoneLabel[],
-  colors: typeof DARK,
+  dataRef: { current: PluginData },
 ): Plugin<'scatter'> {
   return {
     id: 'sigmaLabels',
     afterDraw(chart) {
+      const { lineLabels, zoneLabels, colors } = dataRef.current;
       const { ctx } = chart;
       const xScale = chart.scales['x'];
       const yScale = chart.scales['y'];
@@ -189,11 +193,11 @@ export default function SigmaChart({ latest, symbol, windowSize = 252, xMin, xMa
     { xLeft: s2u, xRight: farR, pct: pctS2u },
   ];
 
-  const labelPlugin = useMemo(
-    () => makeLabelPlugin(lineLabels, zoneLabels, c),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mu, sigma, s2d, s2u, isDark],
-  );
+  // 매 렌더마다 ref에 최신 데이터를 주입 — 플러그인 인스턴스는 한 번만 생성
+  const pluginDataRef = useRef<PluginData>({ lineLabels, zoneLabels, colors: c });
+  pluginDataRef.current = { lineLabels, zoneLabels, colors: c };
+
+  const labelPlugin = useMemo(() => makeLabelPlugin(pluginDataRef), []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const datasets: any[] = [
