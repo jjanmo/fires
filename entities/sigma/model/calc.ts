@@ -1,4 +1,4 @@
-import type { ClosePrice, SigmaResult, HistoryRow, MddResult, MddPoint } from './types';
+import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, MddResult, MddPoint, RollingWindow } from './types';
 
 /** 일간 등락률 배열 계산 (종가 기준) */
 export function calcDailyReturns(closes: ClosePrice[]): number[] {
@@ -118,6 +118,41 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
           : null,
     });
   });
+
+  return rows;
+}
+
+/**
+ * 최근 N 거래일의 신호 분류용 데이터 빌드
+ * actualReturn vs σ 기준으로 신호 판단: window 배열 제외(직렬화 비용 절감)
+ */
+export function buildSignalHistory(
+  closes: ClosePrice[],
+  windowSize: RollingWindow = 252,
+  days = 30
+): SignalRow[] {
+  if (closes.length < 2) return [];
+
+  const returns = calcDailyReturns(closes);
+  const rows: SignalRow[] = [];
+
+  const totalRows = closes.length - 1;
+  const startIdx = Math.max(0, totalRows - days);
+
+  for (let i = startIdx; i < totalRows; i++) {
+    const today = closes[i + 1];
+    const s = calcRolling252(returns, i, windowSize);
+    if (!s) continue;
+
+    rows.push({
+      date:         today.date,
+      actualReturn: returns[i] ?? null,
+      mu:           s.mu,
+      sigma:        s.sigma,
+      s2d:          s.s2d,
+      s2u:          s.s2u,
+    });
+  }
 
   return rows;
 }

@@ -31,6 +31,15 @@ export interface MddResult {
   series:           MddPoint[]  // 수중 곡선 전체 데이터
 }
 
+export interface SignalRow {
+  date:         string
+  actualReturn: number | null
+  mu:           number
+  sigma:        number
+  s2d:          number
+  s2u:          number
+}
+
 export interface HistoryRow extends SigmaResult {
   date:         string
   open:         number          // 당일 시가
