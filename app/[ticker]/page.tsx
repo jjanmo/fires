@@ -1,5 +1,5 @@
 import type { TickerInfo } from '@/entities/ticker';
-import { buildHistory, buildLatestSignal, fetchCloses, calcMdd, ROLLING_WINDOWS } from '@/entities/sigma';
+import { buildHistory, buildLatestSignal, buildSignalHistory, fetchCloses, calcMdd, ROLLING_WINDOWS } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
 import { SigmaTabContent, DeclinePriceChart } from '@/widgets/sigma-chart';
 import { TickerTabs } from '@/widgets/ticker-tabs';
@@ -34,6 +34,10 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildLatestSignal>>;
 
   const latestSignal = signalsByWindow[252];
+
+  const signalHistoryByWindow = Object.fromEntries(
+    ROLLING_WINDOWS.map((w) => [w, buildSignalHistory(closes5y, w, 30)])
+  ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildSignalHistory>>;
 
   const mddResult = calcMdd(closesMax);
 
@@ -79,7 +83,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
                     </p>
                   </div>
                 )}
-                <SigmaTabContent signalsByWindow={signalsByWindow} symbol={ticker.symbol} />
+                <SigmaTabContent signalsByWindow={signalsByWindow} signalHistoryByWindow={signalHistoryByWindow} symbol={ticker.symbol} />
                 <DeclinePriceChart history={history} symbol={ticker.symbol} />
               </div>
             )
