@@ -52,7 +52,10 @@ export default function TickerCard({ ticker, latest, error }: Props) {
           <div className="mb-5">
             <p className="text-[11px] text-ink-3 mb-1">최근 종가</p>
             <p className="text-3xl font-semibold tabular-nums text-ink-1">{formatPrice(latest.close, ticker.symbol)}</p>
-            <p className="text-[11px] text-ink-4 mt-1 font-mono">{latest.date}</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-[11px] text-ink-4 font-mono">{latest.date}</p>
+              <span className="text-[10px] text-ink-4 font-mono">Rolling 252일</span>
+            </div>
           </div>
 
           {/* 매수 */}
