@@ -23,6 +23,7 @@ const DARK = {
   s1u: '#93c5fd',
   s2u: '#60a5fa',
   actual: '#fbbf24',
+  actualClosed: '#94a3b8',
   prevReturn: '#94a3b8',
   grid: '#1e293b',
   ticks: '#94a3b8',
@@ -46,6 +47,7 @@ const LIGHT = {
   s1u: '#93c5fd',
   s2u: '#2563eb',
   actual: '#d97706',
+  actualClosed: '#64748b',
   prevReturn: '#94a3b8',
   grid: '#f1f5f9',
   ticks: '#64748b',
@@ -193,10 +195,11 @@ export default function SigmaChart({
   }, []);
 
   const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
-  const { changePct, marketState } = useLivePrice(symbol, close);
+  const { changePct, marketState, loading } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
-  // 라이브 등락률: 본장 중에만 노란 점으로 표시
-  const liveReturn = isRegular ? changePct : null;
+  const isPostOrClosed = marketState === 'POST' || marketState === 'CLOSED';
+  // 데이터 로드 전(loading)에는 점을 표시하지 않아 초기값 0에서 실제값으로 점프하는 현상 방지
+  const liveReturn = !loading && (isRegular || isPostOrClosed) ? changePct : null;
 
   const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
@@ -215,6 +218,8 @@ export default function SigmaChart({
   const far = xMin ?? mu - 3.8 * sigma;
   const farR = xMax ?? mu + 3.8 * sigma;
   const c = isDark ? DARK : LIGHT;
+  const dotColor = isRegular ? c.actual : c.actualClosed;
+  const dotLabel = isRegular ? '오늘 등락률' : '직전 거래일 종가';
   const maxY = pdf(mu, mu, sigma);
 
   const lineLabels: LineLabel[] = [
@@ -304,16 +309,16 @@ export default function SigmaChart({
       borderDash: [5, 4],
     },
 
-    // 오늘 라이브 등락률 — 본장 중에만 노란 점으로 표시
+    // 본장 중: 노란 점(실시간), 장 종료 후: 회색 점(종가)
     ...(liveReturn != null
       ? [
           {
-            label: '오늘 등락률',
+            label: dotLabel,
             data: [{ x: liveReturn, y: pdf(liveReturn, mu, sigma) }],
             showLine: false,
             fill: false,
-            borderColor: c.actual,
-            backgroundColor: c.actual,
+            borderColor: dotColor,
+            backgroundColor: dotColor,
             borderWidth: 2,
             pointRadius: 7,
             pointHoverRadius: 9,
@@ -386,8 +391,8 @@ export default function SigmaChart({
 
       {liveReturn != null && (
         <div className="flex justify-end mt-2.5">
-          <p className="text-[11px] font-mono" style={{ color: c.actual }}>
-            ● 오늘 등락률&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}
+          <p className="text-[11px] font-mono" style={{ color: dotColor }}>
+            ● {dotLabel}&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}
             {liveReturn.toFixed(2)}%
           </p>
         </div>
@@ -444,16 +449,16 @@ export default function SigmaChart({
           </div>
           {liveReturn != null && (
             <div className="flex items-start gap-2">
-              <span className="text-[11px] mt-0.5" style={{ color: c.actual }}>
+              <span className="text-[11px] mt-0.5" style={{ color: dotColor }}>
                 ●
               </span>
               <p className="text-[11px] text-ink-3 leading-relaxed">
-                <span className="font-semibold" style={{ color: c.actual }}>
-                  황색 점 (오늘 실시간 등락률)
+                <span className="font-semibold" style={{ color: dotColor }}>
+                  {isRegular ? '황색 점 (실시간 등락률)' : '회색 점 (종가 등락률)'}
                 </span>{' '}
-                — 본장 중 현재 등락률이 분포에서 어느 구간에 해당하는지 확인.
-                {liveReturn <= s2d && ' 현재 매수 신호 구간 진입.'}
-                {liveReturn >= s2u && ' 현재 매도 신호 구간 진입.'}
+                — {isRegular ? '본장 중 현재 등락률이' : '직전 거래일 종가 등락률이'} 분포에서 어느 구간에 해당하는지 확인.
+                {liveReturn <= s2d && ' 매수 신호 구간 진입.'}
+                {liveReturn >= s2u && ' 매도 신호 구간 진입.'}
               </p>
             </div>
           )}
