@@ -5,7 +5,9 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  BarController,
   BarElement,
+  LineController,
   LineElement,
   PointElement,
   Tooltip,
@@ -13,7 +15,7 @@ import {
 import { Chart } from 'react-chartjs-2';
 import type { SignalRow } from '@/entities/sigma';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Tooltip);
+ChartJS.register(CategoryScale, LinearScale, BarController, BarElement, LineController, LineElement, PointElement, Tooltip);
 
 type SignalType = 'buy-2s' | 'buy-1s' | 'sell-2s' | 'sell-1s' | 'none';
 
