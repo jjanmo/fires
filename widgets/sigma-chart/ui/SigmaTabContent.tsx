@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import type { HistoryRow, RollingWindow } from '@/entities/sigma';
+import type { HistoryRow, SignalRow, RollingWindow } from '@/entities/sigma';
 import { ROLLING_WINDOWS } from '@/entities/sigma';
 import { InfoTooltip } from '@/shared/ui';
 import SignalCards from '@/widgets/signal-cards/ui/SignalCards';
 import SigmaChart from './SigmaChart';
+import SignalHistoryChart from './SignalHistoryChart';
 
 const WINDOW_LABELS: Record<RollingWindow, string> = {
   252: '1년',
@@ -35,6 +36,7 @@ const WINDOW_GUIDE: Record<RollingWindow, { sub: string; desc: string }> = {
 
 interface Props {
   signalsByWindow: Record<RollingWindow, HistoryRow | null>;
+  signalHistoryByWindow: Record<RollingWindow, SignalRow[]>;
   symbol: string;
 }
 
@@ -48,7 +50,7 @@ function calcFixedXRange(signalsByWindow: Record<RollingWindow, HistoryRow | nul
   };
 }
 
-export default function SigmaTabContent({ signalsByWindow, symbol }: Props) {
+export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow, symbol }: Props) {
   const [selected, setSelected] = useState<RollingWindow>(252);
 
   const latest = signalsByWindow[selected];
@@ -100,6 +102,7 @@ export default function SigmaTabContent({ signalsByWindow, symbol }: Props) {
         <>
           <SignalCards latest={latest} symbol={symbol} />
           <SigmaChart latest={latest} symbol={symbol} windowSize={selected} xMin={xMin} xMax={xMax} />
+          <SignalHistoryChart rows={signalHistoryByWindow[selected]} windowSize={selected} />
         </>
       )}
     </div>
