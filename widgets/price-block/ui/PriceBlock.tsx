@@ -24,7 +24,7 @@ export default function PriceBlock({ ticker, latest }: Props) {
   const badge = MARKET_BADGE[marketState] ?? MARKET_BADGE.CLOSED;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 w-full">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className={`text-xs font-semibold tracking-widest uppercase ${ticker.accentColor}`}>{ticker.name}</span>
@@ -35,12 +35,14 @@ export default function PriceBlock({ ticker, latest }: Props) {
               <span className="normal-case">σ</span> 매수 신호
             </span>
           )}
-          {latest && marketState === 'REGULAR' && (latest.triggered === 'sell-1s' || latest.triggered === 'sell-2s') && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sell-badge text-sell-text border border-sell-edge">
-              {latest.triggered === 'sell-2s' ? '2' : '1'}
-              <span className="normal-case">σ</span> 매도 신호
-            </span>
-          )}
+          {latest &&
+            marketState === 'REGULAR' &&
+            (latest.triggered === 'sell-1s' || latest.triggered === 'sell-2s') && (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sell-badge text-sell-text border border-sell-edge">
+                {latest.triggered === 'sell-2s' ? '2' : '1'}
+                <span className="normal-case">σ</span> 매도 신호
+              </span>
+            )}
         </div>
 
         <p

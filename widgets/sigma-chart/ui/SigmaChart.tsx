@@ -8,46 +8,69 @@ import type { HistoryRow } from '@/entities/sigma';
 import { formatPrice } from '@/shared/lib/ticker';
 import { useLivePrice } from '@/shared/hooks';
 
-
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 const DARK = {
-  tailFill:   'rgba( 74,222,128, 0.30)',
-  innerFill:  'rgba( 74,222,128, 0.10)',
+  tailFill: 'rgba( 74,222,128, 0.30)',
+  innerFill: 'rgba( 74,222,128, 0.10)',
   centerFill: 'rgba(167,139,250, 0.22)',
   innerFillR: 'rgba( 96,165,250, 0.10)',
-  tailFillR:  'rgba( 96,165,250, 0.30)',
+  tailFillR: 'rgba( 96,165,250, 0.30)',
   curveLine: '#a78bfa',
-  s2d: '#4ade80', s1d: '#86efac',
+  s2d: '#4ade80',
+  s1d: '#86efac',
   mu: '#64748b',
-  s1u: '#93c5fd', s2u: '#60a5fa',
+  s1u: '#93c5fd',
+  s2u: '#60a5fa',
   actual: '#fbbf24',
+  actualClosed: '#94a3b8',
   prevReturn: '#94a3b8',
-  grid: '#1e293b', ticks: '#94a3b8',
-  tooltipBg: '#1e293b', tooltipBorder: '#475569',
-  tooltipTitle: '#94a3b8', tooltipBody: '#e2e8f0',
-  labelText: '#e2e8f0', zonePctText: 'rgba(148,163,184,0.8)',
+  grid: '#1e293b',
+  ticks: '#94a3b8',
+  tooltipBg: '#1e293b',
+  tooltipBorder: '#475569',
+  tooltipTitle: '#94a3b8',
+  tooltipBody: '#e2e8f0',
+  labelText: '#e2e8f0',
+  zonePctText: 'rgba(148,163,184,0.8)',
 };
 const LIGHT = {
-  tailFill:   'rgba( 22,163, 74, 0.18)',
-  innerFill:  'rgba( 22,163, 74, 0.07)',
+  tailFill: 'rgba( 22,163, 74, 0.18)',
+  innerFill: 'rgba( 22,163, 74, 0.07)',
   centerFill: 'rgba(124, 58,237, 0.10)',
   innerFillR: 'rgba( 37, 99,235, 0.07)',
-  tailFillR:  'rgba( 37, 99,235, 0.18)',
+  tailFillR: 'rgba( 37, 99,235, 0.18)',
   curveLine: '#7c3aed',
-  s2d: '#16a34a', s1d: '#4ade80',
+  s2d: '#16a34a',
+  s1d: '#4ade80',
   mu: '#94a3b8',
-  s1u: '#93c5fd', s2u: '#2563eb',
+  s1u: '#93c5fd',
+  s2u: '#2563eb',
   actual: '#d97706',
+  actualClosed: '#64748b',
   prevReturn: '#94a3b8',
-  grid: '#f1f5f9', ticks: '#64748b',
-  tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0',
-  tooltipTitle: '#64748b', tooltipBody: '#0f172a',
-  labelText: '#334155', zonePctText: 'rgba(100,116,139,0.8)',
+  grid: '#f1f5f9',
+  ticks: '#64748b',
+  tooltipBg: '#ffffff',
+  tooltipBorder: '#e2e8f0',
+  tooltipTitle: '#64748b',
+  tooltipBody: '#0f172a',
+  labelText: '#334155',
+  zonePctText: 'rgba(100,116,139,0.8)',
 };
 
-interface LineLabel { x: number; name: string; value: string; price: string; color: string }
-interface ZoneLabel { xLeft: number; xRight: number; pct: string }
+interface LineLabel {
+  x: number;
+  name: string;
+  value: string;
+  price: string;
+  color: string;
+}
+interface ZoneLabel {
+  xLeft: number;
+  xRight: number;
+  pct: string;
+}
 
 const pdf = (x: number, mu: number, sigma: number) =>
   Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
@@ -61,12 +84,23 @@ function segment(mu: number, sigma: number, xStart: number, xEnd: number, n = 60
 }
 
 function vLine(x: number, maxY: number) {
-  return [{ x, y: 0 }, { x, y: maxY * 1.08 }];
+  return [
+    { x, y: 0 },
+    { x, y: maxY * 1.08 },
+  ];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function filledSegment(data: { x: number; y: number }[], color: string): any {
-  return { data, showLine: true, fill: 'origin', backgroundColor: color, borderColor: 'transparent', borderWidth: 0, pointRadius: 0 };
+  return {
+    data,
+    showLine: true,
+    fill: 'origin',
+    backgroundColor: color,
+    borderColor: 'transparent',
+    borderWidth: 0,
+    pointRadius: 0,
+  };
 }
 
 function fmtPct(v: number): string {
@@ -100,19 +134,19 @@ function makeLabelPlugin(
         ctx.textBaseline = 'bottom';
 
         // 이름 (예: "2σ↓")
-        ctx.font = 'bold 10px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = 'bold 12px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = color;
-        ctx.fillText(name, px, top - 24);
+        ctx.fillText(name, px, top - 27);
 
         // 변동률 (예: "-14.32%")
-        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = colors.labelText;
-        ctx.fillText(value, px, top - 13);
+        ctx.fillText(value, px, top - 14);
 
         // 예측 가격 (예: "$123.45")
-        ctx.font = '9px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = '11px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = color;
-        ctx.fillText(price, px, top - 3);
+        ctx.fillText(price, px, top - 2);
       }
 
       // ── 구간 비율 라벨 ──
@@ -127,7 +161,7 @@ function makeLabelPlugin(
         const midY = (yScale.top + yScale.bottom) / 2;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = 'bold 11px ui-monospace, SFMono-Regular, monospace';
+        ctx.font = 'bold 13px ui-monospace, SFMono-Regular, monospace';
         ctx.fillStyle = colors.zonePctText;
         ctx.fillText(pct, pxMid, midY);
       }
@@ -137,7 +171,19 @@ function makeLabelPlugin(
   };
 }
 
-export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; symbol: string }) {
+export default function SigmaChart({
+  latest,
+  symbol,
+  windowSize = 252,
+  xMin,
+  xMax,
+}: {
+  latest: HistoryRow;
+  symbol: string;
+  windowSize?: number;
+  xMin?: number;
+  xMax?: number;
+}) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -148,109 +194,154 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
     return () => obs.disconnect();
   }, []);
 
-  const { actualReturn, buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
-  const { changePct, marketState } = useLivePrice(symbol, close);
+  const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
+  const { changePct, marketState, loading } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
-  // 라이브 등락률: 본장 중에만 노란 점으로 표시
-  const liveReturn = isRegular ? changePct : null;
+  const isPostOrClosed = marketState === 'POST' || marketState === 'CLOSED';
+  // 데이터 로드 전(loading)에는 점을 표시하지 않아 초기값 0에서 실제값으로 점프하는 현상 방지
+  const liveReturn = !loading && (isRegular || isPostOrClosed) ? changePct : null;
 
-  // 차트 분포는 prevSigma(오늘 등락률 제외)를 우선 사용 — 없으면 sTomorrow로 fallback
-  const chartSigma = latest.prevSigma ?? latest;
-  const { mu, sigma, s2d, s2u, window: returns } = chartSigma;
+  const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
   const s1u = mu + sigma;
   const muPrice = +(close * (1 + mu / 100)).toFixed(2);
 
   // 실제 252일 데이터 기반 구간별 비율 계산
   const total = returns.length;
-  const pctS2d = ((returns.filter(r => r <= s2d).length / total) * 100).toFixed(1) + '%';
-  const pctS1d = ((returns.filter(r => r > s2d && r <= s1d).length / total) * 100).toFixed(1) + '%';
-  const pctMid = ((returns.filter(r => r > s1d && r < s1u).length / total) * 100).toFixed(1) + '%';
-  const pctS1u = ((returns.filter(r => r >= s1u && r < s2u).length / total) * 100).toFixed(1) + '%';
-  const pctS2u = ((returns.filter(r => r >= s2u).length / total) * 100).toFixed(1) + '%';
+  const pctS2d = ((returns.filter((r) => r <= s2d).length / total) * 100).toFixed(1) + '%';
+  const pctS1d = ((returns.filter((r) => r > s2d && r <= s1d).length / total) * 100).toFixed(1) + '%';
+  const pctMid = ((returns.filter((r) => r > s1d && r < s1u).length / total) * 100).toFixed(1) + '%';
+  const pctS1u = ((returns.filter((r) => r >= s1u && r < s2u).length / total) * 100).toFixed(1) + '%';
+  const pctS2u = ((returns.filter((r) => r >= s2u).length / total) * 100).toFixed(1) + '%';
 
-  const far = mu - 3.8 * sigma;
-  const farR = mu + 3.8 * sigma;
+  // X축 고정 범위 — 전달받은 값 우선, 없으면 현재 창의 3.8σ로 fallback
+  const far = xMin ?? mu - 3.8 * sigma;
+  const farR = xMax ?? mu + 3.8 * sigma;
   const c = isDark ? DARK : LIGHT;
+  const dotColor = isRegular ? c.actual : c.actualClosed;
+  const dotLabel = isRegular ? '오늘 등락률' : '직전 거래일 종가';
   const maxY = pdf(mu, mu, sigma);
 
   const lineLabels: LineLabel[] = [
-    { x: s2d, name: '2σ↓', value: fmtPct(s2d), price: formatPrice(buyPrice, symbol),     color: c.s2d },
-    { x: s1d, name: '1σ↓', value: fmtPct(s1d), price: formatPrice(s1BuyPrice, symbol),   color: c.s1d },
-    { x: mu,  name: 'μ',   value: fmtPct(mu),  price: formatPrice(muPrice, symbol),       color: c.mu  },
-    { x: s1u, name: '1σ↑', value: fmtPct(s1u), price: formatPrice(s1SellPrice, symbol),   color: c.s1u },
-    { x: s2u, name: '2σ↑', value: fmtPct(s2u), price: formatPrice(sellPrice, symbol),     color: c.s2u },
+    { x: s2d, name: '2σ↓', value: fmtPct(s2d), price: formatPrice(buyPrice, symbol), color: c.s2d },
+    { x: s1d, name: '1σ↓', value: fmtPct(s1d), price: formatPrice(s1BuyPrice, symbol), color: c.s1d },
+    { x: mu, name: 'μ(평균)', value: fmtPct(mu), price: formatPrice(muPrice, symbol), color: c.mu },
+    { x: s1u, name: '1σ↑', value: fmtPct(s1u), price: formatPrice(s1SellPrice, symbol), color: c.s1u },
+    { x: s2u, name: '2σ↑', value: fmtPct(s2u), price: formatPrice(sellPrice, symbol), color: c.s2u },
   ];
 
   const zoneLabels: ZoneLabel[] = [
     { xLeft: far, xRight: s2d, pct: pctS2d },
     { xLeft: s2d, xRight: s1d, pct: pctS1d },
-    { xLeft: s1d, xRight: s1u, pct: pctMid  },
+    { xLeft: s1d, xRight: s1u, pct: pctMid },
     { xLeft: s1u, xRight: s2u, pct: pctS1u },
     { xLeft: s2u, xRight: farR, pct: pctS2u },
   ];
 
-  const labelPlugin = useMemo(
-    () => makeLabelPlugin(lineLabels, zoneLabels, c),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mu, sigma, s2d, s2u, isDark],
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const labelPlugin = useMemo(() => makeLabelPlugin(lineLabels, zoneLabels, c), [mu, sigma, s2d, s2u, isDark]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const datasets: any[] = [
-    filledSegment(segment(mu, sigma, far,  s2d), c.tailFill),
-    filledSegment(segment(mu, sigma, s2d,  s1d), c.innerFill),
-    filledSegment(segment(mu, sigma, s1d,  s1u), c.centerFill),
-    filledSegment(segment(mu, sigma, s1u,  s2u), c.innerFillR),
+    filledSegment(segment(mu, sigma, far, s2d), c.tailFill),
+    filledSegment(segment(mu, sigma, s2d, s1d), c.innerFill),
+    filledSegment(segment(mu, sigma, s1d, s1u), c.centerFill),
+    filledSegment(segment(mu, sigma, s1u, s2u), c.innerFillR),
     filledSegment(segment(mu, sigma, s2u, farR), c.tailFillR),
 
     {
       label: '정규분포',
       data: segment(mu, sigma, far, farR, 300),
-      showLine: true, fill: false,
-      borderColor: c.curveLine, borderWidth: 1.5,
+      showLine: true,
+      fill: false,
+      borderColor: c.curveLine,
+      borderWidth: 1.5,
       pointRadius: 0,
     },
 
-    { label: '2σ↓', data: vLine(s2d, maxY), showLine: true, fill: false, borderColor: c.s2d, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
-    { label: '1σ↓', data: vLine(s1d, maxY), showLine: true, fill: false, borderColor: c.s1d, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
-    { label: 'μ',    data: vLine(mu,  maxY), showLine: true, fill: false, borderColor: c.mu,  borderWidth: 1, pointRadius: 0 },
-    { label: '1σ↑', data: vLine(s1u, maxY), showLine: true, fill: false, borderColor: c.s1u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
-    { label: '2σ↑', data: vLine(s2u, maxY), showLine: true, fill: false, borderColor: c.s2u, borderWidth: 2, pointRadius: 0, borderDash: [5, 4] },
+    {
+      label: '2σ↓',
+      data: vLine(s2d, maxY),
+      showLine: true,
+      fill: false,
+      borderColor: c.s2d,
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: [5, 4],
+    },
+    {
+      label: '1σ↓',
+      data: vLine(s1d, maxY),
+      showLine: true,
+      fill: false,
+      borderColor: c.s1d,
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: [5, 4],
+    },
+    {
+      label: 'μ',
+      data: vLine(mu, maxY),
+      showLine: true,
+      fill: false,
+      borderColor: c.mu,
+      borderWidth: 1,
+      pointRadius: 0,
+    },
+    {
+      label: '1σ↑',
+      data: vLine(s1u, maxY),
+      showLine: true,
+      fill: false,
+      borderColor: c.s1u,
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: [5, 4],
+    },
+    {
+      label: '2σ↑',
+      data: vLine(s2u, maxY),
+      showLine: true,
+      fill: false,
+      borderColor: c.s2u,
+      borderWidth: 2,
+      pointRadius: 0,
+      borderDash: [5, 4],
+    },
 
-    // 어제 종가 등락률 — 회색 점으로 항상 표시 (분포의 기준점)
-    ...(actualReturn != null ? [{
-      label: '전일 등락률',
-      data: [{ x: actualReturn, y: pdf(actualReturn, mu, sigma) }],
-      showLine: false, fill: false,
-      borderColor: c.prevReturn, backgroundColor: c.prevReturn,
-      borderWidth: 2, pointRadius: 6, pointHoverRadius: 8,
-    }] : []),
-    // 오늘 라이브 등락률 — 본장 중에만 노란 점으로 표시
-    ...(liveReturn != null ? [{
-      label: '오늘 등락률',
-      data: [{ x: liveReturn, y: pdf(liveReturn, mu, sigma) }],
-      showLine: false, fill: false,
-      borderColor: c.actual, backgroundColor: c.actual,
-      borderWidth: 2, pointRadius: 7, pointHoverRadius: 9,
-    }] : []),
+    // 본장 중: 노란 점(실시간), 장 종료 후: 회색 점(종가)
+    ...(liveReturn != null
+      ? [
+          {
+            label: dotLabel,
+            data: [{ x: liveReturn, y: pdf(liveReturn, mu, sigma) }],
+            showLine: false,
+            fill: false,
+            borderColor: dotColor,
+            backgroundColor: dotColor,
+            borderWidth: 2,
+            pointRadius: 7,
+            pointHoverRadius: 9,
+          },
+        ]
+      : []),
   ];
 
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
       <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">
-        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling 252일)
+        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling {windowSize}일)
       </p>
 
-      <div className="relative h-64">
-        <Scatter
+      <div className="relative h-80">
+        <Scatter key={`${s2d}-${s2u}-${isDark}`}
           data={{ datasets }}
           plugins={[labelPlugin]}
           options={{
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            layout: { padding: { top: 42 } },
+            layout: { padding: { top: 52 } },
             plugins: {
               legend: { display: false },
               tooltip: {
@@ -263,9 +354,7 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
                 borderWidth: 1,
                 padding: 10,
                 filter: (item) => {
-                  const last = datasets.length - 1;
-                  const prev = datasets.length - (liveReturn != null ? 2 : 1);
-                  return item.datasetIndex === last || item.datasetIndex === prev;
+                  return item.datasetIndex === datasets.length - 1;
                 },
                 callbacks: {
                   title: () => '',
@@ -280,9 +369,11 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
             scales: {
               x: {
                 type: 'linear',
+                min: far,
+                max: farR,
                 ticks: {
                   color: c.ticks,
-                  font: { size: 10 },
+                  font: { size: 12 },
                   callback: (v) => `${(v as number).toFixed(1)}%`,
                   maxTicksLimit: 9,
                 },
@@ -298,70 +389,76 @@ export default function SigmaChart({ latest, symbol }: { latest: HistoryRow; sym
         />
       </div>
 
-      <div className="flex justify-end gap-4 mt-2.5">
-        {actualReturn != null && (
-          <p className="text-[11px] font-mono" style={{ color: c.prevReturn }}>
-            ● 전일 등락률&nbsp;&nbsp;{actualReturn > 0 ? '+' : ''}{actualReturn.toFixed(2)}%
+      {liveReturn != null && (
+        <div className="flex justify-end mt-2.5">
+          <p className="text-[11px] font-mono" style={{ color: dotColor }}>
+            ● {dotLabel}&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}
+            {liveReturn.toFixed(2)}%
           </p>
-        )}
-        {liveReturn != null && (
-          <p className="text-[11px] font-mono" style={{ color: c.actual }}>
-            ● 오늘 등락률&nbsp;&nbsp;{liveReturn > 0 ? '+' : ''}{liveReturn.toFixed(2)}%
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 구간 설명 */}
       <div className="mt-4 pt-4 border-t border-edge space-y-2">
         <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">구간 해석</p>
         <div className="space-y-1.5">
           <div className="flex items-start gap-2">
-            <span className="text-[11px] mt-0.5" style={{ color: c.s2d }}>■</span>
+            <span className="text-[11px] mt-0.5" style={{ color: c.s2d }}>
+              ■
+            </span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s2d }}>2<span className="normal-case">σ</span> 이하 하락 ({pctS2d})</span>
-              {' '}— 매수 신호 구간. 당일 저가가 매수 지정가({fmtPct(s2d)})에 도달하면 신호 발동.
+              <span className="font-semibold" style={{ color: c.s2d }}>
+                2<span className="normal-case">σ</span> 이하 하락 ({pctS2d})
+              </span>{' '}
+              — 매수 신호 구간. 당일 저가가 매수 지정가({fmtPct(s2d)})에 도달하면 신호 발동.
             </p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[11px] mt-0.5" style={{ color: c.s1d }}>■</span>
+            <span className="text-[11px] mt-0.5" style={{ color: c.s1d }}>
+              ■
+            </span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s1d }}>1<span className="normal-case">σ</span> ~ 2<span className="normal-case">σ</span> 하락 ({pctS1d})</span>
-              {' '}— 평균보다 낮은 하락이지만 신호 미발동 구간. 참고용 1<span className="normal-case">σ</span> 매수가({fmtPct(s1d)}) 활용 가능.
+              <span className="font-semibold" style={{ color: c.s1d }}>
+                1<span className="normal-case">σ</span> ~ 2<span className="normal-case">σ</span> 하락 ({pctS1d})
+              </span>{' '}
+              — 평균보다 낮은 하락이지만 신호 미발동 구간. 참고용 1<span className="normal-case">σ</span> 매수가(
+              {fmtPct(s1d)}) 활용 가능.
             </p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[11px] mt-0.5" style={{ color: c.mu }}>■</span>
+            <span className="text-[11px] mt-0.5" style={{ color: c.mu }}>
+              ■
+            </span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold text-ink-2">평균 ±1<span className="normal-case">σ</span> 중앙 ({pctMid})</span>
-              {' '}— 일반적인 변동 구간. 252일 중 대부분의 거래일이 이 범위 안에서 마감.
+              <span className="font-semibold text-ink-2">
+                평균 ±1<span className="normal-case">σ</span> 중앙 ({pctMid})
+              </span>{' '}
+              — 일반적인 변동 구간. {windowSize}일 중 대부분의 거래일이 이 범위 안에서 마감.
             </p>
           </div>
           <div className="flex items-start gap-2">
-            <span className="text-[11px] mt-0.5" style={{ color: c.s2u }}>■</span>
+            <span className="text-[11px] mt-0.5" style={{ color: c.s2u }}>
+              ■
+            </span>
             <p className="text-[11px] text-ink-3 leading-relaxed">
-              <span className="font-semibold" style={{ color: c.s2u }}>2<span className="normal-case">σ</span> 이상 상승 ({pctS2u})</span>
-              {' '}— 매도 신호 구간. 당일 고가가 매도 지정가({fmtPct(s2u)})에 도달하면 신호 발동.
+              <span className="font-semibold" style={{ color: c.s2u }}>
+                2<span className="normal-case">σ</span> 이상 상승 ({pctS2u})
+              </span>{' '}
+              — 매도 신호 구간. 당일 고가가 매도 지정가({fmtPct(s2u)})에 도달하면 신호 발동.
             </p>
           </div>
-          {actualReturn != null && (
-            <div className="flex items-start gap-2">
-              <span className="text-[11px] mt-0.5" style={{ color: c.prevReturn }}>●</span>
-              <p className="text-[11px] text-ink-3 leading-relaxed">
-                <span className="font-semibold" style={{ color: c.prevReturn }}>회색 점 (전일 종가 등락률)</span>
-                {' '}— 어제 종가가 분포 기준으로 어느 위치에서 마감됐는지 확인.
-                {actualReturn <= s2d && ' 전일 매수 신호 구간 진입.'}
-                {actualReturn >= s2u && ' 전일 매도 신호 구간 진입.'}
-              </p>
-            </div>
-          )}
           {liveReturn != null && (
             <div className="flex items-start gap-2">
-              <span className="text-[11px] mt-0.5" style={{ color: c.actual }}>●</span>
+              <span className="text-[11px] mt-0.5" style={{ color: dotColor }}>
+                ●
+              </span>
               <p className="text-[11px] text-ink-3 leading-relaxed">
-                <span className="font-semibold" style={{ color: c.actual }}>황색 점 (오늘 실시간 등락률)</span>
-                {' '}— 본장 중 현재 등락률이 분포에서 어느 구간에 해당하는지 확인.
-                {liveReturn <= s2d && ' 현재 매수 신호 구간 진입.'}
-                {liveReturn >= s2u && ' 현재 매도 신호 구간 진입.'}
+                <span className="font-semibold" style={{ color: dotColor }}>
+                  {isRegular ? '황색 점 (실시간 등락률)' : '회색 점 (종가 등락률)'}
+                </span>{' '}
+                — {isRegular ? '본장 중 현재 등락률이' : '직전 거래일 종가 등락률이'} 분포에서 어느 구간에 해당하는지 확인.
+                {liveReturn <= s2d && ' 매수 신호 구간 진입.'}
+                {liveReturn >= s2u && ' 매도 신호 구간 진입.'}
               </p>
             </div>
           )}

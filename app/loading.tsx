@@ -15,7 +15,10 @@ function CardSkeleton() {
       <div className="mb-5">
         <div className="skeleton h-3 w-14 mb-1" />
         <div className="skeleton h-9 w-32" />
-        <div className="skeleton h-3 w-20 mt-1" />
+        <div className="flex items-center justify-between mt-1">
+          <div className="skeleton h-3 w-20" />
+          <div className="skeleton h-3 w-16" />
+        </div>
       </div>
 
       {/* 매수 박스 (1σ / 2σ) */}
@@ -52,7 +55,7 @@ export default function HomeLoading() {
           <div className="skeleton h-3 w-64" />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <CardSkeleton key={i} />
           ))}
         </div>
