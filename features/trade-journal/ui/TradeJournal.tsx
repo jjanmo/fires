@@ -4,13 +4,13 @@ import { useState, useCallback, useTransition } from "react";
 import type { Trade, EnrichedTrade } from "../model/journal";
 import { calcStats, enrichTrades } from "../model/journal";
 import { addTrade, updateTrade, deleteTrade } from "../actions";
-import { useFxRate } from "@/shared/hooks";
+import { useFxRate, useLivePrice } from "@/shared/hooks";
 import { isKoreanTicker, formatPrice as fmtTickerPrice } from "@/shared/lib/ticker";
 
 interface Props {
   ticker: string;
   symbol: string;
-  currentPrice: number;
+  fallbackPrice: number;
   initialTrades: Trade[];
 }
 
@@ -199,11 +199,12 @@ function TradeRow({
 export default function TradeJournal({
   ticker,
   symbol,
-  currentPrice,
+  fallbackPrice,
   initialTrades,
 }: Props) {
   const isKR = isKoreanTicker(symbol);
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
+  const { price: currentPrice } = useLivePrice(symbol, fallbackPrice);
   const { rate: fxRate, updatedAt, loading: fxLoading, refresh } = useFxRate();
   const [form, setForm] = useState({
     type: "buy" as "buy" | "sell",
