@@ -197,9 +197,8 @@ export default function SigmaChart({
   const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
   const { changePct, marketState, loading } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
-  const isPostOrClosed = marketState === 'POST' || marketState === 'CLOSED';
   // 데이터 로드 전(loading)에는 점을 표시하지 않아 초기값 0에서 실제값으로 점프하는 현상 방지
-  const liveReturn = !loading && (isRegular || isPostOrClosed) ? changePct : null;
+  const liveReturn = !loading ? changePct : null;
 
   const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
