@@ -38,6 +38,7 @@ interface Props {
   signalsByWindow: Record<RollingWindow, HistoryRow | null>;
   signalHistoryByWindow: Record<RollingWindow, SignalRow[]>;
   symbol: string;
+  availableDays: number;
 }
 
 /** 가장 넓은 롤링 기간(252 → 120 → 60 → 20 순)을 기준으로 X축 고정 범위 계산 */
@@ -50,8 +51,12 @@ function calcFixedXRange(signalsByWindow: Record<RollingWindow, HistoryRow | nul
   };
 }
 
-export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow, symbol }: Props) {
-  const [selected, setSelected] = useState<RollingWindow>(252);
+export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow, symbol, availableDays }: Props) {
+  const isEnabled = (w: RollingWindow) => availableDays >= w;
+  const defaultWindow = ROLLING_WINDOWS.find(isEnabled) ?? ROLLING_WINDOWS[ROLLING_WINDOWS.length - 1];
+  const [selected, setSelected] = useState<RollingWindow>(defaultWindow);
+
+  const disabledWindows = ROLLING_WINDOWS.filter(w => !isEnabled(w));
 
   const latest = signalsByWindow[selected];
   const { xMin, xMax } = calcFixedXRange(signalsByWindow);
@@ -59,24 +64,31 @@ export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow
   return (
     <div className="space-y-5">
       {/* 롤링 기간 선택 */}
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] text-ink-4 uppercase tracking-widest shrink-0">롤링 기간</span>
-        <div className="flex gap-1 bg-inset rounded-lg p-0.5 border border-edge">
-          {ROLLING_WINDOWS.map((w) => (
-            <button
-              key={w}
-              onClick={() => setSelected(w)}
-              className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150 cursor-pointer border ${
-                selected === w
-                  ? 'bg-card text-ink-1 shadow-sm border-edge'
-                  : 'border-transparent text-ink-3 hover:text-ink-2'
-              }`}
-            >
-              {WINDOW_LABELS[w]}
-            </button>
-          ))}
-        </div>
-        <InfoTooltip>
+      <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <span className="text-[11px] text-ink-4 uppercase tracking-widest shrink-0">롤링 기간</span>
+          <div className="flex gap-1 bg-inset rounded-lg p-0.5 border border-edge">
+            {ROLLING_WINDOWS.map((w) => {
+              const enabled = isEnabled(w);
+              return (
+                <button
+                  key={w}
+                  onClick={() => enabled && setSelected(w)}
+                  disabled={!enabled}
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150 border ${
+                    !enabled
+                      ? 'border-transparent text-ink-4/40 cursor-not-allowed'
+                      : selected === w
+                      ? 'bg-card text-ink-1 shadow-sm border-edge cursor-pointer'
+                      : 'border-transparent text-ink-3 hover:text-ink-2 cursor-pointer'
+                  }`}
+                >
+                  {WINDOW_LABELS[w]}
+                </button>
+              );
+            })}
+          </div>
+          <InfoTooltip>
           <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">롤링 기간 선택 가이드</p>
           <div className="space-y-3">
             {ROLLING_WINDOWS.map((w) => (
@@ -89,7 +101,14 @@ export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow
               </div>
             ))}
           </div>
-        </InfoTooltip>
+          </InfoTooltip>
+        </div>
+        {disabledWindows.length > 0 && (
+          <p className="text-[11px] text-ink-4 leading-relaxed">
+            사용 가능한 거래 데이터 {availableDays}일 —{' '}
+            {disabledWindows.map(w => WINDOW_LABELS[w]).join(' · ')} 비활성
+          </p>
+        )}
       </div>
 
       {latest == null ? (

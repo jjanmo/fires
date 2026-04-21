@@ -80,7 +80,7 @@ export default function SignalHistoryChart({
   if (rows.length === 0) {
     return (
       <div className="rounded-2xl bg-card border border-edge p-5">
-        <p className="text-[11px] text-ink-3 uppercase tracking-widest">신호 이력 · 최근 30일</p>
+        <p className="text-[11px] text-ink-3 uppercase tracking-widest">신호 이력</p>
         <p className="text-[11px] text-ink-4 mt-3">데이터가 충분하지 않습니다.</p>
       </div>
     );
@@ -133,7 +133,7 @@ export default function SignalHistoryChart({
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
       <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">
-        신호 이력 · 최근 30일 (Rolling {windowSize}일)
+        신호 이력 · 최근 {rows.length}일 (Rolling {windowSize}일)
       </p>
 
       <div className="h-52">

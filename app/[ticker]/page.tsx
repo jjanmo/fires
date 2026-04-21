@@ -36,7 +36,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
   const latestSignal = signalsByWindow[252];
 
   const signalHistoryByWindow = Object.fromEntries(
-    ROLLING_WINDOWS.map((w) => [w, buildSignalHistory(closes5y, w, 30)])
+    ROLLING_WINDOWS.map((w) => [w, signalsByWindow[w] ? buildSignalHistory(closes5y, signalsByWindow[w]!, 30) : []])
   ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildSignalHistory>>;
 
   const mddResult = calcMdd(closesMax);
@@ -83,7 +83,7 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
                     </p>
                   </div>
                 )}
-                <SigmaTabContent signalsByWindow={signalsByWindow} signalHistoryByWindow={signalHistoryByWindow} symbol={ticker.symbol} />
+                <SigmaTabContent signalsByWindow={signalsByWindow} signalHistoryByWindow={signalHistoryByWindow} symbol={ticker.symbol} availableDays={closes5y.length - 1} />
                 <DeclinePriceChart history={history} symbol={ticker.symbol} />
               </div>
             )

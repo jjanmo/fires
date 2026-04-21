@@ -1,4 +1,4 @@
-import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, MddResult, MddPoint, RollingWindow } from './types';
+import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, MddResult, MddPoint } from './types';
 
 /** 일간 등락률 배열 계산 (종가 기준) */
 export function calcDailyReturns(closes: ClosePrice[]): number[] {
@@ -124,37 +124,30 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
 
 /**
  * 최근 N 거래일의 신호 분류용 데이터 빌드
- * actualReturn vs σ 기준으로 신호 판단: window 배열 제외(직렬화 비용 절감)
+ * 현재 σ 기준(latest)을 고정값으로 사용 — 각 날마다 재계산하지 않음
  */
 export function buildSignalHistory(
   closes: ClosePrice[],
-  windowSize: RollingWindow = 252,
+  latest: HistoryRow,
   days = 30
 ): SignalRow[] {
   if (closes.length < 2) return [];
 
   const returns = calcDailyReturns(closes);
-  const rows: SignalRow[] = [];
-
   const totalRows = closes.length - 1;
   const startIdx = Math.max(0, totalRows - days);
 
-  for (let i = startIdx; i < totalRows; i++) {
-    const today = closes[i + 1];
-    const s = calcRolling252(returns, i, windowSize);
-    if (!s) continue;
-
-    rows.push({
-      date:         today.date,
+  return Array.from({ length: totalRows - startIdx }, (_, k) => {
+    const i = startIdx + k;
+    return {
+      date:         closes[i + 1].date,
       actualReturn: returns[i] ?? null,
-      mu:           s.mu,
-      sigma:        s.sigma,
-      s2d:          s.s2d,
-      s2u:          s.s2u,
-    });
-  }
-
-  return rows;
+      mu:           latest.mu,
+      sigma:        latest.sigma,
+      s2d:          latest.s2d,
+      s2u:          latest.s2u,
+    };
+  });
 }
 
 /**
