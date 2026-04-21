@@ -1,7 +1,6 @@
-function CardSkeleton() {
+export function CardSkeleton() {
   return (
-    <div className="rounded-2xl border border-edge bg-sk-card p-6">
-      {/* 심볼 + 설명 + 배지 — mb-4 */}
+    <div className="animate-pulse rounded-2xl border border-edge bg-sk-card p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="space-y-1">
           <div className="skeleton h-3 w-10" />
@@ -11,7 +10,6 @@ function CardSkeleton() {
         <div className="skeleton h-6 w-14 rounded-md" />
       </div>
 
-      {/* 종가 — mb-5 */}
       <div className="mb-5">
         <div className="skeleton h-3 w-14 mb-1" />
         <div className="skeleton h-9 w-32" />
@@ -21,7 +19,6 @@ function CardSkeleton() {
         </div>
       </div>
 
-      {/* 매수 박스 (1σ / 2σ) */}
       <div className="grid grid-cols-2 gap-3 mb-3">
         {[0, 1].map((i) => (
           <div key={i} className="rounded-xl border border-edge bg-sk-card p-3">
@@ -32,7 +29,6 @@ function CardSkeleton() {
         ))}
       </div>
 
-      {/* 매도 박스 (1σ / 2σ) */}
       <div className="grid grid-cols-2 gap-3">
         {[0, 1].map((i) => (
           <div key={i} className="rounded-xl border border-edge bg-sk-card p-3">
