@@ -1,6 +1,7 @@
 'use client'
 
 import { useOptimistic, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { toggleWatchlist } from '../actions'
 
 interface Props {
@@ -11,11 +12,13 @@ interface Props {
 export default function WatchlistButton({ symbol, isWatchlisted: initial }: Props) {
   const [isWatchlisted, setOptimistic] = useOptimistic(initial)
   const [, startTransition] = useTransition()
+  const router = useRouter()
 
   const handleClick = () => {
     startTransition(async () => {
       setOptimistic(!isWatchlisted)
       await toggleWatchlist(symbol)
+      router.refresh()
     })
   }
 

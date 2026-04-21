@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { Trade, EnrichedTrade } from "../model/journal";
 import { calcStats, enrichTrades } from "../model/journal";
 import { addTrade, updateTrade, deleteTrade } from "../actions";
@@ -214,6 +215,7 @@ export default function TradeJournal({
     memo: "",
   });
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleAdd = useCallback(() => {
     const qty = parseFloat(form.qty);
@@ -238,6 +240,7 @@ export default function TradeJournal({
         setTrades((prev) =>
           prev.map((t) => (t.id === optimisticId ? saved : t)),
         );
+        router.refresh();
       }
     });
   }, [form, ticker, startTransition]);
@@ -251,6 +254,7 @@ export default function TradeJournal({
         const saved = await updateTrade(ticker, id, fields);
         if (saved) {
           setTrades((prev) => prev.map((t) => (t.id === id ? saved : t)));
+          router.refresh();
         }
       });
     },
@@ -262,6 +266,7 @@ export default function TradeJournal({
       setTrades((prev) => prev.filter((t) => t.id !== id));
       startTransition(async () => {
         await deleteTrade(ticker, id);
+        router.refresh();
       });
     },
     [ticker, startTransition],
