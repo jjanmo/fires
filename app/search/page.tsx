@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { isKoreanTicker } from '@/shared/lib/ticker';
 
 interface SearchResult {
@@ -23,7 +24,6 @@ const EXCHANGE_LABEL: Record<string, string> = {
 };
 
 function SearchContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const q = searchParams.get('q') ?? '';
 
@@ -57,13 +57,6 @@ function SearchContent() {
     return () => controller.abort();
   }, [q]);
 
-  const navigate = useCallback(
-    (symbol: string) => {
-      router.push(`/${encodeURIComponent(symbol.toLowerCase())}`);
-    },
-    [router]
-  );
-
   return (
     <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -82,10 +75,10 @@ function SearchContent() {
               const isKR = isKoreanTicker(r.symbol);
               const exchangeLabel = EXCHANGE_LABEL[r.exchange] ?? r.exchange;
               return (
-                <button
+                <Link
                   key={r.symbol}
-                  onClick={() => navigate(r.symbol)}
-                  className="group rounded-xl border border-edge bg-card p-4 hover:bg-inset hover:border-edge-hi hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer"
+                  href={`/${encodeURIComponent(r.symbol.toLowerCase())}`}
+                  className="group block rounded-xl border border-edge bg-card p-4 hover:bg-inset hover:border-edge-hi hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer"
                 >
                   <p className="text-sm font-bold text-ink-1 truncate mb-1 group-hover:text-ink-1">
                     {isKR ? r.name : r.symbol}
@@ -109,7 +102,7 @@ function SearchContent() {
                       </span>
                     )}
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>
