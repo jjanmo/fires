@@ -25,7 +25,7 @@ export async function GET(
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': 'Mozilla/5.0' },
-      cache: 'no-store',
+      next: { revalidate: 10 },
     })
     if (!res.ok) return NextResponse.json({ error: 'Yahoo Finance 요청 실패' }, { status: 502 })
 

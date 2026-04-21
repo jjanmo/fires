@@ -2,7 +2,6 @@ import type { ClosePrice } from "../model/types";
 import { isKoreanTicker, isKrxMarketHours, isNyseMarketHours } from "@/shared/lib/ticker";
 import { AppError } from "@/shared/lib/app-error";
 
-/** 심볼에 따라 해당 시장의 장중 여부를 판단 */
 function isMarketHours(symbol: string): boolean {
   return isKoreanTicker(symbol) ? isKrxMarketHours() : isNyseMarketHours();
 }

@@ -37,6 +37,12 @@ async function poll(ticker: string) {
     };
     _cache.set(ticker, q);
     _listeners.get(ticker)?.forEach(fn => fn(q));
+
+    // 장중이 아니면 인터벌 중단 — 가격이 변하지 않으므로 폴링 불필요
+    if (q.marketState !== 'REGULAR') {
+      clearInterval(_intervals.get(ticker));
+      _intervals.delete(ticker);
+    }
   } catch { /* 무시 */ }
 }
 
@@ -46,8 +52,8 @@ function subscribe(ticker: string, cb: (d: QuoteData) => void): () => void {
 
   if (!_intervals.has(ticker)) {
     poll(ticker);
-    // 장중(REGULAR)에만 의미 있으므로 15초 폴링
-    _intervals.set(ticker, setInterval(() => poll(ticker), 15_000));
+    // 첫 응답이 REGULAR면 poll() 안에서 인터벌 유지, 아니면 자동 중단
+    _intervals.set(ticker, setInterval(() => poll(ticker), 10_000));
   } else if (_cache.has(ticker)) {
     cb(_cache.get(ticker)!);
   }
