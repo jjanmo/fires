@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
-function HeaderSearchContent() {
+const HeaderSearchContent = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isSearchPage = pathname === '/search';
@@ -134,12 +134,12 @@ function HeaderSearchContent() {
       </button>
     </div>
   );
-}
+};
 
-export default function HeaderSearch() {
-  return (
-    <Suspense>
-      <HeaderSearchContent />
-    </Suspense>
-  );
-}
+const HeaderSearch = () => (
+  <Suspense>
+    <HeaderSearchContent />
+  </Suspense>
+);
+
+export default HeaderSearch;

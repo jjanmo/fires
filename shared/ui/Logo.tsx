@@ -1,3 +1,5 @@
+import { cn } from '@/shared/lib/cn';
+
 interface Props {
   size?: 'sm' | 'md' | 'lg'
 }
@@ -8,10 +10,10 @@ const sizeClass = {
   lg: 'text-5xl',
 }
 
-export default function Logo({ size = 'md' }: Props) {
-  return (
-    <span className={`font-bold tracking-tight bg-linear-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent ${sizeClass[size]}`}>
-      fires
-    </span>
-  )
-}
+const Logo = ({ size = 'md' }: Props) => (
+  <span className={cn('font-bold tracking-tight bg-linear-to-r from-red-500 via-orange-400 to-yellow-400 bg-clip-text text-transparent', sizeClass[size])}>
+    fires
+  </span>
+)
+
+export default Logo;

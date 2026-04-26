@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { cn } from '@/shared/lib/cn';
 
 type Placement = 'top' | 'bottom' | 'left' | 'right';
 
@@ -23,7 +24,7 @@ const TAIL: Record<Placement, string> = {
   left:   'left-full top-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[6px] border-l-edge',
 };
 
-export default function InfoTooltip({ children, placement = 'right' }: Props) {
+const InfoTooltip = ({ children, placement = 'right' }: Props) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -48,16 +49,15 @@ export default function InfoTooltip({ children, placement = 'right' }: Props) {
 
       {open && (
         <>
-          {/* 배경 오버레이 (모바일) */}
           <div className="fixed inset-0 z-40 sm:hidden" onClick={() => setOpen(false)} />
-          {/* 툴팁 패널 */}
-          <div className={`absolute z-50 w-72 rounded-xl bg-card border border-edge shadow-xl p-4 text-left ${PANEL[placement]}`}>
-            {/* 말풍선 꼬리 */}
-            <span className={`absolute w-0 h-0 ${TAIL[placement]}`} />
+          <div className={cn('absolute z-50 w-72 rounded-xl bg-card border border-edge shadow-xl p-4 text-left', PANEL[placement])}>
+            <span className={cn('absolute w-0 h-0', TAIL[placement])} />
             {children}
           </div>
         </>
       )}
     </div>
   );
-}
+};
+
+export default InfoTooltip;

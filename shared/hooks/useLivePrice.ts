@@ -24,7 +24,7 @@ const _cache = new Map<string, QuoteData>();
 const _listeners = new Map<string, Set<(d: QuoteData) => void>>();
 const _intervals = new Map<string, ReturnType<typeof setInterval>>();
 
-async function poll(ticker: string) {
+const poll = async (ticker: string) => {
   try {
     const res = await fetch(`/api/quote/${ticker.toLowerCase()}`);
     const data = await res.json();
@@ -44,9 +44,9 @@ async function poll(ticker: string) {
       _intervals.delete(ticker);
     }
   } catch { /* 무시 */ }
-}
+};
 
-function subscribe(ticker: string, cb: (d: QuoteData) => void): () => void {
+const subscribe = (ticker: string, cb: (d: QuoteData) => void): () => void => {
   if (!_listeners.has(ticker)) _listeners.set(ticker, new Set());
   _listeners.get(ticker)!.add(cb);
 
@@ -69,7 +69,7 @@ function subscribe(ticker: string, cb: (d: QuoteData) => void): () => void {
 }
 // ───────────────────────────────────────────────────────────────
 
-export function useLivePrice(ticker: string, fallback: number): LivePriceResult {
+export const useLivePrice = (ticker: string, fallback: number): LivePriceResult => {
   const cached = _cache.get(ticker);
   const [data, setData] = useState<QuoteData>({
     price:       cached?.price       ?? fallback,
