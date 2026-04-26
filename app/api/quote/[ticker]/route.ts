@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server'
 
 type MarketState = 'REGULAR' | 'PRE' | 'POST' | 'CLOSED'
 
-function resolveMarketState(ctp: {
+const resolveMarketState = (ctp: {
   pre:     { start: number; end: number }
   regular: { start: number; end: number }
   post:    { start: number; end: number }
-}): MarketState {
+}): MarketState => {
   const now = Math.floor(Date.now() / 1000)
   if (now >= ctp.regular.start && now < ctp.regular.end) return 'REGULAR'
   if (now >= ctp.pre.start     && now < ctp.pre.end)     return 'PRE'
@@ -14,10 +14,10 @@ function resolveMarketState(ctp: {
   return 'CLOSED'
 }
 
-export async function GET(
+export const GET = async (
   _req: Request,
   { params }: { params: Promise<{ ticker: string }> }
-) {
+) => {
   const { ticker } = await params
   const symbol = ticker.toUpperCase()
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`

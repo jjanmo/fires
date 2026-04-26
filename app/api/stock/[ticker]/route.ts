@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { fetchCloses } from '@/entities/sigma'
 
-export async function GET(
+export const GET = async (
   _req: Request,
   { params }: { params: Promise<{ ticker: string }> }
-) {
+) => {
   const { ticker } = await params
 
   try {

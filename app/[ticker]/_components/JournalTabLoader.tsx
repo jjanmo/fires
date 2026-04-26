@@ -1,6 +1,6 @@
 import { getTrades, TradeJournal } from '@/features/trade-journal';
 
-export default async function JournalTabLoader({
+const JournalTabLoader = async ({
   slug,
   symbol,
   fallbackPrice,
@@ -8,7 +8,7 @@ export default async function JournalTabLoader({
   slug: string;
   symbol: string;
   fallbackPrice: number;
-}) {
+}) => {
   const initialTrades = await getTrades(slug);
 
   return (
@@ -20,3 +20,5 @@ export default async function JournalTabLoader({
     />
   );
 }
+
+export default JournalTabLoader

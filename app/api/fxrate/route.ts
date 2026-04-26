@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const URL = 'https://query1.finance.yahoo.com/v8/finance/chart/KRW=X?interval=1d&range=1d'
 
-export async function GET() {
+export const GET = async () => {
   try {
     const res = await fetch(URL, {
       headers: {

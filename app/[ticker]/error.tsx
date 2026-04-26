@@ -21,12 +21,12 @@ const ERROR_UI: Record<AppErrorCode | 'UNKNOWN', { title: string; description: s
   },
 };
 
-function resolveCode(message: string): AppErrorCode | 'UNKNOWN' {
+const resolveCode = (message: string): AppErrorCode | 'UNKNOWN' => {
   const codes: (AppErrorCode | 'UNKNOWN')[] = ['SYMBOL_NOT_FOUND', 'FETCH_FAILED'];
   return codes.find((c) => c === message) ?? 'UNKNOWN';
 }
 
-export default function TickerError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+const TickerError = ({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) => {
   const code = resolveCode(error.message);
   const { title, description, canRetry } = ERROR_UI[code];
 
@@ -56,3 +56,5 @@ export default function TickerError({ error, reset }: { error: Error & { digest?
     </main>
   );
 }
+
+export default TickerError

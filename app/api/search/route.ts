@@ -29,7 +29,7 @@ const fetchYahoo = async (q: string): Promise<SearchResult[]> => {
     }))
 }
 
-export async function GET(req: Request) {
+export const GET = async (req: Request) => {
   const { searchParams } = new URL(req.url)
   const q = searchParams.get('q')?.trim()
   if (!q || q.length < 1) {
