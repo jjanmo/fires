@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/shared/lib/cn';
 import type { Trade } from '../model/journal';
 import { calcStats, enrichTrades } from '../model/journal';
 import { addTrade, updateTrade, deleteTrade } from '../actions';
-import { useFxRate, useLivePrice } from '@/shared/hooks';
+import { useFxRate, useLivePrice, useAuth } from '@/shared/hooks';
 import { isKoreanTicker } from '@/shared/lib/ticker';
 import TradeRow from './TradeRow';
 
@@ -27,6 +27,7 @@ const sign = (n: number) => (n > 0 ? '+' : '');
 const pnlCls = (n: number) => (n > 0 ? 'text-gain' : n < 0 ? 'text-loss' : 'text-ink-3');
 
 const TradeJournal = ({ ticker, symbol, fallbackPrice, initialTrades }: Props) => {
+  const user = useAuth();
   const isKR = isKoreanTicker(symbol);
   const [trades, setTrades] = useState<Trade[]>(initialTrades);
   const { price: currentPrice } = useLivePrice(symbol, fallbackPrice);
@@ -40,6 +41,22 @@ const TradeJournal = ({ ticker, symbol, fallbackPrice, initialTrades }: Props) =
   });
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (!user) {
+    return (
+      <div className="rounded-2xl bg-card border border-edge p-8 text-center space-y-3">
+        <p className="text-ink-2 font-medium">매매일지는 로그인이 필요합니다</p>
+        <p className="text-ink-4 text-sm">로그인 후 매매 내역을 기록하고 수익을 추적해보세요</p>
+        <button
+          onClick={() => router.push(`/login?redirect=${pathname}&tab=journal`)}
+          className="mt-1 px-5 py-2 rounded-lg text-sm font-semibold bg-buy-badge text-buy-text border border-buy-edge hover:bg-buy-bg transition-all duration-150"
+        >
+          로그인하러 가기
+        </button>
+      </div>
+    );
+  }
 
   const handleAdd = () => {
     const qty = parseFloat(form.qty);
