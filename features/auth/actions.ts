@@ -15,6 +15,11 @@ const ERROR_MAP: Record<string, string> = {
 
 const toKorean = (message: string): string => ERROR_MAP[message] ?? message
 
+const safeRedirectUrl = (raw: FormDataEntryValue | null): string => {
+  if (typeof raw !== 'string' || !raw.startsWith('/')) return '/'
+  return raw
+}
+
 export const signUp = async (formData: FormData) => {
   const supabase = await createClient()
 
@@ -24,7 +29,7 @@ export const signUp = async (formData: FormData) => {
   })
 
   if (error) return { error: toKorean(error.message) }
-  redirect('/')
+  redirect(safeRedirectUrl(formData.get('redirectTo')))
 }
 
 export const signIn = async (formData: FormData) => {
@@ -36,7 +41,7 @@ export const signIn = async (formData: FormData) => {
   })
 
   if (error) return { error: toKorean(error.message) }
-  redirect('/')
+  redirect(safeRedirectUrl(formData.get('redirectTo')))
 }
 
 export const signOut = async () => {

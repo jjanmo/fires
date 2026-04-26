@@ -7,7 +7,11 @@ import { signIn, signUp } from '../actions'
 
 type Mode = 'login' | 'signup'
 
-const LoginForm = () => {
+interface Props {
+  redirectUrl?: string
+}
+
+const LoginForm = ({ redirectUrl }: Props) => {
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -55,6 +59,7 @@ const LoginForm = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
+        {redirectUrl && <input type="hidden" name="redirectTo" value={redirectUrl} />}
         <input
           name="email"
           type="email"
