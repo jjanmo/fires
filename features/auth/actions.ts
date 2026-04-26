@@ -13,11 +13,9 @@ const ERROR_MAP: Record<string, string> = {
   'signup_disabled':                                '현재 회원가입이 비활성화되어 있습니다',
 }
 
-function toKorean(message: string): string {
-  return ERROR_MAP[message] ?? message
-}
+const toKorean = (message: string): string => ERROR_MAP[message] ?? message
 
-export async function signUp(formData: FormData) {
+export const signUp = async (formData: FormData) => {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.signUp({
@@ -29,7 +27,7 @@ export async function signUp(formData: FormData) {
   redirect('/')
 }
 
-export async function signIn(formData: FormData) {
+export const signIn = async (formData: FormData) => {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -41,8 +39,7 @@ export async function signIn(formData: FormData) {
   redirect('/')
 }
 
-
-export async function signOut() {
+export const signOut = async () => {
   const supabase = await createClient()
   await supabase.auth.signOut()
   redirect('/login')

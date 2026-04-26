@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/shared/lib/supabase/server'
 
-export async function toggleWatchlist(symbol: string) {
+export const toggleWatchlist = async (symbol: string) => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
@@ -25,7 +25,7 @@ export async function toggleWatchlist(symbol: string) {
   revalidatePath(`/${symbol.toLowerCase()}`)
 }
 
-export async function getWatchlistSymbols(userId: string): Promise<string[]> {
+export const getWatchlistSymbols = async (userId: string): Promise<string[]> => {
   const supabase = await createClient()
   const { data } = await supabase
     .from('watchlist')

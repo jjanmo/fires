@@ -1,22 +1,23 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { cn } from '@/shared/lib/cn'
 import { Logo } from '@/shared/ui'
 import { signIn, signUp } from '../actions'
 
 type Mode = 'login' | 'signup'
 
-export default function LoginForm() {
+const LoginForm = () => {
   const [mode, setMode] = useState<Mode>('login')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function switchMode(next: Mode) {
+  const switchMode = (next: Mode) => {
     setMode(next)
     setError(null)
   }
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
     const formData = new FormData(e.currentTarget)
@@ -30,21 +31,20 @@ export default function LoginForm() {
 
   return (
     <div className="w-full max-w-sm space-y-6">
-      {/* 로고 */}
       <div className="text-center">
         <Logo size="lg" />
       </div>
 
-      {/* 탭 */}
       <div className="flex gap-1 border-b border-edge">
         {(['login', 'signup'] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => switchMode(m)}
-            className={`flex-1 pb-2.5 text-sm font-semibold transition-all relative cursor-pointer ${
+            className={cn(
+              'flex-1 pb-2.5 text-sm font-semibold transition-all relative cursor-pointer',
               mode === m ? 'text-ink-1' : 'text-ink-4 hover:text-ink-2'
-            }`}
+            )}
           >
             {m === 'login' ? '로그인' : '회원가입'}
             {mode === m && (
@@ -54,7 +54,6 @@ export default function LoginForm() {
         ))}
       </div>
 
-      {/* 폼 */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           name="email"
@@ -87,3 +86,5 @@ export default function LoginForm() {
     </div>
   )
 }
+
+export default LoginForm

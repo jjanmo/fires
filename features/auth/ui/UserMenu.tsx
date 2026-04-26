@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '@/shared/lib/cn';
 import { signOut } from '../actions';
 
 const COLORS = [
@@ -14,7 +15,7 @@ const COLORS = [
   'bg-pink-500',
 ];
 
-function emailToColor(email: string | undefined): string {
+const emailToColor = (email: string | undefined): string => {
   if (!email) return COLORS[0];
   const sum = email.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   return COLORS[sum % COLORS.length];
@@ -24,7 +25,7 @@ interface Props {
   email: string | undefined;
 }
 
-export default function UserMenu({ email }: Props) {
+const UserMenu = ({ email }: Props) => {
   const [open, setOpen] = useState(false);
   const color = emailToColor(email);
   const initial = email ? email[0].toUpperCase() : '?';
@@ -33,7 +34,10 @@ export default function UserMenu({ email }: Props) {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`w-6 h-6 rounded-full ${color} flex items-center justify-center text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity cursor-pointer`}
+        className={cn(
+          'w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity cursor-pointer',
+          color
+        )}
       >
         {initial}
       </button>
@@ -57,3 +61,5 @@ export default function UserMenu({ email }: Props) {
     </div>
   );
 }
+
+export default UserMenu

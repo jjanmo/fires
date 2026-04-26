@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { Trade } from './model/journal'
 
-export async function getTrades(ticker: string): Promise<Trade[]> {
+export const getTrades = async (ticker: string): Promise<Trade[]> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
@@ -26,10 +26,10 @@ export async function getTrades(ticker: string): Promise<Trade[]> {
   }))
 }
 
-export async function addTrade(
+export const addTrade = async (
   ticker: string,
   trade: Omit<Trade, 'id'>,
-): Promise<Trade | null> {
+): Promise<Trade | null> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -62,11 +62,11 @@ export async function addTrade(
   }
 }
 
-export async function updateTrade(
+export const updateTrade = async (
   ticker: string,
   id: string,
   fields: Partial<Omit<Trade, 'id'>>,
-): Promise<Trade | null> {
+): Promise<Trade | null> => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -93,7 +93,7 @@ export async function updateTrade(
   }
 }
 
-export async function deleteTrade(ticker: string, id: string) {
+export const deleteTrade = async (ticker: string, id: string) => {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return

@@ -28,11 +28,11 @@ export interface EnrichedTrade extends Trade {
 }
 
 /** 트레이드 요약 통계 (fxRate: 현재 환율로 일괄 환산) */
-export function calcStats(
+export const calcStats = (
   trades: Trade[],
   currentPrice: number,
   fxRate: number,
-): TradeStats {
+): TradeStats => {
   let totalShares    = 0
   let totalCostUSD   = 0
   let realizedPnlUSD = 0
@@ -71,7 +71,7 @@ export function calcStats(
 }
 
 /** 각 트레이드에 롤링 평균단가 + 손익 추가 */
-export function enrichTrades(trades: Trade[]): EnrichedTrade[] {
+export const enrichTrades = (trades: Trade[]): EnrichedTrade[] => {
   let totalShares  = 0
   let totalCostUSD = 0
 

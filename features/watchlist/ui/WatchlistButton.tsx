@@ -9,7 +9,7 @@ interface Props {
   isWatchlisted: boolean
 }
 
-export default function WatchlistButton({ symbol, isWatchlisted: initial }: Props) {
+const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
   const [isWatchlisted, setOptimistic] = useOptimistic(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
@@ -35,3 +35,5 @@ export default function WatchlistButton({ symbol, isWatchlisted: initial }: Prop
     </button>
   )
 }
+
+export default WatchlistButton
