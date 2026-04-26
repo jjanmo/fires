@@ -14,7 +14,7 @@ fires helps you grow and manage your investments —
 one spark at a time — until the day you no longer need to work.`,
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -42,3 +42,5 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     </html>
   );
 }
+
+export default RootLayout

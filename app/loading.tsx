@@ -1,4 +1,4 @@
-export function CardSkeleton() {
+export const CardSkeleton = () => {
   return (
     <div className="animate-pulse rounded-2xl border border-edge bg-sk-card p-6">
       <div className="flex items-start justify-between mb-4">
@@ -42,7 +42,7 @@ export function CardSkeleton() {
   );
 }
 
-export default function HomeLoading() {
+const HomeLoading = () => {
   return (
     <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 py-10 sm:px-6">
       <div className="max-w-4xl mx-auto">
@@ -59,3 +59,5 @@ export default function HomeLoading() {
     </main>
   );
 }
+
+export default HomeLoading
