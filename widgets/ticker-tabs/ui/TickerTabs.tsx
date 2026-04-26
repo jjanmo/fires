@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { cn } from "@/shared/lib/cn";
 
 interface Props {
   sigmaContent: ReactNode;
@@ -17,11 +18,7 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-export default function TickerTabs({
-  sigmaContent,
-  mddContent,
-  journalContent,
-}: Props) {
+const TickerTabs = ({ sigmaContent, mddContent, journalContent }: Props) => {
   const [tab, setTab] = useState<TabKey>("sigma");
 
   return (
@@ -31,11 +28,12 @@ export default function TickerTabs({
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-150 ${
+            className={cn(
+              "flex-1 py-2 text-sm font-medium rounded-lg transition-all duration-150",
               tab === t.key
                 ? "bg-tab-active text-ink-1 shadow-sm"
                 : "text-ink-3 hover:text-ink-2"
-            }`}
+            )}
           >
             {t.label}
           </button>
@@ -47,4 +45,6 @@ export default function TickerTabs({
       <div className={tab === "journal" ? "" : "hidden"}>{journalContent}</div>
     </div>
   );
-}
+};
+
+export default TickerTabs;

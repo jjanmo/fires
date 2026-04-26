@@ -8,7 +8,7 @@ interface Props {
 }
 
 /** 주말을 건너뛴 다음 거래일 — "M월 D일" 형식 */
-function nextTradingDate(dateStr: string): string {
+const nextTradingDate = (dateStr: string): string => {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + 1);
   if (d.getDay() === 6) d.setDate(d.getDate() + 2); // 토 → 월
@@ -16,7 +16,7 @@ function nextTradingDate(dateStr: string): string {
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
-export default function SignalCards({ latest, symbol }: Props) {
+const SignalCards = ({ latest, symbol }: Props) => {
   const dateLabel = nextTradingDate(latest.date);
   const s1d = latest.mu - latest.sigma;
   const s1u = latest.mu + latest.sigma;
@@ -62,4 +62,6 @@ export default function SignalCards({ latest, symbol }: Props) {
       </div>
     </div>
   );
-}
+};
+
+export default SignalCards;

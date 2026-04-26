@@ -8,7 +8,7 @@ interface Props {
   dataCount: number
 }
 
-export default function MddTab({ mdd, symbol, dataCount }: Props) {
+const MddTab = ({ mdd, symbol, dataCount }: Props) => {
   if (!mdd) {
     return (
       <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
@@ -44,4 +44,6 @@ export default function MddTab({ mdd, symbol, dataCount }: Props) {
       />
     </div>
   )
-}
+};
+
+export default MddTab;

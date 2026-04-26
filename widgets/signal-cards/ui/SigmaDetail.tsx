@@ -2,7 +2,7 @@ import type { HistoryRow } from '@/entities/sigma'
 
 interface Props { latest: HistoryRow }
 
-export default function SigmaDetail({ latest }: Props) {
+const SigmaDetail = ({ latest }: Props) => {
   const s1d = latest.mu - latest.sigma
   const s1u = latest.mu + latest.sigma
 
@@ -31,4 +31,6 @@ export default function SigmaDetail({ latest }: Props) {
       </div>
     </div>
   )
-}
+};
+
+export default SigmaDetail;

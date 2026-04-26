@@ -19,7 +19,7 @@ ChartJS.register(CategoryScale, LinearScale, BarController, BarElement, LineCont
 
 type SignalType = 'buy-2s' | 'buy-1s' | 'sell-2s' | 'sell-1s' | 'none';
 
-function getSignalType(row: SignalRow): SignalType {
+const getSignalType = (row: SignalRow): SignalType => {
   const { actualReturn, s2d, s2u, mu, sigma } = row;
   if (actualReturn == null) return 'none';
   const s1d = mu - sigma;
@@ -29,7 +29,7 @@ function getSignalType(row: SignalRow): SignalType {
   if (actualReturn >= s2u) return 'sell-2s';
   if (actualReturn >= s1u) return 'sell-1s';
   return 'none';
-}
+};
 
 // SigmaChart DARK/LIGHT 팔레트와 동일하게 맞춤
 const DARK = {
@@ -55,18 +55,18 @@ const LIGHT = {
   tooltipTitle: '#64748b', tooltipBody: '#0f172a',
 };
 
-function fmt(dateStr: string) {
+const fmt = (dateStr: string) => {
   const [, m, d] = dateStr.split('-');
   return `${m}/${d}`;
 }
 
-export default function SignalHistoryChart({
+const SignalHistoryChart = ({
   rows,
   windowSize,
 }: {
   rows: SignalRow[];
   windowSize: number;
-}) {
+}) => {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -218,4 +218,6 @@ export default function SignalHistoryChart({
       </div>
     </div>
   );
-}
+};
+
+export default SignalHistoryChart;

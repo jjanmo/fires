@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '@/shared/lib/cn';
 import type { HistoryRow, SignalRow, RollingWindow } from '@/entities/sigma';
 import { ROLLING_WINDOWS } from '@/entities/sigma';
 import { InfoTooltip } from '@/shared/ui';
@@ -42,7 +43,7 @@ interface Props {
 }
 
 /** 가장 넓은 롤링 기간(252 → 120 → 60 → 20 순)을 기준으로 X축 고정 범위 계산 */
-function calcFixedXRange(signalsByWindow: Record<RollingWindow, HistoryRow | null>) {
+const calcFixedXRange = (signalsByWindow: Record<RollingWindow, HistoryRow | null>) => {
   const base = signalsByWindow[252] ?? signalsByWindow[120] ?? signalsByWindow[60] ?? signalsByWindow[20];
   if (!base) return { xMin: undefined, xMax: undefined };
   return {
@@ -51,7 +52,7 @@ function calcFixedXRange(signalsByWindow: Record<RollingWindow, HistoryRow | nul
   };
 }
 
-export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow, symbol, availableDays }: Props) {
+const SigmaTabContent = ({ signalsByWindow, signalHistoryByWindow, symbol, availableDays }: Props) => {
   const isEnabled = (w: RollingWindow) => availableDays >= w;
   const defaultWindow = ROLLING_WINDOWS.find(isEnabled) ?? ROLLING_WINDOWS[ROLLING_WINDOWS.length - 1];
   const [selected, setSelected] = useState<RollingWindow>(defaultWindow);
@@ -75,13 +76,14 @@ export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow
                   key={w}
                   onClick={() => enabled && setSelected(w)}
                   disabled={!enabled}
-                  className={`px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150 border ${
+                  className={cn(
+                    'px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150 border',
                     !enabled
                       ? 'border-transparent text-ink-4/40 cursor-not-allowed'
                       : selected === w
                       ? 'bg-card text-ink-1 shadow-sm border-edge cursor-pointer'
                       : 'border-transparent text-ink-3 hover:text-ink-2 cursor-pointer'
-                  }`}
+                  )}
                 >
                   {WINDOW_LABELS[w]}
                 </button>
@@ -126,4 +128,6 @@ export default function SigmaTabContent({ signalsByWindow, signalHistoryByWindow
       )}
     </div>
   );
-}
+};
+
+export default SigmaTabContent;

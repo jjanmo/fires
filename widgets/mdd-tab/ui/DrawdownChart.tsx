@@ -10,14 +10,14 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip,
 const DARK  = { grid: '#1e293b', ticks: '#94a3b8', tooltipBg: '#1e293b', tooltipBorder: '#475569', tooltipTitle: '#94a3b8', tooltipBody: '#e2e8f0' }
 const LIGHT = { grid: '#f1f5f9', ticks: '#64748b', tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0', tooltipTitle: '#64748b', tooltipBody: '#0f172a' }
 
-function downsample(data: MddPoint[], max = 600): MddPoint[] {
+const downsample = (data: MddPoint[], max = 600): MddPoint[] => {
   if (data.length <= max) return data
   const step = Math.ceil(data.length / max)
   const result = data.filter((_, i) => i % step === 0)
   const last = data[data.length - 1]
   if (result[result.length - 1] !== last) result.push(last)
   return result
-}
+};
 
 interface Props {
   series:    MddPoint[]
@@ -25,7 +25,7 @@ interface Props {
   currentDD: number   // 현재 낙폭
 }
 
-export default function DrawdownChart({ series, mdd, currentDD }: Props) {
+const DrawdownChart = ({ series, mdd, currentDD }: Props) => {
   const [isDark, setIsDark] = useState(true)
 
   useEffect(() => {
@@ -109,4 +109,6 @@ export default function DrawdownChart({ series, mdd, currentDD }: Props) {
       </div>
     </div>
   )
-}
+};
+
+export default DrawdownChart;

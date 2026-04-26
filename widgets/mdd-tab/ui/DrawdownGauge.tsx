@@ -9,7 +9,7 @@ interface Props {
   symbol:       string
 }
 
-export default function DrawdownGauge({ mdd, currentDD, mddRatio, athPrice, athHighPrice, symbol }: Props) {
+const DrawdownGauge = ({ mdd, currentDD, mddRatio, athPrice, athHighPrice, symbol }: Props) => {
   const fillPct = Math.min(Math.max(mddRatio, 0), 100)
 
   return (
@@ -54,4 +54,6 @@ export default function DrawdownGauge({ mdd, currentDD, mddRatio, athPrice, athH
       </div>
     </div>
   )
-}
+};
+
+export default DrawdownGauge;
