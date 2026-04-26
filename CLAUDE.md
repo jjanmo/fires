@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 협업 방식
+
+- **답변은 항상 한글**로 작성한다.
+- **개발 요청을 받으면 바로 실행하지 않는다.** 먼저 접근 방식, 트레이드오프, 주요 결정 사항을 설명하고 사용자의 동의/피드백을 받은 뒤 구현한다. (페어 프로그래밍·페어 기획 방식)
+- 예외: 오타 수정, 명백한 버그픽스 등 단순 작업은 바로 실행해도 무방하다.
+
 ## Commands
 
 ```bash
@@ -66,6 +72,14 @@ fetchCloses('max') → calcMdd()           → MddTab
 Pub/Sub + 모듈 레벨 Map 캐시 패턴. 동일 ticker를 여러 컴포넌트가 구독해도 `/api/quote/[ticker]` 요청은 1회. 장중(`REGULAR`)에만 10초 폴링, 장외 시 인터벌 자동 중단.
 
 ## 리팩토링 규칙
+
+### React 메모이제이션 (useCallback / useMemo)
+
+`reactCompiler: true` 설정으로 React Compiler가 자동 메모이제이션을 담당한다.
+
+- **원칙: `useCallback` / `useMemo`를 작성하지 않는다.**
+- **예외: React Compiler가 다루기 어려운 케이스** (외부 라이브러리에 stable ref 전달, 의존성 추론이 불가한 패턴 등)에 한해 허용한다.
+- ⚠️ 예외에 해당한다고 판단될 경우, **구현 완료 전에 반드시 사용자에게 먼저 확인**한다.
 
 ### 함수 선언 방식
 
