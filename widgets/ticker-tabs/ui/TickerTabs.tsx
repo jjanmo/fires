@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import type { ReactNode } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { cn } from "@/shared/lib/cn";
 
 interface Props {
@@ -18,8 +19,22 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
-const TickerTabs = ({ sigmaContent, mddContent, journalContent }: Props) => {
-  const [tab, setTab] = useState<TabKey>("sigma");
+const TickerTabsInner = ({ sigmaContent, mddContent, journalContent }: Props) => {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const tabParam = searchParams.get("tab") as TabKey | null;
+  const validTab = tabParam && TABS.some((t) => t.key === tabParam) ? tabParam : null;
+
+  const [tab, setTab] = useState<TabKey>(validTab ?? "sigma");
+
+  // tab 파라미터로 진입한 경우 URL 정리
+  useEffect(() => {
+    if (validTab) {
+      router.replace(pathname);
+    }
+  }, [validTab, router, pathname]);
 
   return (
     <div>
@@ -46,5 +61,12 @@ const TickerTabs = ({ sigmaContent, mddContent, journalContent }: Props) => {
     </div>
   );
 };
+
+// useSearchParams는 Suspense 경계 필요
+const TickerTabs = (props: Props) => (
+  <Suspense fallback={null}>
+    <TickerTabsInner {...props} />
+  </Suspense>
+);
 
 export default TickerTabs;
