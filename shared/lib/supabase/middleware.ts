@@ -28,13 +28,6 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // 미인증 → /login 리다이렉트 (/login, /auth/** 제외)
-  if (!user && pathname !== '/login' && !pathname.startsWith('/auth')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
   // 인증 상태에서 /login 접근 → / 리다이렉트
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone()
