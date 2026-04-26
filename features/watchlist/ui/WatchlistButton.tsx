@@ -1,8 +1,9 @@
 'use client'
 
 import { useOptimistic, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { toggleWatchlist } from '../actions'
+import { useAuth } from '@/shared/hooks'
 
 interface Props {
   symbol: string
@@ -10,11 +11,17 @@ interface Props {
 }
 
 const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
+  const user = useAuth()
   const [isWatchlisted, setOptimistic] = useOptimistic(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleClick = () => {
+    if (!user) {
+      router.push(`/login?redirect=${pathname}`)
+      return
+    }
     startTransition(async () => {
       setOptimistic(!isWatchlisted)
       await toggleWatchlist(symbol)
