@@ -11,6 +11,5 @@ export const TICKER_PALETTE = [
   { accentColor: 'text-indigo-600 dark:text-indigo-400', borderColor: 'border-indigo-400 dark:border-indigo-500/30' },
 ] as const
 
-export function getTickerColor(index: number) {
-  return TICKER_PALETTE[index % TICKER_PALETTE.length]
-}
+export const getTickerColor = (index: number) =>
+  TICKER_PALETTE[index % TICKER_PALETTE.length]

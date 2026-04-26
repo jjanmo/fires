@@ -2,14 +2,13 @@ import type { ClosePrice } from "../model/types";
 import { isKoreanTicker, isKrxMarketHours, isNyseMarketHours } from "@/shared/lib/ticker";
 import { AppError } from "@/shared/lib/app-error";
 
-function isMarketHours(symbol: string): boolean {
-  return isKoreanTicker(symbol) ? isKrxMarketHours() : isNyseMarketHours();
-}
+const isMarketHours = (symbol: string): boolean =>
+  isKoreanTicker(symbol) ? isKrxMarketHours() : isNyseMarketHours();
 
-export async function fetchCloses(
+export const fetchCloses = async (
   symbol: string,
   range: "1y" | "2y" | "5y" | "max" = "5y",
-): Promise<ClosePrice[]> {
+): Promise<ClosePrice[]> => {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=${range}`;
 
   const res = await fetch(url, {

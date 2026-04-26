@@ -1,7 +1,7 @@
 import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, MddResult, MddPoint } from './types';
 
 /** 일간 등락률 배열 계산 (종가 기준) */
-export function calcDailyReturns(closes: ClosePrice[]): number[] {
+export const calcDailyReturns = (closes: ClosePrice[]): number[] => {
   const returns: number[] = [];
   for (let i = 1; i < closes.length; i++) {
     const r = ((closes[i].price - closes[i - 1].price) / closes[i - 1].price) * 100;
@@ -15,7 +15,7 @@ export function calcDailyReturns(closes: ClosePrice[]): number[] {
  * targetIndex: returns 배열 기준 인덱스 — 이 값은 window에 포함하지 않음
  * windowSize: 롤링 기간 (기본 252일)
  */
-export function calcRolling252(returnsArr: number[], targetIndex: number, windowSize = 252): SigmaResult | null {
+export const calcRolling252 = (returnsArr: number[], targetIndex: number, windowSize = 252): SigmaResult | null => {
   const start = Math.max(0, targetIndex - windowSize);
   const window = returnsArr.slice(start, targetIndex);
 
@@ -35,7 +35,7 @@ export function calcRolling252(returnsArr: number[], targetIndex: number, window
 }
 
 /** MDD + 수중 곡선 계산 (종가 기준, max range 데이터 권장) */
-export function calcMdd(closes: ClosePrice[]): MddResult | null {
+export const calcMdd = (closes: ClosePrice[]): MddResult | null => {
   if (!closes.length) return null;
 
   // ── 1. ATH ──────────────────────────────────────────────────────
@@ -70,22 +70,20 @@ export function calcMdd(closes: ClosePrice[]): MddResult | null {
 }
 
 /** 종가 기준 지정가 계산 */
-export function calcOrderPrices(
+export const calcOrderPrices = (
   close: number,
   s: SigmaResult
-): Pick<HistoryRow, 'buyPrice' | 'sellPrice' | 's1BuyPrice' | 's1SellPrice'> {
-  return {
-    buyPrice: +(close * (1 + s.s2d / 100)).toFixed(2),
-    sellPrice: +(close * (1 + s.s2u / 100)).toFixed(2),
-    s1BuyPrice: +(close * (1 + (s.mu - s.sigma) / 100)).toFixed(2),
-    s1SellPrice: +(close * (1 + (s.mu + s.sigma) / 100)).toFixed(2),
-  };
-}
+): Pick<HistoryRow, 'buyPrice' | 'sellPrice' | 's1BuyPrice' | 's1SellPrice'> => ({
+  buyPrice: +(close * (1 + s.s2d / 100)).toFixed(2),
+  sellPrice: +(close * (1 + s.s2u / 100)).toFixed(2),
+  s1BuyPrice: +(close * (1 + (s.mu - s.sigma) / 100)).toFixed(2),
+  s1SellPrice: +(close * (1 + (s.mu + s.sigma) / 100)).toFixed(2),
+})
 
 /**
  * 전체 히스토리 빌드 — 각 행은 "실행일" 기준
  */
-export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
+export const buildHistory = (closes: ClosePrice[]): HistoryRow[] => {
   const returns = calcDailyReturns(closes);
   const rows: HistoryRow[] = [];
 
@@ -126,11 +124,11 @@ export function buildHistory(closes: ClosePrice[]): HistoryRow[] {
  * 최근 N 거래일의 신호 분류용 데이터 빌드
  * 현재 σ 기준(latest)을 고정값으로 사용 — 각 날마다 재계산하지 않음
  */
-export function buildSignalHistory(
+export const buildSignalHistory = (
   closes: ClosePrice[],
   latest: HistoryRow,
   days = 30
-): SignalRow[] {
+): SignalRow[] => {
   if (closes.length < 2) return [];
 
   const returns = calcDailyReturns(closes);
@@ -154,7 +152,7 @@ export function buildSignalHistory(
  * 최신 신호 계산 — 오늘 종가 기준 내일 지정가
  * windowSize: 롤링 기간 (기본 252일)
  */
-export function buildLatestSignal(closes: ClosePrice[], windowSize = 252): HistoryRow | null {
+export const buildLatestSignal = (closes: ClosePrice[], windowSize = 252): HistoryRow | null => {
   const returns = calcDailyReturns(closes);
   const N = closes.length;
 
