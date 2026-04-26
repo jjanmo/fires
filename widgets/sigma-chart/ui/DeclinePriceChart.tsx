@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   LinearScale,
@@ -14,6 +14,7 @@ import 'chartjs-adapter-date-fns'
 import { Line } from 'react-chartjs-2'
 import type { HistoryRow } from '@/entities/sigma'
 import { formatPrice, currencySymbol } from '@/shared/lib/ticker'
+import { cn } from '@/shared/lib/cn'
 
 ChartJS.register(TimeScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -26,7 +27,7 @@ const DECLINE_LEVELS = [
 const DARK  = { line: '#5eead4', grid: '#1e293b', ticks: '#94a3b8', tooltipBg: '#1e293b', tooltipBorder: '#475569', tooltipTitle: '#94a3b8', tooltipBody: '#e2e8f0', legendText: '#94a3b8' }
 const LIGHT = { line: '#0d9488', grid: '#f1f5f9', ticks: '#64748b', tooltipBg: '#ffffff', tooltipBorder: '#e2e8f0', tooltipTitle: '#64748b', tooltipBody: '#0f172a', legendText: '#64748b' }
 
-function classifyDecline(actualReturn: number | null): number {
+const classifyDecline = (actualReturn: number | null): number => {
   if (actualReturn == null) return -1
   const drop = -actualReturn
   if (drop >= 20) return 2
@@ -35,7 +36,7 @@ function classifyDecline(actualReturn: number | null): number {
   return -1
 }
 
-export default function DeclinePriceChart({ history, symbol }: { history: HistoryRow[]; symbol: string }) {
+const DeclinePriceChart = ({ history, symbol }: { history: HistoryRow[]; symbol: string }) => {
   const [isDark, setIsDark] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
 
@@ -49,36 +50,25 @@ export default function DeclinePriceChart({ history, symbol }: { history: Histor
 
   const c = isDark ? DARK : LIGHT
 
-  const years = useMemo(() => {
-    const set = new Set(history.map(r => new Date(r.date).getFullYear()))
-    return [...set].sort()
-  }, [history])
+  const years = [...new Set(history.map(r => new Date(r.date).getFullYear()))].sort()
 
-  const yearData = useMemo(() => {
-    if (selectedYear == null) return history
-    return history.filter(r => new Date(r.date).getFullYear() === selectedYear)
-  }, [history, selectedYear])
+  const yearData = selectedYear == null
+    ? history
+    : history.filter(r => new Date(r.date).getFullYear() === selectedYear)
 
-  // TimeScale용: { x: date string, y: value } 형태
-  const pricePoints = useMemo(
-    () => yearData.map(r => ({ x: r.date, y: r.close })),
-    [yearData],
-  )
+  const pricePoints = yearData.map(r => ({ x: r.date, y: r.close }))
 
-  const declinePoints = useMemo(
-    () => DECLINE_LEVELS.map((_, li) =>
-      yearData
-        .filter(r => classifyDecline(r.actualReturn) === li)
-        .map(r => ({ x: r.date, y: r.close }))
-    ),
-    [yearData],
+  const declinePoints = DECLINE_LEVELS.map((_, li) =>
+    yearData
+      .filter(r => classifyDecline(r.actualReturn) === li)
+      .map(r => ({ x: r.date, y: r.close }))
   )
 
   // 연도 선택 시 x축 범위를 1/1 ~ 12/31로 고정
   const xMin = selectedYear != null ? `${selectedYear}-01-01` : undefined
   const xMax = selectedYear != null ? `${selectedYear}-12-31` : undefined
 
-  const datasets = useMemo(() => [
+  const datasets = [
     {
       label: '종가',
       data: pricePoints,
@@ -100,7 +90,7 @@ export default function DeclinePriceChart({ history, symbol }: { history: Histor
       borderWidth: 0,
       order: 0,
     })),
-  ], [pricePoints, declinePoints, isDark, c.line])
+  ]
 
   const counts = DECLINE_LEVELS.map((_, li) =>
     yearData.filter(r => classifyDecline(r.actualReturn) === li).length
@@ -115,11 +105,12 @@ export default function DeclinePriceChart({ history, symbol }: { history: Histor
       <div className="flex gap-1 mb-4 bg-inset rounded-lg p-1 w-fit flex-wrap">
         <button
           onClick={() => setSelectedYear(null)}
-          className={`px-3 py-1 text-[11px] rounded-md transition-colors cursor-pointer ${
+          className={cn(
+            'px-3 py-1 text-[11px] rounded-md transition-colors cursor-pointer',
             selectedYear == null
               ? 'bg-card text-ink-1 border border-edge font-medium'
               : 'text-ink-3 hover:text-ink-2'
-          }`}
+          )}
         >
           전체
         </button>
@@ -127,11 +118,12 @@ export default function DeclinePriceChart({ history, symbol }: { history: Histor
           <button
             key={y}
             onClick={() => setSelectedYear(y)}
-            className={`px-3 py-1 text-[11px] rounded-md transition-colors cursor-pointer ${
+            className={cn(
+              'px-3 py-1 text-[11px] rounded-md transition-colors cursor-pointer',
               selectedYear === y
                 ? 'bg-card text-ink-1 border border-edge font-medium'
                 : 'text-ink-3 hover:text-ink-2'
-            }`}
+            )}
           >
             {y}
           </button>
@@ -237,3 +229,5 @@ export default function DeclinePriceChart({ history, symbol }: { history: Histor
     </div>
   )
 }
+
+export default DeclinePriceChart

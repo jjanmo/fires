@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Chart as ChartJS, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js';
 import type { Plugin } from 'chart.js';
 import { Scatter } from 'react-chartjs-2';
@@ -75,45 +75,38 @@ interface ZoneLabel {
 const pdf = (x: number, mu: number, sigma: number) =>
   Math.exp(-0.5 * ((x - mu) / sigma) ** 2) / (sigma * Math.sqrt(2 * Math.PI));
 
-function segment(mu: number, sigma: number, xStart: number, xEnd: number, n = 60) {
+const segment = (mu: number, sigma: number, xStart: number, xEnd: number, n = 60) => {
   const step = (xEnd - xStart) / n;
   return Array.from({ length: n + 1 }, (_, i) => {
     const x = xStart + i * step;
     return { x, y: pdf(x, mu, sigma) };
   });
-}
+};
 
-function vLine(x: number, maxY: number) {
-  return [
-    { x, y: 0 },
-    { x, y: maxY * 1.08 },
-  ];
-}
+const vLine = (x: number, maxY: number) => [
+  { x, y: 0 },
+  { x, y: maxY * 1.08 },
+];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function filledSegment(data: { x: number; y: number }[], color: string): any {
-  return {
-    data,
-    showLine: true,
-    fill: 'origin',
-    backgroundColor: color,
-    borderColor: 'transparent',
-    borderWidth: 0,
-    pointRadius: 0,
-  };
-}
+const filledSegment = (data: { x: number; y: number }[], color: string): any => ({
+  data,
+  showLine: true,
+  fill: 'origin',
+  backgroundColor: color,
+  borderColor: 'transparent',
+  borderWidth: 0,
+  pointRadius: 0,
+});
 
-function fmtPct(v: number): string {
-  return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
-}
+const fmtPct = (v: number): string => (v > 0 ? '+' : '') + v.toFixed(2) + '%';
 
 /** 차트 위에 수직선 라벨 + 구간 비율을 직접 렌더링하는 플러그인 */
-function makeLabelPlugin(
+const makeLabelPlugin = (
   lineLabels: LineLabel[],
   zoneLabels: ZoneLabel[],
   colors: typeof DARK,
-): Plugin<'scatter'> {
-  return {
+): Plugin<'scatter'> => ({
     id: 'sigmaLabels',
     afterDraw(chart) {
       const { ctx } = chart;
@@ -168,10 +161,9 @@ function makeLabelPlugin(
 
       ctx.restore();
     },
-  };
-}
+  });
 
-export default function SigmaChart({
+const SigmaChart = ({
   latest,
   symbol,
   windowSize = 252,
@@ -183,7 +175,7 @@ export default function SigmaChart({
   windowSize?: number;
   xMin?: number;
   xMax?: number;
-}) {
+}) => {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -237,8 +229,7 @@ export default function SigmaChart({
     { xLeft: s2u, xRight: farR, pct: pctS2u },
   ];
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const labelPlugin = useMemo(() => makeLabelPlugin(lineLabels, zoneLabels, c), [mu, sigma, s2d, s2u, isDark]);
+  const labelPlugin = makeLabelPlugin(lineLabels, zoneLabels, c);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const datasets: any[] = [
@@ -465,4 +456,6 @@ export default function SigmaChart({
       </div>
     </div>
   );
-}
+};
+
+export default SigmaChart;

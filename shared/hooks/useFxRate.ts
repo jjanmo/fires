@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FxRateResult {
   rate: number;
@@ -14,16 +14,16 @@ const FALLBACK = 1450;
 // 모듈 레벨 캐시 — 컴포넌트 리마운트 시에도 유지
 let _cache: { rate: number; updatedAt: string } | null = null;
 
-async function fetchFxRate() {
+const fetchFxRate = async () => {
   const res = await fetch('/api/fxrate');
   const data = await res.json();
   if (!data.error) {
     _cache = { rate: data.rate, updatedAt: data.updatedAt };
   }
   return _cache;
-}
+};
 
-export function useFxRate(): FxRateResult {
+export const useFxRate = (): FxRateResult => {
   const [rate, setRate] = useState(_cache?.rate ?? FALLBACK);
   const [updatedAt, setUpdatedAt] = useState(_cache?.updatedAt ?? '');
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export function useFxRate(): FxRateResult {
       .finally(() => setLoading(false));
   }, []);
 
-  const refresh = useCallback(async () => {
+  const refresh = async () => {
     setLoading(true);
     try {
       _cache = null; // 강제 재요청
@@ -57,7 +57,7 @@ export function useFxRate(): FxRateResult {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return { rate, updatedAt, loading, refresh };
-}
+};
