@@ -1,0 +1,360 @@
+'use client';
+
+import { useState } from 'react';
+import { useEffectOnce } from '@/shared/hooks';
+import { cn } from '@/shared/lib/cn';
+import { INDICATOR_CONFIGS, getSignal } from '../lib/indicator-config';
+import type { IndicatorData, ChartPoint } from '../types';
+import MacroLineChart from './MacroLineChart';
+import IndicatorStat from './IndicatorStat';
+
+type SuiteId = 'long-rate' | 'short-rate' | 'yield-spread';
+
+const SUITE_IDS: SuiteId[] = ['long-rate', 'short-rate', 'yield-spread'];
+
+// ≤1Y: 일봉 (클라이언트 API 호출), 3Y: 주봉 (서버 pre-fetch)
+// weeksBack은 일봉 fetch 전/실패 시 pre-fetch 주봉 데이터의 fallback 슬라이싱에 사용
+const RANGE_OPTIONS = [
+  { label: '3M', isDaily: true,  apiRange: '3mo', weeksBack: 13  },
+  { label: '1Y', isDaily: true,  apiRange: '1y',  weeksBack: 52  },
+  { label: '3Y', isDaily: false,                  weeksBack: 156 },
+] as const;
+
+type SuiteRangeOpt = typeof RANGE_OPTIONS[number];
+
+const slicePoints = (points: ChartPoint[], weeksBack: number): ChartPoint[] => points.slice(-weeksBack);
+
+const computeSpread = (primary: ChartPoint[], secondary: ChartPoint[]): ChartPoint[] => {
+  const secMap = new Map(secondary.map((p) => [p.date, p.value]));
+  return primary.filter((p) => secMap.has(p.date)).map((p) => ({ date: p.date, value: p.value - secMap.get(p.date)! }));
+};
+
+type Props = {
+  longRate: IndicatorData | null;
+  shortRate: IndicatorData | null;
+};
+
+const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
+  const [selected, setSelected] = useState<Set<SuiteId>>(new Set(['long-rate', 'short-rate', 'yield-spread']));
+  const [activeRange, setActiveRange] = useState('1Y');
+  const [interpTab, setInterpTab] = useState<SuiteId>('long-rate');
+
+  // 차트용 state — 탭 변경 시 교체됨
+  const [dailyLongRate, setDailyLongRate] = useState<ChartPoint[] | null>(null);
+  const [dailyShortRate, setDailyShortRate] = useState<ChartPoint[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const longRateConfig = INDICATOR_CONFIGS['long-rate'];
+  const shortRateConfig = INDICATOR_CONFIGS['short-rate'];
+  const yieldSpreadConfig = INDICATOR_CONFIGS['yield-spread'];
+
+  const currentOpt: SuiteRangeOpt = RANGE_OPTIONS.find((r) => r.label === activeRange) ?? RANGE_OPTIONS[1];
+
+  const handleRange = async (opt: SuiteRangeOpt) => {
+    setActiveRange(opt.label);
+    setDailyLongRate(null);
+    setDailyShortRate(null);
+
+    if (opt.isDaily) {
+      setIsLoading(true);
+      try {
+        const [longRes, shortRes] = await Promise.all([
+          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^TNX')}&range=${opt.apiRange}&interval=1d`),
+          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^IRX')}&range=${opt.apiRange}&interval=1d`),
+        ]);
+        const [longJson, shortJson] = await Promise.all([longRes.json(), shortRes.json()]);
+        const lp: ChartPoint[] = longJson.points ?? [];
+        const sp: ChartPoint[] = shortJson.points ?? [];
+
+        setDailyLongRate(lp);
+        setDailyShortRate(sp);
+      } catch {
+        // 실패 시 pre-fetch 데이터 fallback
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // 마운트 시 기본 범위(1Y 일봉) 즉시 fetch — 차트 일봉 표시
+  useEffectOnce(() => {
+    const defaultOpt = RANGE_OPTIONS.find((r) => r.label === activeRange);
+    if (defaultOpt?.isDaily) handleRange(defaultOpt);
+  });
+
+  // ── 헤더 stat 계산 (stable prevDay 기준, 탭 무관) ──────────────────────────
+  const yieldSpreadCurrent =
+    longRate?.current != null && shortRate?.current != null
+      ? +(longRate.current - shortRate.current).toFixed(3)
+      : null;
+
+  const headerLongPrevDay = longRate?.prevDay ?? null;
+  const headerShortPrevDay = shortRate?.prevDay ?? null;
+
+  // 장단기 금리차 변화 = 장기 변화 - 단기 변화 (일관된 기준 보장)
+  const headerLongChange =
+    longRate?.current != null && headerLongPrevDay != null
+      ? +(longRate.current - headerLongPrevDay).toFixed(3)
+      : null;
+  const headerShortChange =
+    shortRate?.current != null && headerShortPrevDay != null
+      ? +(shortRate.current - headerShortPrevDay).toFixed(3)
+      : null;
+  const yieldSpreadChange =
+    headerLongChange !== null && headerShortChange !== null
+      ? +(headerLongChange - headerShortChange).toFixed(3)
+      : null;
+  const yieldSpreadPrevDay =
+    yieldSpreadCurrent !== null && yieldSpreadChange !== null
+      ? +(yieldSpreadCurrent - yieldSpreadChange).toFixed(3)
+      : null;
+
+  // ── 해석 탭용 direction 계산 (stable prevDay 기준) ──────────────────────────
+  const interpConfig = INDICATOR_CONFIGS[interpTab];
+  const interpCurrent = interpTab === 'yield-spread'
+    ? yieldSpreadCurrent
+    : (interpTab === 'long-rate' ? longRate?.current : shortRate?.current) ?? null;
+  const interpPrevDay = interpTab === 'yield-spread'
+    ? yieldSpreadPrevDay
+    : (interpTab === 'long-rate' ? headerLongPrevDay : headerShortPrevDay);
+  const isUp = interpCurrent !== null && interpPrevDay !== null && interpCurrent > interpPrevDay;
+  const isDown = interpCurrent !== null && interpPrevDay !== null && interpCurrent < interpPrevDay;
+  const signal = getSignal(interpCurrent, interpConfig.signals);
+
+  // ── 시그널 라벨 (헤더 좌측) ────────────────────────────────────────────────
+  const statCurrents: Record<SuiteId, number | null> = {
+    'long-rate': longRate?.current ?? null,
+    'short-rate': shortRate?.current ?? null,
+    'yield-spread': yieldSpreadCurrent,
+  };
+
+  // ── 차트 표시 데이터 ───────────────────────────────────────────────────────
+  const displayLongRate: ChartPoint[] =
+    currentOpt.isDaily && dailyLongRate !== null
+      ? dailyLongRate
+      : slicePoints(longRate?.points ?? [], currentOpt.weeksBack);
+
+  const displayShortRate: ChartPoint[] =
+    currentOpt.isDaily && dailyShortRate !== null
+      ? dailyShortRate
+      : slicePoints(shortRate?.points ?? [], currentOpt.weeksBack);
+
+  const displayYieldSpread: ChartPoint[] = computeSpread(displayLongRate, displayShortRate);
+
+  const toggleId = (id: SuiteId) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        if (next.size > 1) next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const showUpperChart = selected.has('long-rate') || selected.has('short-rate');
+  const showLowerChart = selected.has('yield-spread');
+
+  const upperPrimary: ChartPoint[] = selected.has('long-rate') ? displayLongRate : displayShortRate;
+  const upperPrimaryConfig = selected.has('long-rate') ? longRateConfig : shortRateConfig;
+  const upperSecondary =
+    selected.has('long-rate') && selected.has('short-rate')
+      ? {
+          points: displayShortRate,
+          color: shortRateConfig.color,
+          fill: shortRateConfig.fill,
+          label: shortRateConfig.title,
+          formatValue: shortRateConfig.formatValue,
+        }
+      : undefined;
+
+  return (
+    <div className="rounded-2xl border border-edge bg-card p-4 md:p-5 scroll-mt-16 relative">
+      {/* 앵커 — 요약 그리드 링크 대응 */}
+      <span id="long-rate" className="absolute -top-16" />
+      <span id="short-rate" className="absolute -top-16" />
+      <span id="yield-spread" className="absolute -top-16" />
+
+      {/* 헤더: 카드 타이틀 + 3개 지표 stat */}
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="min-w-0">
+          <p className="text-xs sm:text-sm font-semibold text-ink-1">미 금리 & 수익률 곡선</p>
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {SUITE_IDS.map((id, i) => {
+              const cfg = INDICATOR_CONFIGS[id];
+              const sig = getSignal(statCurrents[id], cfg.signals);
+              return sig ? (
+                <span key={id} className="flex items-center gap-1">
+                  {i > 0 && <span className="text-ink-4 text-[10px] select-none">·</span>}
+                  <span className="text-[10px] sm:text-xs font-medium leading-none" style={{ color: cfg.color }}>
+                    {sig.label}
+                  </span>
+                </span>
+              ) : null;
+            })}
+          </div>
+        </div>
+
+        {/* 헤더 stat: 탭과 완전히 독립 */}
+        <div className="flex gap-4 shrink-0">
+          <IndicatorStat
+            current={longRate?.current ?? null}
+            prevDay={headerLongPrevDay}
+            config={longRateConfig}
+          />
+          <IndicatorStat
+            current={shortRate?.current ?? null}
+            prevDay={headerShortPrevDay}
+            config={shortRateConfig}
+          />
+          <IndicatorStat
+            current={yieldSpreadCurrent}
+            prevDay={yieldSpreadPrevDay}
+            config={yieldSpreadConfig}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1.5 mb-1.5">
+        {/* 범위 탭 */}
+        <div className="flex bg-inset rounded-lg p-0.5 h-fit w-fit">
+          {RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.label}
+              onClick={() => handleRange(opt)}
+              className={cn(
+                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer',
+                activeRange === opt.label ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 토글 칩 */}
+        <div className="flex gap-1.5 flex-wrap">
+          {SUITE_IDS.map((id) => {
+            const cfg = INDICATOR_CONFIGS[id];
+            const isOn = selected.has(id);
+            return (
+              <button
+                key={id}
+                onClick={() => toggleId(id)}
+                className={cn(
+                  'px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded-full border transition-colors cursor-pointer',
+                  isOn ? 'text-white' : 'border-edge bg-inset text-ink-4 hover:text-ink-2'
+                )}
+                style={isOn ? { backgroundColor: cfg.color, borderColor: cfg.color } : {}}
+              >
+                {cfg.title}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 로딩 스피너 */}
+      {isLoading && (
+        <div className="h-[140px] flex items-center justify-center">
+          <div className="w-4 h-4 rounded-full border-2 border-ink-4 border-t-transparent animate-spin" />
+        </div>
+      )}
+
+      {/* 상단 차트: 미 장기금리 + 단기금리 */}
+      {!isLoading && showUpperChart && (
+        <MacroLineChart
+          points={upperPrimary}
+          color={upperPrimaryConfig.color}
+          fill={upperPrimaryConfig.fill}
+          label={upperPrimaryConfig.title}
+          formatValue={upperPrimaryConfig.formatValue}
+          secondary={upperSecondary}
+          refLines={selected.has('long-rate') ? longRateConfig.refLines : undefined}
+          height={140}
+          hideLegend
+        />
+      )}
+
+      {!isLoading && showUpperChart && showLowerChart && <div className="mt-2 mb-1 border-t border-edge border-dashed" />}
+
+      {/* 하단 차트: 장단기 금리차 */}
+      {!isLoading && showLowerChart && (
+        <MacroLineChart
+          points={displayYieldSpread}
+          color={yieldSpreadConfig.color}
+          fill={yieldSpreadConfig.fill}
+          label={yieldSpreadConfig.title}
+          formatValue={yieldSpreadConfig.formatValue}
+          variant="area"
+          refLines={yieldSpreadConfig.refLines}
+          height={100}
+        />
+      )}
+
+      {/* 해석 섹션 */}
+      <div className="mt-4 pt-4 border-t border-edge space-y-3">
+        {/* 해석 탭 */}
+        <div className="flex bg-inset rounded-lg p-0.5 w-fit">
+          {SUITE_IDS.map((id) => (
+            <button
+              key={id}
+              onClick={() => setInterpTab(id)}
+              className={cn(
+                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer',
+                interpTab === id ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
+              )}
+            >
+              {INDICATOR_CONFIGS[id].title}
+            </button>
+          ))}
+        </div>
+
+        {/* 시그널 설명 */}
+        {signal && (
+          <p className="text-xs text-ink-3 leading-relaxed">
+            <span className="font-semibold" style={{ color: signal.color }}>
+              {signal.label}:
+            </span>{' '}
+            {signal.desc}
+          </p>
+        )}
+
+        {/* 방향 카드 */}
+        <div className="grid grid-cols-2 gap-2">
+          <div
+            className={cn(
+              'rounded-lg p-2.5 border transition-colors',
+              isUp ? 'border-buy-edge bg-buy-bg' : 'border-edge bg-inset'
+            )}
+          >
+            <p className={cn('text-[10px] font-semibold mb-1', isUp ? 'text-buy-text' : 'text-ink-4')}>
+              ▲ {interpConfig.upLabel}
+            </p>
+            <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.upEffect}</p>
+          </div>
+          <div
+            className={cn(
+              'rounded-lg p-2.5 border transition-colors',
+              isDown ? 'border-sell-edge bg-sell-bg' : 'border-edge bg-inset'
+            )}
+          >
+            <p className={cn('text-[10px] font-semibold mb-1', isDown ? 'text-sell-text' : 'text-ink-4')}>
+              ▼ {interpConfig.downLabel}
+            </p>
+            <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.downEffect}</p>
+          </div>
+        </div>
+
+        {/* 지표 의미 */}
+        <div>
+          <p className="text-[10px] font-semibold text-ink-4 uppercase tracking-wide mb-1.5">지표 의미</p>
+          <p className="text-xs text-ink-3 leading-relaxed">{interpConfig.meaning}</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MacroRateSuiteCard;
