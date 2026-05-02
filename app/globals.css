@@ -122,6 +122,10 @@
   .text-loss     { color: var(--c-loss); }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* ── 스켈레톤 shimmer ── */
 :root {
   --sk-base:  #1e293b;
@@ -167,3 +171,6 @@
 ::-webkit-scrollbar-track  { background: var(--c-canvas); }
 ::-webkit-scrollbar-thumb  { background: var(--c-edge-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--c-ink-4); }
+
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
