@@ -95,6 +95,30 @@ function MyComponent({ title }: Props) { ... }
 function calcSomething(x: number) { ... }
 ```
 
+### 상수 정의 규칙
+
+컴포넌트 내부에 하드코딩 데이터(배열, 객체, Record 등)를 인라인으로 두지 않는다.
+
+- **컴포넌트 함수 외부** 파일 상단에 **`UPPER_SNAKE_CASE`** 로 정의한다
+- 단일 컴포넌트 전용이면 같은 파일 상단에 둔다
+- 여러 컴포넌트가 공유하는 상수·유틸 함수는 `features/{feature}/lib/` 하위 파일로 이동한다
+
+```ts
+// ✅ 파일 상단에 상수 분리
+const SOURCE_LABEL: Record<string, string> = {
+  yahoo: 'Yahoo',
+  fred: 'FRED',
+}
+
+const MyComponent = () => <span>{SOURCE_LABEL['yahoo']}</span>
+
+// ❌ 컴포넌트 내부 인라인
+const MyComponent = () => {
+  const label = { yahoo: 'Yahoo', fred: 'FRED' }
+  return <span>{label['yahoo']}</span>
+}
+```
+
 ### 컴포넌트 분리 기준
 
 컴포넌트가 길어지면 **기능 단위 / UI 단위**로 쪼갠다. Tailwind 클래스가 길어져 가독성이 떨어지는 것이 주된 이유.
@@ -103,6 +127,7 @@ function calcSomething(x: number) { ... }
 - JSX 블록 하나가 눈에 들어오지 않을 정도로 길면 분리 신호
 - 반복되는 UI 패턴은 별도 컴포넌트로 추출
 - 분리한 컴포넌트는 같은 디렉토리 내 파일로 배치 (무조건 `shared/ui`로 올리지 않음)
+- 자체 상태(state)를 갖는 독립적인 UI 섹션은 별도 컴포넌트로 분리한다
 
 ### Tailwind 클래스네임 가독성
 
