@@ -33,7 +33,7 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
       )}
     >
       <div className="flex items-start justify-between mb-3">
-        <div>
+        <div className="min-w-0">
           <span className={cn('text-xs font-semibold tracking-widest uppercase truncate block', ticker.accentColor)}>
             {isKoreanTicker(ticker.symbol) ? ticker.name.replace(/\(.*\)$/, '') : ticker.symbol}
           </span>
