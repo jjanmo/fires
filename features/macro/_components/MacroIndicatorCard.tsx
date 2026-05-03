@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useEffectOnce } from '@/shared/hooks';
 import { cn } from '@/shared/lib/cn';
 import { INDICATOR_CONFIGS, getSignal, type RangeOption } from '../lib/indicator-config';
+import { calcChange } from '../lib/calc-change';
 import type { IndicatorId, IndicatorData, ChartPoint } from '../types';
 import MacroLineChart from './MacroLineChart';
 import MacroBarLineChart from './MacroBarLineChart';
@@ -15,11 +16,12 @@ type Props = {
   secondaryData?: IndicatorData | null;
 };
 
-const calcChange = (current: number | null, prev: number | null, type: 'pct' | 'pp') => {
-  if (current === null || prev === null) return null;
-  if (type === 'pp') return +(current - prev).toFixed(3);
-  if (prev === 0) return null;
-  return +(((current - prev) / prev) * 100).toFixed(2);
+const SOURCE_LABEL: Record<string, string> = {
+  yahoo: 'Yahoo',
+  fred: 'FRED',
+  ecos: 'ECOS',
+  cnn: 'CNN',
+  calc: '계산',
 };
 
 const fmtChange = (change: number | null, type: 'pct' | 'pp') => {
@@ -27,20 +29,11 @@ const fmtChange = (change: number | null, type: 'pct' | 'pp') => {
   const sign = change > 0 ? '+' : '';
   return type === 'pp' ? `${sign}${change.toFixed(2)}%p` : `${sign}${change.toFixed(2)}%`;
 };
-// fmtChange는 3개월 비교 표시에 사용됨
 
 const slicePoints = (points: ChartPoint[], opt: RangeOption): ChartPoint[] => {
   if (opt.weeksBack !== undefined) return points.slice(-opt.weeksBack);
   if (opt.pointsBack !== undefined) return points.slice(-opt.pointsBack);
   return points;
-};
-
-const SOURCE_LABEL: Record<string, string> = {
-  yahoo: 'Yahoo',
-  fred: 'FRED',
-  ecos: 'ECOS',
-  cnn: 'CNN',
-  calc: '계산',
 };
 
 const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
@@ -52,7 +45,6 @@ const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
 
   const current = data?.current ?? null;
   const headerPrevDay = data?.prevDay ?? null;
-  // 방향 카드(isUp/isDown)도 동일 기준
   const change = calcChange(current, headerPrevDay, config.changeType);
   const isUp = change !== null && change > 0;
   const isDown = change !== null && change < 0;
