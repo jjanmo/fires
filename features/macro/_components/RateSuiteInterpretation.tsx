@@ -1,38 +1,40 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { cn } from '@/shared/lib/cn'
-import { INDICATOR_CONFIGS, getSignal } from '../lib/indicator-config'
-import type { IndicatorData } from '../types'
+import { useState } from 'react';
+import { cn } from '@/shared/lib/cn';
+import { INDICATOR_CONFIGS, getSignal } from '../lib/indicator-config';
+import type { IndicatorData } from '../types';
 
-type SuiteId = 'long-rate' | 'short-rate' | 'yield-spread'
+type SuiteId = 'long-rate' | 'short-rate' | 'yield-spread';
 
-const SUITE_IDS: SuiteId[] = ['long-rate', 'short-rate', 'yield-spread']
+const SUITE_IDS: SuiteId[] = ['long-rate', 'short-rate', 'yield-spread'];
 
 type Props = {
-  longRate: IndicatorData | null
-  shortRate: IndicatorData | null
-  yieldSpreadCurrent: number | null
-  yieldSpreadPrevDay: number | null
-}
+  longRate: IndicatorData | null;
+  shortRate: IndicatorData | null;
+  yieldSpreadCurrent: number | null;
+  yieldSpreadPrevDay: number | null;
+};
 
 const RateSuiteInterpretation = ({ longRate, shortRate, yieldSpreadCurrent, yieldSpreadPrevDay }: Props) => {
-  const [interpTab, setInterpTab] = useState<SuiteId>('long-rate')
+  const [interpretationTab, setInterpretationTab] = useState<SuiteId>('long-rate');
 
-  const interpConfig = INDICATOR_CONFIGS[interpTab]
-  const interpCurrent =
-    interpTab === 'yield-spread'
+  const interpretationConfig = INDICATOR_CONFIGS[interpretationTab];
+  const interpretationCurrent =
+    interpretationTab === 'yield-spread'
       ? yieldSpreadCurrent
-      : (interpTab === 'long-rate' ? longRate?.current : shortRate?.current) ?? null
-  const interpPrevDay =
-    interpTab === 'yield-spread'
+      : (interpretationTab === 'long-rate' ? longRate?.current : shortRate?.current) ?? null;
+  const interpretationPrevDay =
+    interpretationTab === 'yield-spread'
       ? yieldSpreadPrevDay
-      : interpTab === 'long-rate'
+      : interpretationTab === 'long-rate'
       ? longRate?.prevDay ?? null
-      : shortRate?.prevDay ?? null
-  const isUp = interpCurrent !== null && interpPrevDay !== null && interpCurrent > interpPrevDay
-  const isDown = interpCurrent !== null && interpPrevDay !== null && interpCurrent < interpPrevDay
-  const signal = getSignal(interpCurrent, interpConfig.signals)
+      : shortRate?.prevDay ?? null;
+  const isUp =
+    interpretationCurrent !== null && interpretationPrevDay !== null && interpretationCurrent > interpretationPrevDay;
+  const isDown =
+    interpretationCurrent !== null && interpretationPrevDay !== null && interpretationCurrent < interpretationPrevDay;
+  const signal = getSignal(interpretationCurrent, interpretationConfig.signals);
 
   return (
     <div className="mt-4 pt-4 border-t border-edge space-y-3">
@@ -40,10 +42,10 @@ const RateSuiteInterpretation = ({ longRate, shortRate, yieldSpreadCurrent, yiel
         {SUITE_IDS.map((id) => (
           <button
             key={id}
-            onClick={() => setInterpTab(id)}
+            onClick={() => setInterpretationTab(id)}
             className={cn(
               'px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer',
-              interpTab === id ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
+              interpretationTab === id ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
             )}
           >
             {INDICATOR_CONFIGS[id].title}
@@ -68,9 +70,9 @@ const RateSuiteInterpretation = ({ longRate, shortRate, yieldSpreadCurrent, yiel
           )}
         >
           <p className={cn('text-[10px] font-semibold mb-1', isUp ? 'text-buy-text' : 'text-ink-4')}>
-            ▲ {interpConfig.upLabel}
+            ▲ {interpretationConfig.upLabel}
           </p>
-          <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.upEffect}</p>
+          <p className="text-[11px] text-ink-3 leading-relaxed">{interpretationConfig.upEffect}</p>
         </div>
         <div
           className={cn(
@@ -79,18 +81,18 @@ const RateSuiteInterpretation = ({ longRate, shortRate, yieldSpreadCurrent, yiel
           )}
         >
           <p className={cn('text-[10px] font-semibold mb-1', isDown ? 'text-sell-text' : 'text-ink-4')}>
-            ▼ {interpConfig.downLabel}
+            ▼ {interpretationConfig.downLabel}
           </p>
-          <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.downEffect}</p>
+          <p className="text-[11px] text-ink-3 leading-relaxed">{interpretationConfig.downEffect}</p>
         </div>
       </div>
 
       <div>
         <p className="text-[10px] font-semibold text-ink-4 uppercase tracking-wide mb-1.5">지표 의미</p>
-        <p className="text-xs text-ink-3 leading-relaxed">{interpConfig.meaning}</p>
+        <p className="text-xs text-ink-3 leading-relaxed">{interpretationConfig.meaning}</p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RateSuiteInterpretation
+export default RateSuiteInterpretation;
