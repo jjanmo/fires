@@ -7,6 +7,7 @@ import { INDICATOR_CONFIGS, getSignal } from '../lib/indicator-config';
 import type { IndicatorData, ChartPoint } from '../types';
 import MacroLineChart from './MacroLineChart';
 import IndicatorStat from './IndicatorStat';
+import RateSuiteInterpretation from './RateSuiteInterpretation';
 
 type SuiteId = 'long-rate' | 'short-rate' | 'yield-spread';
 
@@ -37,7 +38,6 @@ type Props = {
 const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
   const [selected, setSelected] = useState<Set<SuiteId>>(new Set(['long-rate', 'short-rate', 'yield-spread']));
   const [activeRange, setActiveRange] = useState('1Y');
-  const [interpTab, setInterpTab] = useState<SuiteId>('long-rate');
 
   // 차트용 state — 탭 변경 시 교체됨
   const [dailyLongRate, setDailyLongRate] = useState<ChartPoint[] | null>(null);
@@ -109,26 +109,12 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
       ? +(yieldSpreadCurrent - yieldSpreadChange).toFixed(3)
       : null;
 
-  // ── 해석 탭용 direction 계산 (stable prevDay 기준) ──────────────────────────
-  const interpConfig = INDICATOR_CONFIGS[interpTab];
-  const interpCurrent = interpTab === 'yield-spread'
-    ? yieldSpreadCurrent
-    : (interpTab === 'long-rate' ? longRate?.current : shortRate?.current) ?? null;
-  const interpPrevDay = interpTab === 'yield-spread'
-    ? yieldSpreadPrevDay
-    : (interpTab === 'long-rate' ? headerLongPrevDay : headerShortPrevDay);
-  const isUp = interpCurrent !== null && interpPrevDay !== null && interpCurrent > interpPrevDay;
-  const isDown = interpCurrent !== null && interpPrevDay !== null && interpCurrent < interpPrevDay;
-  const signal = getSignal(interpCurrent, interpConfig.signals);
-
-  // ── 시그널 라벨 (헤더 좌측) ────────────────────────────────────────────────
   const statCurrents: Record<SuiteId, number | null> = {
     'long-rate': longRate?.current ?? null,
     'short-rate': shortRate?.current ?? null,
     'yield-spread': yieldSpreadCurrent,
   };
 
-  // ── 차트 표시 데이터 ───────────────────────────────────────────────────────
   const displayLongRate: ChartPoint[] =
     currentOpt.isDaily && dailyLongRate !== null
       ? dailyLongRate
@@ -293,66 +279,12 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
         />
       )}
 
-      {/* 해석 섹션 */}
-      <div className="mt-4 pt-4 border-t border-edge space-y-3">
-        {/* 해석 탭 */}
-        <div className="flex bg-inset rounded-lg p-0.5 w-fit">
-          {SUITE_IDS.map((id) => (
-            <button
-              key={id}
-              onClick={() => setInterpTab(id)}
-              className={cn(
-                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer',
-                interpTab === id ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
-              )}
-            >
-              {INDICATOR_CONFIGS[id].title}
-            </button>
-          ))}
-        </div>
-
-        {/* 시그널 설명 */}
-        {signal && (
-          <p className="text-xs text-ink-3 leading-relaxed">
-            <span className="font-semibold" style={{ color: signal.color }}>
-              {signal.label}:
-            </span>{' '}
-            {signal.desc}
-          </p>
-        )}
-
-        {/* 방향 카드 */}
-        <div className="grid grid-cols-2 gap-2">
-          <div
-            className={cn(
-              'rounded-lg p-2.5 border transition-colors',
-              isUp ? 'border-buy-edge bg-buy-bg' : 'border-edge bg-inset'
-            )}
-          >
-            <p className={cn('text-[10px] font-semibold mb-1', isUp ? 'text-buy-text' : 'text-ink-4')}>
-              ▲ {interpConfig.upLabel}
-            </p>
-            <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.upEffect}</p>
-          </div>
-          <div
-            className={cn(
-              'rounded-lg p-2.5 border transition-colors',
-              isDown ? 'border-sell-edge bg-sell-bg' : 'border-edge bg-inset'
-            )}
-          >
-            <p className={cn('text-[10px] font-semibold mb-1', isDown ? 'text-sell-text' : 'text-ink-4')}>
-              ▼ {interpConfig.downLabel}
-            </p>
-            <p className="text-[11px] text-ink-3 leading-relaxed">{interpConfig.downEffect}</p>
-          </div>
-        </div>
-
-        {/* 지표 의미 */}
-        <div>
-          <p className="text-[10px] font-semibold text-ink-4 uppercase tracking-wide mb-1.5">지표 의미</p>
-          <p className="text-xs text-ink-3 leading-relaxed">{interpConfig.meaning}</p>
-        </div>
-      </div>
+      <RateSuiteInterpretation
+        longRate={longRate}
+        shortRate={shortRate}
+        yieldSpreadCurrent={yieldSpreadCurrent}
+        yieldSpreadPrevDay={yieldSpreadPrevDay}
+      />
     </div>
   );
 };
