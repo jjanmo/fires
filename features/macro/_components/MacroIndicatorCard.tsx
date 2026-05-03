@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useEffectOnce } from '@/shared/hooks';
+import { useState, useRef } from 'react';
 import { cn } from '@/shared/lib/cn';
 import { INDICATOR_CONFIGS, getSignal, type RangeOption } from '../lib/indicator-config';
 import { calcChange } from '../lib/calc-change';
@@ -31,17 +30,29 @@ const fmtChange = (change: number | null, type: 'pct' | 'pp') => {
 };
 
 const slicePoints = (points: ChartPoint[], opt: RangeOption): ChartPoint[] => {
-  if (opt.weeksBack !== undefined) return points.slice(-opt.weeksBack);
   if (opt.pointsBack !== undefined) return points.slice(-opt.pointsBack);
   return points;
 };
 
+type CacheEntry = { points: ChartPoint[]; secondary?: ChartPoint[] }
+
 const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
   const config = INDICATOR_CONFIGS[id];
   const [activeRange, setActiveRange] = useState(config.defaultRange);
-  const [fetchedPoints, setFetchedPoints] = useState<ChartPoint[] | null>(null);
-  const [fetchedSecondary, setFetchedSecondary] = useState<ChartPoint[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 범위별 차트 포인트 캐시 — 서버 데이터로 초기화, clientFetch 범위는 패칭 후 추가됨
+  const dataCache = useRef(new Map<string, CacheEntry>(
+    config.rangeOptions
+      .filter((opt) => !opt.clientFetch)
+      .map((opt) => [
+        opt.label,
+        {
+          points: slicePoints(data?.points ?? [], opt),
+          secondary: config.secondaryId ? slicePoints(secondaryData?.points ?? [], opt) : undefined,
+        },
+      ])
+  ));
 
   const current = data?.current ?? null;
   const headerPrevDay = data?.prevDay ?? null;
@@ -57,60 +68,40 @@ const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
 
   const handleRange = async (opt: RangeOption) => {
     setActiveRange(opt.label);
-    setFetchedPoints(null);
-    setFetchedSecondary(null);
 
-    if (opt.dailyApiCall && config.symbol) {
+    if (opt.clientFetch && config.symbol) {
+      if (dataCache.current.has(opt.label)) return; // 캐시 히트 → setActiveRange 리렌더로 즉시 표시
       setIsLoading(true);
       try {
         const secondary = config.secondaryId ? INDICATOR_CONFIGS[config.secondaryId].symbol : undefined;
         const params = new URLSearchParams({
           symbol: config.symbol,
-          range: opt.apiRange ?? '1mo',
-          interval: '1d',
+          range: opt.apiRange ?? '3y',
+          interval: opt.apiInterval ?? '1wk',
         });
         if (secondary) params.set('secondary', secondary);
 
         const res = await fetch(`/api/macro/chart?${params}`);
         const json = await res.json();
-        const pts: ChartPoint[] = json.points ?? [];
-        setFetchedPoints(pts);
-        if (secondary) setFetchedSecondary(json.secondaryPoints ?? []);
+        dataCache.current.set(opt.label, {
+          points: json.points ?? [],
+          secondary: secondary ? (json.secondaryPoints ?? []) : undefined,
+        });
       } catch {
-        // 실패 시 pre-fetch 데이터 유지
+        // 실패 시 캐시 미저장 → 다음 클릭 시 재시도
       } finally {
         setIsLoading(false);
       }
     }
   };
 
-  // 마운트 시 기본 범위가 일봉이면 즉시 fetch — 차트 일봉 표시
-  useEffectOnce(() => {
-    const defaultOpt = config.rangeOptions.find((r) => r.label === activeRange);
-    if (defaultOpt?.dailyApiCall) handleRange(defaultOpt);
-  });
-
-  const currentOpt = config.rangeOptions.find((r) => r.label === activeRange);
-
-  const displayPoints: ChartPoint[] = (() => {
-    if (fetchedPoints !== null) return fetchedPoints;
-    if (!data?.points.length) return [];
-    if (!currentOpt) return data.points;
-    return slicePoints(data.points, currentOpt);
-  })();
+  const currentEntry = dataCache.current.get(activeRange);
+  const displayPoints: ChartPoint[] = currentEntry?.points ?? [];
 
   const displaySecondary = (() => {
     if (!config.secondaryId || !config.secondaryColor || !config.formatSecondary) return undefined;
-    const secData =
-      fetchedSecondary !== null
-        ? fetchedSecondary
-        : (() => {
-            if (!secondaryData?.points.length) return [];
-            if (!currentOpt) return secondaryData.points;
-            return slicePoints(secondaryData.points, currentOpt);
-          })();
     return {
-      points: secData,
+      points: currentEntry?.secondary ?? [],
       color: config.secondaryColor,
       fill: config.secondaryFill ?? 'transparent',
       label: INDICATOR_CONFIGS[config.secondaryId].title,

@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useEffectOnce } from '@/shared/hooks';
+import { useState, useRef } from 'react';
 import { cn } from '@/shared/lib/cn';
-import { INDICATOR_CONFIGS, getSignal } from '../lib/indicator-config';
+import { INDICATOR_CONFIGS, getSignal, type RangeOption } from '../lib/indicator-config';
 import type { IndicatorData, ChartPoint } from '../types';
 import MacroLineChart from './MacroLineChart';
 import IndicatorStat from './IndicatorStat';
@@ -13,17 +12,14 @@ type SuiteId = 'long-rate' | 'short-rate' | 'yield-spread';
 
 const SUITE_IDS: SuiteId[] = ['long-rate', 'short-rate', 'yield-spread'];
 
-// ≤1Y: 일봉 (클라이언트 API 호출), 3Y: 주봉 (서버 pre-fetch)
-// weeksBack은 일봉 fetch 전/실패 시 pre-fetch 주봉 데이터의 fallback 슬라이싱에 사용
-const RANGE_OPTIONS = [
-  { label: '3M', isDaily: true,  apiRange: '3mo', weeksBack: 13  },
-  { label: '1Y', isDaily: true,  apiRange: '1y',  weeksBack: 52  },
-  { label: '3Y', isDaily: false,                  weeksBack: 156 },
-] as const;
+// 3M/1Y: 서버 1y/1d 데이터 슬라이싱, 3Y: 클라이언트 3y/1wk on-demand fetch
+const RANGE_OPTIONS: RangeOption[] = [
+  { label: '3M', pointsBack: 66  },
+  { label: '1Y', pointsBack: 252 },
+  { label: '3Y', clientFetch: true, apiRange: '3y', apiInterval: '1wk' },
+];
 
-type SuiteRangeOpt = typeof RANGE_OPTIONS[number];
-
-const slicePoints = (points: ChartPoint[], weeksBack: number): ChartPoint[] => points.slice(-weeksBack);
+const slicePoints = (points: ChartPoint[], n: number): ChartPoint[] => points.slice(-n);
 
 const computeSpread = (primary: ChartPoint[], secondary: ChartPoint[]): ChartPoint[] => {
   const secMap = new Map(secondary.map((p) => [p.date, p.value]));
@@ -38,49 +34,46 @@ type Props = {
 const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
   const [selected, setSelected] = useState<Set<SuiteId>>(new Set(['long-rate', 'short-rate', 'yield-spread']));
   const [activeRange, setActiveRange] = useState('1Y');
-
-  // 차트용 state — 탭 변경 시 교체됨
-  const [dailyLongRate, setDailyLongRate] = useState<ChartPoint[] | null>(null);
-  const [dailyShortRate, setDailyShortRate] = useState<ChartPoint[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 범위별 차트 포인트 캐시 — 서버 데이터로 초기화, 3Y는 클라이언트 패칭 후 추가됨
+  const longCache = useRef(new Map(
+    RANGE_OPTIONS
+      .filter((opt) => !opt.clientFetch)
+      .map((opt) => [opt.label, slicePoints(longRate?.points ?? [], opt.pointsBack ?? 252)])
+  ));
+  const shortCache = useRef(new Map(
+    RANGE_OPTIONS
+      .filter((opt) => !opt.clientFetch)
+      .map((opt) => [opt.label, slicePoints(shortRate?.points ?? [], opt.pointsBack ?? 252)])
+  ));
 
   const longRateConfig = INDICATOR_CONFIGS['long-rate'];
   const shortRateConfig = INDICATOR_CONFIGS['short-rate'];
   const yieldSpreadConfig = INDICATOR_CONFIGS['yield-spread'];
 
-  const currentOpt: SuiteRangeOpt = RANGE_OPTIONS.find((r) => r.label === activeRange) ?? RANGE_OPTIONS[1];
-
-  const handleRange = async (opt: SuiteRangeOpt) => {
+  const handleRange = async (opt: RangeOption) => {
     setActiveRange(opt.label);
-    setDailyLongRate(null);
-    setDailyShortRate(null);
 
-    if (opt.isDaily) {
+    if (opt.clientFetch) {
+      if (longCache.current.has(opt.label)) return; // 캐시 히트 → setActiveRange 리렌더로 즉시 표시
       setIsLoading(true);
       try {
+        const interval = opt.apiInterval ?? '1wk';
         const [longRes, shortRes] = await Promise.all([
-          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^TNX')}&range=${opt.apiRange}&interval=1d`),
-          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^IRX')}&range=${opt.apiRange}&interval=1d`),
+          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^TNX')}&range=${opt.apiRange}&interval=${interval}`),
+          fetch(`/api/macro/chart?symbol=${encodeURIComponent('^IRX')}&range=${opt.apiRange}&interval=${interval}`),
         ]);
         const [longJson, shortJson] = await Promise.all([longRes.json(), shortRes.json()]);
-        const lp: ChartPoint[] = longJson.points ?? [];
-        const sp: ChartPoint[] = shortJson.points ?? [];
-
-        setDailyLongRate(lp);
-        setDailyShortRate(sp);
+        longCache.current.set(opt.label, longJson.points ?? []);
+        shortCache.current.set(opt.label, shortJson.points ?? []);
       } catch {
-        // 실패 시 pre-fetch 데이터 fallback
+        // 실패 시 캐시 미저장 → 다음 클릭 시 재시도
       } finally {
         setIsLoading(false);
       }
     }
   };
-
-  // 마운트 시 기본 범위(1Y 일봉) 즉시 fetch — 차트 일봉 표시
-  useEffectOnce(() => {
-    const defaultOpt = RANGE_OPTIONS.find((r) => r.label === activeRange);
-    if (defaultOpt?.isDaily) handleRange(defaultOpt);
-  });
 
   // ── 헤더 stat 계산 (stable prevDay 기준, 탭 무관) ──────────────────────────
   const yieldSpreadCurrent =
@@ -115,15 +108,8 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
     'yield-spread': yieldSpreadCurrent,
   };
 
-  const displayLongRate: ChartPoint[] =
-    currentOpt.isDaily && dailyLongRate !== null
-      ? dailyLongRate
-      : slicePoints(longRate?.points ?? [], currentOpt.weeksBack);
-
-  const displayShortRate: ChartPoint[] =
-    currentOpt.isDaily && dailyShortRate !== null
-      ? dailyShortRate
-      : slicePoints(shortRate?.points ?? [], currentOpt.weeksBack);
+  const displayLongRate: ChartPoint[] = longCache.current.get(activeRange) ?? [];
+  const displayShortRate: ChartPoint[] = shortCache.current.get(activeRange) ?? [];
 
   const displayYieldSpread: ChartPoint[] = computeSpread(displayLongRate, displayShortRate);
 

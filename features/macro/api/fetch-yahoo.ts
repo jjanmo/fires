@@ -20,8 +20,8 @@ const emptyData = (): IndicatorData => ({
 
 export const fetchYahooChart = async (
   symbol: string,
-  range = '3y',
-  interval = '1wk',
+  range = '1y',
+  interval = '1d',
   revalidate = 900,
 ): Promise<IndicatorData> => {
   const controller = new AbortController()
@@ -64,8 +64,8 @@ export const fetchYahooChart = async (
         ? +(price - change).toFixed(4)
         : null
 
-    // 주봉 fallback: Yahoo가 주말에 현재가와 동일한 미완성 캔들을 추가하는 경우가 있어
-    // price와 거의 같은 캔들(0.01% 이내)은 건너뛰고 실제 이전 주봉을 찾음
+    // 일봉 fallback: Yahoo가 당일 장중에 미완성 캔들(현재가와 거의 동일)을 추가하는 경우
+    // price와 거의 같은 캔들(0.01% 이내)은 건너뛰고 실제 전일 종가를 찾음
     const isNearlyEqual = (a: number, b: number) => Math.abs(a - b) / Math.abs(b || 1) < 0.0001
     const prevFromPoints = (() => {
       if (price === null) return n >= 2 ? points[n - 2].value : null
@@ -78,7 +78,7 @@ export const fetchYahooChart = async (
       points,
       current: price,
       prevDay: prevDayFromMeta ?? prevFromPoints,
-      prev3M: n >= 13 ? points[n - 13].value : null,
+      prev3M: n >= 66 ? points[n - 66].value : null,
     }
   } catch (err) {
     // AbortError(타임아웃)는 상위로 재전파 — fetchAllYahooCharts에서 집계

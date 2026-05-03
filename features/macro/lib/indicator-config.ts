@@ -5,10 +5,10 @@ export type DataSource = 'yahoo' | 'fred' | 'ecos' | 'cnn' | 'calc'
 
 export type RangeOption = {
   label: string
-  weeksBack?: number
   pointsBack?: number
-  dailyApiCall?: boolean
-  apiRange?: string  // dailyApiCall 시 Yahoo API에 넘길 range 파라미터 (e.g. '1mo', '3mo', '1y')
+  clientFetch?: boolean  // true: 이 범위 선택 시 클라이언트에서 Yahoo API 직접 호출
+  apiRange?: string      // clientFetch 시 Yahoo API range 파라미터 (e.g. '3y')
+  apiInterval?: string   // clientFetch 시 Yahoo API interval 파라미터 (e.g. '1wk')
 }
 
 export type SignalThreshold = {
@@ -54,16 +54,16 @@ export const getSignal = (
 }
 
 const YAHOO_RANGES: RangeOption[] = [
-  { label: '1M', dailyApiCall: true, apiRange: '1mo', weeksBack: 4   },
-  { label: '3M', dailyApiCall: true, apiRange: '3mo', weeksBack: 13  },
-  { label: '1Y', dailyApiCall: true, apiRange: '1y',  weeksBack: 52  },
-  { label: '3Y', weeksBack: 156 },
+  { label: '1M', pointsBack: 22  },
+  { label: '3M', pointsBack: 66  },
+  { label: '1Y', pointsBack: 252 },
+  { label: '3Y', clientFetch: true, apiRange: '3y', apiInterval: '1wk' },
 ]
 
+// yield-spread, kr-us-spread: 서버 1y/1d 데이터 기반 슬라이싱 (3Y 없음)
 const CALC_RANGES: RangeOption[] = [
-  { label: '3M', weeksBack: 13 },
-  { label: '1Y', weeksBack: 52 },
-  { label: '3Y', weeksBack: 156 },
+  { label: '3M', pointsBack: 66  },
+  { label: '1Y', pointsBack: 252 },
 ]
 
 const FRED_RANGES: RangeOption[] = [
@@ -265,16 +265,16 @@ export const INDICATOR_CONFIGS: Record<IndicatorId, IndicatorConfig> = {
     rangeOptions: CALC_RANGES,
     defaultRange: '1Y',
     meaning:
-      '미 10년물에서 국고채 10년물을 뺀 값. 마이너스(미국 < 한국)가 깊어질수록 외국인 채권 매도 · 달러 자금 이탈 압력 증가. 한국 통화정책의 제약 요인.',
+      '미 10년물에서 국고채 10년물을 뺀 값. 플러스(미국 > 한국)가 깊어질수록 외국인 채권 매도 · 달러 자금 이탈 압력 증가. 한국 통화정책의 제약 요인.',
     upLabel: '미국 금리 우위 확대',
     upEffect: '외국인 채권 매도 압력 증가, 원화 약세 연동. 한은 금리 인하 제약.',
     downLabel: '한국 금리 프리미엄',
     downEffect: '외국인 채권 유입 우호, 원화 강세 지지. 한은 정책 유연성 확대.',
     signals: [
-      { max: -2.0, label: '역전 심화 · 위험', color: '#ef4444', desc: '외국인 채권 매도 압력 강함. 원화 약세·금리 인상 제약.' },
-      { max: -0.75, label: '역전 · 주의', color: '#f97316', desc: '미국 금리가 한국보다 높아 자금 이탈 압력 존재.' },
-      { max: 0.5, label: '중립', color: '#94a3b8', desc: '금리차 크지 않아 자금 방향성 혼재.' },
-      { max: Infinity, label: '한국 프리미엄', color: '#22c55e', desc: '한국 금리가 상대적으로 높아 외국인 채권 유입 우호.' },
+      { max: 0,        label: '한국 금리 우위', color: '#22c55e', desc: '한국 금리가 높아 외국인 채권 유입 우호. 원화 강세 지지.' },
+      { max: 1.0,      label: '중립',           color: '#94a3b8', desc: '금리차 크지 않아 자금 방향성 혼재.' },
+      { max: 2.0,      label: '미국 우위 · 주의', color: '#fbbf24', desc: '미국 금리가 한국보다 높아 자금 이탈 압력 존재.' },
+      { max: Infinity, label: '역전 심화 · 위험', color: '#ef4444', desc: '미국 금리 우위 크게 확대. 원화 약세·외국인 채권 매도 압력 강함.' },
     ],
   },
   jpy: {
@@ -301,7 +301,7 @@ export const INDICATOR_CONFIGS: Record<IndicatorId, IndicatorConfig> = {
       { max: 145, label: '중립', color: '#94a3b8', desc: '과거 레인지 상단 부근. 방향성 주시.' },
       { max: 155, label: '엔 약세 · 주의', color: '#fbbf24', desc: '캐리 트레이드 활성화. 청산 시 글로벌 변동성 리스크.' },
       { max: 160, label: '위험', color: '#f97316', desc: '일본 정부·BOJ 개입 가능성. 급격한 반전 주의.' },
-      { max: Infinity, label: '개입 임박', color: '#ef4444', desc: '사상적 수준의 엔 약세. 급격한 엔 강세 반전 위험.' },
+      { max: Infinity, label: '개입 임박', color: '#ef4444', desc: '사상 최저 수준의 엔 약세. 급격한 엔 강세 반전 위험.' },
     ],
   },
   sp500: {

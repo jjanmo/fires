@@ -38,10 +38,10 @@ const computeSpread = (primary: IndicatorData, secondary: IndicatorData): Indica
     primary.prevDay !== null && secondary.prevDay !== null
       ? +(primary.prevDay - secondary.prevDay).toFixed(4)
       : null
-  return { points, current, prevDay, prev3M: n >= 13 ? points[n - 13].value : null }
+  return { points, current, prevDay, prev3M: n >= 66 ? points[n - 66].value : null }
 }
 
-// TNX 주봉 vs ECOS 일봉 — TNX 날짜 기준으로 가장 가까운 ECOS 값 매칭
+// TNX 일봉 vs ECOS 일봉 — TNX 날짜 기준으로 가장 가까운 ECOS 값 매칭
 const computeKrUsSpread = (longRate: IndicatorData, krBond: IndicatorData): IndicatorData => {
   const sortedBond = [...krBond.points].sort((a, b) => a.date.localeCompare(b.date))
 
@@ -75,7 +75,7 @@ const computeKrUsSpread = (longRate: IndicatorData, krBond: IndicatorData): Indi
     longRate.prevDay !== null && krBond.prevDay !== null
       ? +(longRate.prevDay - krBond.prevDay).toFixed(4)
       : null
-  return { points, current, prevDay, prev3M: n >= 13 ? points[n - 13].value : null }
+  return { points, current, prevDay, prev3M: n >= 66 ? points[n - 66].value : null }
 }
 
 const errMsg = (reason: unknown): string => {
