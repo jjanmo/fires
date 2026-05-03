@@ -32,7 +32,7 @@ const RecentOrRecommended = () => {
                 accentColor: card.accentColor,
                 borderColor: card.borderColor,
               };
-              return <TickerCard key={card.slug} ticker={ticker} latest={card.latest} compact />;
+              return <TickerCard key={card.slug} ticker={ticker} latest={card.latest} />;
             })}
           </div>
         </div>

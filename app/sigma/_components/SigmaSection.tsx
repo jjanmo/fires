@@ -21,7 +21,7 @@ const SigmaSection = async () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {symbols.map((symbol, i) => (
               <Suspense key={symbol} fallback={<CardSkeleton />}>
-                <WatchlistCard symbol={symbol} index={i} compact />
+                <WatchlistCard symbol={symbol} index={i} />
               </Suspense>
             ))}
           </div>
