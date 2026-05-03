@@ -1,13 +1,13 @@
 import { Suspense } from 'react';
 import SigmaSection from './_components/SigmaSection';
-
-const CardSkeleton = () => (
-  <div className="rounded-2xl border border-edge bg-card p-3.5 h-44 animate-pulse" />
-);
+import CardSkeleton from './_components/CardSkeleton';
 
 const SigmaSectionSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-    {[0, 1, 2, 3].map((i) => <CardSkeleton key={i} />)}
+  <div className="space-y-3">
+    <div className="h-4 w-14 bg-card rounded animate-pulse" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)}
+    </div>
   </div>
 );
 

@@ -3,10 +3,7 @@ import { createClient } from '@/shared/lib/supabase/server';
 import { getWatchlistSymbols } from '@/features/watchlist';
 import WatchlistCard from './WatchlistCard';
 import RecentOrRecommended from './RecentOrRecommended';
-
-const CardSkeleton = () => (
-  <div className="rounded-2xl border border-edge bg-card p-3.5 h-44 animate-pulse" />
-);
+import CardSkeleton from './CardSkeleton';
 
 const SigmaSection = async () => {
   const supabase = await createClient();
