@@ -30,7 +30,7 @@ const SearchResultItem = ({ result }: { result: SearchResult }) => {
 
   return (
     <Link
-      href={`/${encodeURIComponent(result.symbol.toLowerCase())}`}
+      href={`/sigma/${encodeURIComponent(result.symbol.toLowerCase())}`}
       className="group block rounded-xl border border-edge bg-card p-4 hover:bg-inset hover:border-edge-hi hover:shadow-lg hover:-translate-y-0.5 transition-all duration-150 text-left cursor-pointer"
     >
       <p className="text-sm font-bold text-ink-1 truncate mb-1 group-hover:text-ink-1">

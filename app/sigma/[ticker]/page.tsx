@@ -4,7 +4,7 @@ import { getKrStockName } from '@/shared/lib/kr-stocks';
 import TickerContent from './_components/TickerContent';
 import { TickerInnerSkeleton } from './loading';
 
-export default async function TickerPage({ params }: { params: Promise<{ ticker: string }> }) {
+const TickerPage = async ({ params }: { params: Promise<{ ticker: string }> }) => {
   const { ticker: slug } = await params;
 
   const symbol = slug.toUpperCase();
@@ -28,4 +28,6 @@ export default async function TickerPage({ params }: { params: Promise<{ ticker:
       </div>
     </main>
   );
-}
+};
+
+export default TickerPage;

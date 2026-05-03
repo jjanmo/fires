@@ -26,7 +26,7 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
 
   return (
     <Link
-      href={`/${ticker.slug}`}
+      href={`/sigma/${ticker.slug}`}
       className={cn(
         'group block rounded-2xl border bg-card p-5 transition-colors duration-200 hover:bg-white/5',
         ticker.borderColor
