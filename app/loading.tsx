@@ -111,37 +111,6 @@ export const MacroSectionSkeleton = () => (
   </section>
 )
 
-// ── 관심종목 카드 뼈대 ────────────────────────────────────────────────────────
-export const CardSkeleton = () => (
-  <div className="animate-pulse rounded-2xl border border-edge bg-sk-card p-6 space-y-4">
-    <div className="flex items-start justify-between">
-      <div className="space-y-1.5">
-        <Sk h="h-3" w="w-10" />
-        <Sk h="h-3" w="w-36" />
-        <Sk h="h-3" w="w-28" />
-      </div>
-      <div className="skeleton h-6 w-14 rounded-md" />
-    </div>
-    <div className="space-y-1">
-      <Sk h="h-3" w="w-14" />
-      <Sk h="h-9" w="w-32" />
-      <div className="flex items-center justify-between">
-        <Sk h="h-3" w="w-20" />
-        <Sk h="h-3" w="w-16" />
-      </div>
-    </div>
-    <div className="grid grid-cols-2 gap-3">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="rounded-xl border border-edge bg-sk-card p-3 space-y-1">
-          <Sk h="h-2.5" w="w-20" />
-          <Sk h="h-7" w="w-24" />
-          <Sk h="h-2.5" w="w-16" />
-        </div>
-      ))}
-    </div>
-  </div>
-)
-
 // ── 페이지 전체 로딩 (route 전환 시) ─────────────────────────────────────────
 const HomeLoading = () => (
   <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
