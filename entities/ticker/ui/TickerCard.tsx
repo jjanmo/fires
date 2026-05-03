@@ -28,13 +28,13 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
     <Link
       href={`/sigma/${ticker.slug}`}
       className={cn(
-        'group block rounded-2xl border bg-card p-5 transition-colors duration-200 hover:bg-white/5',
+        'group block rounded-2xl border bg-card p-3.5 transition-colors duration-200 hover:bg-white/5',
         ticker.borderColor
       )}
     >
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-3">
         <div>
-          <span className={cn('text-xs font-semibold tracking-widest uppercase', ticker.accentColor)}>
+          <span className={cn('text-xs font-semibold tracking-widest uppercase truncate block', ticker.accentColor)}>
             {isKoreanTicker(ticker.symbol) ? ticker.name.replace(/\(.*\)$/, '') : ticker.symbol}
           </span>
           <p className="mt-1 text-[11px] text-ink-3 leading-snug max-w-[180px]">{ticker.description}</p>
@@ -50,53 +50,53 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
         <p className="text-ink-3 text-sm">{error ?? '데이터 없음'}</p>
       ) : (
         <>
-          <div className="mb-5">
+          <div className="mb-3">
             <p className="text-[11px] text-ink-3 mb-1">최근 종가</p>
-            <p className="text-3xl font-semibold tabular-nums text-ink-1">
+            <p className="text-xl font-semibold tabular-nums text-ink-1">
               {formatPrice(latest.close, ticker.symbol)}
             </p>
             <div className="flex items-center justify-between mt-1">
               <p className="text-[11px] text-ink-4 font-mono">{latest.date}</p>
-              <span className="text-[10px] text-ink-4 font-mono">Rolling 252일</span>
+              <span className="text-[10px] text-ink-4 font-mono hidden sm:inline">Rolling 252일</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="rounded-xl bg-buy-bg border border-buy-edge p-2">
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-buy-val">
+              <p className="text-sm font-semibold tabular-nums text-buy-val">
                 {formatPrice(latest.s1BuyPrice, ticker.symbol)}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{s1d.toFixed(2)}%</p>
             </div>
-            <div className="rounded-xl bg-buy-bg border border-buy-edge p-3">
+            <div className="rounded-xl bg-buy-bg border border-buy-edge p-2">
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-buy-val">
+              <p className="text-sm font-semibold tabular-nums text-buy-val">
                 {formatPrice(latest.buyPrice, ticker.symbol)}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{latest.s2d.toFixed(2)}%</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-sell-bg border border-sell-edge p-2">
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-sell-val">
+              <p className="text-sm font-semibold tabular-nums text-sell-val">
                 {formatPrice(latest.s1SellPrice, ticker.symbol)}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{s1u.toFixed(2)}%</p>
             </div>
-            <div className="rounded-xl bg-sell-bg border border-sell-edge p-3">
+            <div className="rounded-xl bg-sell-bg border border-sell-edge p-2">
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-lg font-semibold tabular-nums text-sell-val">
+              <p className="text-sm font-semibold tabular-nums text-sell-val">
                 {formatPrice(latest.sellPrice, ticker.symbol)}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{latest.s2u.toFixed(2)}%</p>
