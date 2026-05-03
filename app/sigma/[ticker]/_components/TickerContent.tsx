@@ -62,11 +62,9 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
     <>
       <div className="flex items-start justify-between gap-4">
         <PriceBlock ticker={ticker} latest={latestSignal} />
-        {userCtx.user && (
-          <div className="pt-1">
-            <WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />
-          </div>
-        )}
+        <div className="pt-1">
+          <WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />
+        </div>
       </div>
 
       <TickerTabs
