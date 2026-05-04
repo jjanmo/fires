@@ -56,62 +56,70 @@ const SigmaWindowBar = () => {
   }, []);
 
   return (
-    <div className="sticky top-12 z-10 bg-canvas/95 backdrop-blur-sm border-b border-edge">
-      <div className="max-w-4xl mx-auto py-1 flex items-center gap-3">
-        {/* 세그먼트 컨트롤 */}
-        <div className="relative flex bg-inset rounded-lg border border-edge/60 p-0.5 shrink-0">
-          {/* 슬라이딩 필 */}
-          <div
-            className="absolute top-0.5 bottom-0.5 rounded-md bg-card border border-edge shadow-sm pointer-events-none transition-transform duration-200 ease-out"
-            style={{
-              width: BTN_W - 1,
-              transform: `translateX(calc(${activeIdx * BTN_W}px + ${activeIdx}px))`,
-            }}
-          />
+    <div className="sticky top-12 z-10 bg-canvas/95 backdrop-blur-sm border-b border-edge mb-0">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 py-1">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative flex shrink-0 bg-inset rounded-lg border border-edge p-1">
+            <div
+              className="absolute top-0.5 bottom-0.5 rounded-md bg-card border border-edge shadow-sm pointer-events-none transition-transform duration-200 ease-out"
+              style={{
+                width: BTN_W - 1,
+                transform: `translateX(calc(${activeIdx * BTN_W}px + ${activeIdx}px))`,
+              }}
+            />
 
-          {ROLLING_WINDOWS.map((w) => {
-            const enabled = isEnabled(w);
-            const isActive = selected === w;
-            return (
-              <button
-                key={w}
-                onClick={() => enabled && setSelected(w)}
-                disabled={!enabled}
-                style={{ width: BTN_W }}
-                className={cn(
-                  'relative z-10 flex flex-col items-center justify-center py-1 shrink-0 rounded-md transition-colors duration-150',
-                  !enabled ? 'cursor-not-allowed' : 'cursor-pointer'
-                )}
-              >
-                <span
+            {ROLLING_WINDOWS.map((w) => {
+              const enabled = isEnabled(w);
+              const isActive = selected === w;
+              return (
+                <button
+                  key={w}
+                  onClick={() => enabled && setSelected(w)}
+                  disabled={!enabled}
+                  style={{ width: BTN_W }}
                   className={cn(
-                    'text-[11px] font-medium leading-none transition-colors duration-150',
-                    !enabled ? 'text-ink-4/30' : isActive ? 'text-ink-1' : 'text-ink-3'
+                    'relative z-10 flex shrink-0 flex-col items-center justify-center rounded-md py-1 transition-colors duration-150',
+                    !enabled ? 'cursor-not-allowed' : 'cursor-pointer'
                   )}
                 >
-                  {WINDOW_LABELS[w]}
-                </span>
-                <span
-                  className={cn(
-                    'text-[9px] leading-none mt-0.5 transition-colors duration-150 tabular-nums',
-                    !enabled ? 'text-ink-4/20' : isActive ? 'text-ink-3' : 'text-ink-4'
-                  )}
-                >
-                  {WINDOW_DAYS[w]}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className={cn(
+                      'text-[11px] font-medium leading-none transition-colors duration-150',
+                      !enabled ? 'text-ink-4/30' : isActive ? 'text-ink-1' : 'text-ink-3'
+                    )}
+                  >
+                    {WINDOW_LABELS[w]}
+                  </span>
+                  <span
+                    className={cn(
+                      'text-[9px] leading-none mt-0.5 transition-colors duration-150 tabular-nums',
+                      !enabled ? 'text-ink-4/20' : isActive ? 'text-ink-3' : 'text-ink-4'
+                    )}
+                  >
+                    {WINDOW_DAYS[w]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 비활성 안내 */}
+          {disabledWindows.length > 0 && (
+            <p className="hidden text-[11px] text-ink-4 sm:block">
+              데이터 부족 <br />
+              <span className="opacity-50">{disabledWindows.map((w) => WINDOW_LABELS[w]).join(' · ')}</span>
+            </p>
+          )}
         </div>
 
-        {/* 가이드 툴팁 — 최상단일 때만 표시 */}
+        {/* 최상단이 아니면 레이아웃에서 제거 — w-0 + 긴 라벨이 줄바꿈되며 행 높이가 비정상적으로 커지는 현상 방지 */}
         <div
           className={cn(
-            'transition-all duration-200 overflow-hidden',
-            isAtTop ? 'opacity-100 w-auto' : 'opacity-0 w-0 pointer-events-none'
+            'shrink-0 translate-y-[4px]',
+            isAtTop ? 'overflow-visible' : 'hidden'
           )}
         >
-          <InfoTooltip>
+          <InfoTooltip placement="left">
             <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">롤링 기간 선택 가이드</p>
             <div className="space-y-3">
               {ROLLING_WINDOWS.map((w) => (
@@ -125,14 +133,6 @@ const SigmaWindowBar = () => {
             </div>
           </InfoTooltip>
         </div>
-
-        {/* 비활성 안내 */}
-        {disabledWindows.length > 0 && (
-          <p className="text-[11px] text-ink-4 hidden sm:block">
-            데이터 부족 —{' '}
-            <span className="line-through opacity-50">{disabledWindows.map((w) => WINDOW_LABELS[w]).join(' · ')}</span>
-          </p>
-        )}
       </div>
     </div>
   );

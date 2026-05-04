@@ -1,10 +1,13 @@
+import { Suspense } from 'react';
 import type { TickerInfo } from '@/entities/ticker';
-import { buildHistory, buildLatestSignal, buildSignalHistory, fetchCloses, ROLLING_WINDOWS } from '@/entities/sigma';
+import { buildLatestSignal, fetchCloses, ROLLING_WINDOWS } from '@/entities/sigma';
 import type { RollingWindow } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
 import { createClient } from '@/shared/lib/supabase/server';
-import SigmaPageShell from './SigmaPageShell';
+import SigmaDeferredCharts from './SigmaDeferredCharts';
+import SigmaLowerChartsSkeleton from './SigmaLowerChartsSkeleton';
+import SigmaWindowContextProvider from './SigmaWindowContextProvider';
 
 const getUserContext = async (symbol: string) => {
   const supabase = await createClient();
@@ -24,15 +27,6 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
   >;
 
   const latestSignal = signalsByWindow[252];
-
-  const signalHistoryByWindow = Object.fromEntries(
-    ROLLING_WINDOWS.map((w) => [w, signalsByWindow[w] ? buildSignalHistory(closes5y, signalsByWindow[w]!, 30) : []])
-  ) as Record<RollingWindow, ReturnType<typeof buildSignalHistory>>;
-
-  const historyByWindow = Object.fromEntries(ROLLING_WINDOWS.map((w) => [w, buildHistory(closes5y, w)])) as Record<
-    RollingWindow,
-    ReturnType<typeof buildHistory>
-  >;
 
   const high52w =
     closes5y.length >= 252
@@ -56,15 +50,19 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
         </div>
       </div>
 
-      <SigmaPageShell
+      <SigmaWindowContextProvider
         signalsByWindow={signalsByWindow}
-        signalHistoryByWindow={signalHistoryByWindow}
-        historyByWindow={historyByWindow}
         availableDays={availableDays}
         insufficientData={insufficientData}
         insufficientMsg={insufficientMsg}
         symbol={ticker.symbol}
-      />
+      >
+        {!insufficientData && (
+          <Suspense fallback={<SigmaLowerChartsSkeleton />}>
+            <SigmaDeferredCharts closes={closes5y} signalsByWindow={signalsByWindow} />
+          </Suspense>
+        )}
+      </SigmaWindowContextProvider>
     </>
   );
 };
