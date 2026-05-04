@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { DotsPending } from '@/shared/ui';
+import DotsPending from '@/shared/ui/DotsPending';
 import SigmaSection from './_components/SigmaSection';
 
 const SigmaPage = () => (

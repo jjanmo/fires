@@ -19,4 +19,4 @@ const DotsPending = ({ className }: DotsPendingProps) => (
   </div>
 )
 
-export { DotsPending }
+export default DotsPending

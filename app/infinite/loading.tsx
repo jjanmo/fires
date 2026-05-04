@@ -1,4 +1,4 @@
-import { DotsPending } from '@/shared/ui'
+import DotsPending from '@/shared/ui/DotsPending';
 
 const InfiniteLoading = () => (
   <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
@@ -6,6 +6,6 @@ const InfiniteLoading = () => (
       <DotsPending />
     </div>
   </main>
-)
+);
 
-export default InfiniteLoading
+export default InfiniteLoading;
