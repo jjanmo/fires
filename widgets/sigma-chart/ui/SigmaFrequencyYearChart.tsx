@@ -22,6 +22,9 @@ ChartJS.register(CategoryScale, LinearScale, LineController, LineElement, PointE
 
 const Y_AXIS_GRACE = '12%';
 
+const FOOTER_LABEL_BUY_1S = '1σ 매수';
+const FOOTER_LABEL_BUY_2S = '2σ 매수';
+
 const formatSignedPct = (n: number | null | undefined) => {
   if (n === null || n === undefined || Number.isNaN(n)) return '—';
   const sign = n >= 0 ? '+' : '';
@@ -180,18 +183,17 @@ const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props
       <div className="mt-4 pt-4 border-t border-edge grid grid-cols-2 gap-2 text-center">
         {(
           [
-            ['buy-1s', label1s, count1s, c.buy1s],
-            ['buy-2s', label2s, count2s, c.buy2s],
+            ['buy-1s', FOOTER_LABEL_BUY_1S, count1s, c.buy1s],
+            ['buy-2s', FOOTER_LABEL_BUY_2S, count2s, c.buy2s],
           ] as const
         ).map(([key, label, count, color]) => (
           <div key={key}>
-            <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color }}>
+            <p className="text-[10px] tracking-wider mb-1 normal-case" style={{ color }}>
               {label}
             </p>
             <p className="text-xl font-semibold tabular-nums" style={{ color }}>
-              {count}
+              {count} <span className="text-[10px] text-ink-4">회</span>
             </p>
-            <p className="text-[10px] text-ink-4">회</p>
           </div>
         ))}
       </div>
