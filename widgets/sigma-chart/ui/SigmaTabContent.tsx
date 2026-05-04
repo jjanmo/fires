@@ -4,7 +4,6 @@ import type { RollingWindow } from '@/entities/sigma';
 import { useSigmaWindow } from '@/app/sigma/[ticker]/_context/SigmaWindowContext';
 import SignalCards from '@/widgets/signal-cards/ui/SignalCards';
 import SigmaChart from './SigmaChart';
-import SignalHistoryChart from './SignalHistoryChart';
 import SigmaWarning from '@/app/sigma/[ticker]/_components/SigmaWarning';
 
 const WINDOW_LABELS: Record<RollingWindow, string> = {
@@ -31,7 +30,7 @@ interface Props {
 }
 
 const SigmaTabContent = ({ symbol, insufficientData, insufficientMsg }: Props) => {
-  const { selected, signalsByWindow, signalHistoryByWindow } = useSigmaWindow();
+  const { selected, signalsByWindow } = useSigmaWindow();
   const latest = signalsByWindow[selected];
   const { xMin, xMax } = calcFixedXRange(signalsByWindow);
 
@@ -53,7 +52,6 @@ const SigmaTabContent = ({ symbol, insufficientData, insufficientMsg }: Props) =
         <>
           <SignalCards latest={latest} symbol={symbol} />
           <SigmaChart latest={latest} symbol={symbol} windowSize={selected} xMin={xMin} xMax={xMax} />
-          <SignalHistoryChart rows={signalHistoryByWindow[selected]} windowSize={selected} />
         </>
       )}
     </div>

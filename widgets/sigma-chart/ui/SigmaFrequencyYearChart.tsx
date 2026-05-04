@@ -10,26 +10,26 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
-import type { HistoryRow } from '@/entities/sigma';
+import type { HistoryRowLite } from '@/entities/sigma';
 import {
-  SIGMA_TOUCH_DARK,
-  SIGMA_TOUCH_LIGHT,
+  SIGMA_FREQUENCY_DARK,
+  SIGMA_FREQUENCY_LIGHT,
   generateFullYearDates,
   getYearFromDate,
-} from './_sigmaTouchUtils';
+} from './_sigmaFrequencyUtils';
 
 ChartJS.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip);
 
 interface Props {
-  rows: HistoryRow[];
+  rows: HistoryRowLite[];
   year: string;
   isDark: boolean;
   label2s: string;
   label1s: string;
 }
 
-const SigmaTouchYearChart = ({ rows, year, isDark, label2s, label1s }: Props) => {
-  const c = isDark ? SIGMA_TOUCH_DARK : SIGMA_TOUCH_LIGHT;
+const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props) => {
+  const c = isDark ? SIGMA_FREQUENCY_DARK : SIGMA_FREQUENCY_LIGHT;
   const yearRows = rows.filter((r) => getYearFromDate(r.date) === year);
   const fullDates = generateFullYearDates(year);
   const rowMap = new Map(yearRows.map((r) => [r.date, r]));
@@ -41,7 +41,6 @@ const SigmaTouchYearChart = ({ rows, year, isDark, label2s, label1s }: Props) =>
   const count2s = buy2sData.filter(Boolean).length;
   const count1s = buy1sData.filter(Boolean).length;
 
-  // null 위치엔 반지름 0 → 차트 경계 밖으로 튀어나오는 버그 방지
   const radius2s = buy2sData.map((v) => (v !== null ? 4 : 0));
   const hover2s = buy2sData.map((v) => (v !== null ? 6 : 0));
   const radius1s = buy1sData.map((v) => (v !== null ? 4 : 0));
@@ -176,4 +175,4 @@ const SigmaTouchYearChart = ({ rows, year, isDark, label2s, label1s }: Props) =>
   );
 };
 
-export default SigmaTouchYearChart;
+export default SigmaFrequencyYearChart;

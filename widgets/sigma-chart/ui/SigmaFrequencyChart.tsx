@@ -2,15 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/shared/lib/cn';
-import type { RollingWindow } from '@/entities/sigma';
+import type { HistoryRowLite, RollingWindow } from '@/entities/sigma';
 import { useSigmaWindow } from '@/app/sigma/[ticker]/_context/SigmaWindowContext';
-import { SIGMA_TOUCH_DARK, SIGMA_TOUCH_LIGHT, getYearFromDate } from './_sigmaTouchUtils';
-import SigmaTouchSummary from './SigmaTouchSummary';
-import SigmaTouchYearChart from './SigmaTouchYearChart';
+import { SIGMA_FREQUENCY_DARK, SIGMA_FREQUENCY_LIGHT, getYearFromDate } from './_sigmaFrequencyUtils';
+import SigmaFrequencySummary from './SigmaFrequencySummary';
+import SigmaFrequencyYearChart from './SigmaFrequencyYearChart';
 
-const SigmaTouchChart = () => {
-  const { selected, historyByWindow, signalsByWindow } = useSigmaWindow();
-  const rows = historyByWindow[selected] ?? [];
+interface Props {
+  rows: HistoryRowLite[];
+}
+
+const SigmaFrequencyChart = ({ rows }: Props) => {
+  const { signalsByWindow, selected } = useSigmaWindow();
   const latestSignal = signalsByWindow[selected];
 
   const s2dPct = latestSignal != null ? latestSignal.s2d.toFixed(2) : null;
@@ -21,9 +24,9 @@ const SigmaTouchChart = () => {
   const years = Array.from(new Set(rows.map((r) => getYearFromDate(r.date)))).sort((a, b) => b.localeCompare(a));
   const tabs = ['all', ...years];
 
-  const [activeTab, setActiveTab]   = useState<'all' | string>('all');
-  const prevSelected                = useRef<RollingWindow>(selected);
-  const [isDark, setIsDark]         = useState(true);
+  const [activeTab, setActiveTab] = useState<'all' | string>('all');
+  const prevSelected = useRef<RollingWindow>(selected);
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     const update = () => setIsDark(!document.documentElement.classList.contains('light'));
@@ -40,13 +43,12 @@ const SigmaTouchChart = () => {
     }
   }, [selected]);
 
-  const c = isDark ? SIGMA_TOUCH_DARK : SIGMA_TOUCH_LIGHT;
+  const c = isDark ? SIGMA_FREQUENCY_DARK : SIGMA_FREQUENCY_LIGHT;
 
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
-      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">시그마 터치 차트</p>
+      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">시그마 빈도 분석 차트</p>
 
-      {/* 연도 탭 + 범례 */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex gap-1 bg-inset rounded-lg p-1 w-fit flex-wrap">
           {tabs.map((tab) => (
@@ -81,12 +83,12 @@ const SigmaTouchChart = () => {
       </div>
 
       {activeTab === 'all' ? (
-        <SigmaTouchSummary rows={rows} isDark={isDark} label2s={label2s} label1s={label1s} />
+        <SigmaFrequencySummary rows={rows} isDark={isDark} label2s={label2s} label1s={label1s} />
       ) : (
-        <SigmaTouchYearChart rows={rows} year={activeTab} isDark={isDark} label2s={label2s} label1s={label1s} />
+        <SigmaFrequencyYearChart rows={rows} year={activeTab} isDark={isDark} label2s={label2s} label1s={label1s} />
       )}
     </div>
   );
 };
 
-export default SigmaTouchChart;
+export default SigmaFrequencyChart;
