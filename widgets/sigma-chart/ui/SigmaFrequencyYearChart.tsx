@@ -20,6 +20,8 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, LineController, LineElement, PointElement, Tooltip);
 
+const Y_AXIS_GRACE = '12%';
+
 interface Props {
   rows: HistoryRowLite[];
   year: string;
@@ -151,6 +153,7 @@ const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props
               },
               y: {
                 position: 'right',
+                grace: Y_AXIS_GRACE,
                 grid: { color: c.grid },
                 ticks: { color: c.ticks, font: { size: 10 }, callback: (v) => `$${Number(v).toLocaleString()}` },
               },
