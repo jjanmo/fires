@@ -7,7 +7,6 @@ import { TickerTabs } from '@/widgets/ticker-tabs';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
 import { createClient } from '@/shared/lib/supabase/server';
 import MddTabLoader from './MddTabLoader';
-import JournalTabLoader from './JournalTabLoader';
 import SigmaWarning from './SigmaWarning';
 
 const getUserContext = async (symbol: string) => {
@@ -44,8 +43,6 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
     ROLLING_WINDOWS.map((w) => [w, signalsByWindow[w] ? buildSignalHistory(closes5y, signalsByWindow[w]!, 30) : []])
   ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildSignalHistory>>;
 
-  const fallbackPrice = latestSignal?.close ?? 0;
-
   const sigmaContent = latestSignal == null ? (
     <SigmaWarning message="σ 계산에 필요한 데이터가 부족합니다 (최소 20거래일). 신규 상장 종목이거나 거래 정지 상태일 수 있습니다." />
   ) : (
@@ -72,11 +69,6 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
         mddContent={
           <Suspense fallback={<TabSkeleton />}>
             <MddTabLoader slug={ticker.slug} symbol={ticker.symbol} />
-          </Suspense>
-        }
-        journalContent={
-          <Suspense fallback={<TabSkeleton />}>
-            <JournalTabLoader slug={ticker.slug} symbol={ticker.symbol} fallbackPrice={fallbackPrice} />
           </Suspense>
         }
       />

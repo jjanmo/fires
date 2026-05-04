@@ -8,18 +8,16 @@ import { cn } from "@/shared/lib/cn";
 interface Props {
   sigmaContent: ReactNode;
   mddContent: ReactNode;
-  journalContent: ReactNode;
 }
 
 const TABS = [
   { key: "sigma", label: "σ 지표" },
   { key: "mdd", label: "MDD 지표" },
-  { key: "journal", label: "매매일지" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
 
-const TickerTabsInner = ({ sigmaContent, mddContent, journalContent }: Props) => {
+const TickerTabsInner = ({ sigmaContent, mddContent }: Props) => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -57,14 +55,13 @@ const TickerTabsInner = ({ sigmaContent, mddContent, journalContent }: Props) =>
 
       <div className={tab === "sigma" ? "" : "hidden"}>{sigmaContent}</div>
       <div className={tab === "mdd" ? "" : "hidden"}>{mddContent}</div>
-      <div className={tab === "journal" ? "" : "hidden"}>{journalContent}</div>
     </div>
   );
 };
 
 // useSearchParams는 Suspense 경계 필요
 const TickerTabs = (props: Props) => (
-  <Suspense fallback={null}>
+  <Suspense>
     <TickerTabsInner {...props} />
   </Suspense>
 );
