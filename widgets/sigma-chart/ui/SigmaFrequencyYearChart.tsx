@@ -22,6 +22,12 @@ ChartJS.register(CategoryScale, LinearScale, LineController, LineElement, PointE
 
 const Y_AXIS_GRACE = '12%';
 
+const formatSignedPct = (n: number | null | undefined) => {
+  if (n === null || n === undefined || Number.isNaN(n)) return '—';
+  const sign = n >= 0 ? '+' : '';
+  return `${sign}${n.toFixed(2)}%`;
+};
+
 interface Props {
   rows: HistoryRowLite[];
   year: string;
@@ -125,11 +131,20 @@ const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props
                   label: (ctx) => {
                     const y = ctx.parsed.y as number | null;
                     if (y === null || y === undefined) return '';
-                    const row = rowMap.get(fullDates[ctx.dataIndex]);
-                    if (ctx.datasetIndex === 0) return ` 종가: ${y.toLocaleString()}`;
+                    if (ctx.datasetIndex === 0) return undefined;
                     const lbl = ctx.datasetIndex === 1 ? label2s : label1s;
-                    const ret = row?.lowReturn?.toFixed(2) ?? '';
-                    return ` ${lbl}: ${y.toLocaleString()}${ret ? ` (${parseFloat(ret) >= 0 ? '+' : ''}${ret}%)` : ''}`;
+                    return ` ${lbl}`;
+                  },
+                  afterBody: (items) => {
+                    const idx = items[0]?.dataIndex;
+                    if (idx === undefined) return '';
+                    const row = rowMap.get(fullDates[idx]);
+                    if (!row) return '';
+                    return [
+                      '',
+                      ` 저가: ${row.low.toLocaleString()} (전일대비 ${formatSignedPct(row.lowReturn)})`,
+                      ` 종가: ${row.close.toLocaleString()} (전일대비 ${formatSignedPct(row.actualReturn)})`,
+                    ];
                   },
                 },
               },
