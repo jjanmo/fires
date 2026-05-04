@@ -9,6 +9,7 @@ export const getRecentSlugs = (): string[] => {
     const items: RecentItem[] = raw ? JSON.parse(raw) : [];
     return items.map((i) => i.slug);
   } catch {
+    console.error('Failed to get recent search');
     return [];
   }
 };
@@ -20,5 +21,7 @@ export const saveRecentSearch = (symbol: string, slug: string, name: string): vo
     const filtered = items.filter((i) => i.slug !== slug);
     const next = [{ symbol, slug, name, timestamp: Date.now() }, ...filtered].slice(0, MAX_RECENT);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {}
+  } catch {
+    console.error('Failed to save recent search');
+  }
 };
