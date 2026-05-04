@@ -41,3 +41,6 @@ export interface HistoryRow extends SigmaResult {
   lowReturn:    number          // 전날 종가 대비 당일 저가 등락률 (장중 최대 낙폭 기준)
   triggered:    'buy-2s' | 'buy-1s' | 'sell-2s' | 'sell-1s' | null
 }
+
+/** 클라이언트 페이로드용 — 각 일자의 rolling 등락률 배열(`window`) 제외 */
+export type HistoryRowLite = Omit<HistoryRow, 'window'>
