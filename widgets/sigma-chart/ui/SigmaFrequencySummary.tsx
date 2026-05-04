@@ -34,9 +34,8 @@ const SigmaFrequencySummary = ({ rows, isDark, label2s, label1s }: Props) => {
               {label}
             </p>
             <p className="text-3xl font-bold tabular-nums" style={{ color }}>
-              {count}
+              {count} <span className="text-[10px] text-ink-4">회</span>
             </p>
-            <p className="text-[10px] text-ink-4 mt-0.5">회</p>
           </div>
         ))}
       </div>

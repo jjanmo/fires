@@ -290,9 +290,8 @@ const SignalHistoryChart = ({ rows, windowSize }: { rows: SignalRow[]; windowSiz
               {label.split('σ')[1]}
             </p>
             <p className="text-xl font-semibold tabular-nums" style={{ color }}>
-              {count}
+              {count} <span className="text-[10px] text-ink-4">회</span>
             </p>
-            <p className="text-[10px] text-ink-4">회</p>
           </div>
         ))}
       </div>
