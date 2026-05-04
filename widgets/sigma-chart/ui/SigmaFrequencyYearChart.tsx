@@ -192,8 +192,9 @@ const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props
               {label}
             </p>
             <p className="text-xl font-semibold tabular-nums" style={{ color }}>
-              {count} <span className="text-[10px] text-ink-4">회</span>
+              {count}
             </p>
+            <p className="text-[10px] text-ink-4">회</p>
           </div>
         ))}
       </div>
