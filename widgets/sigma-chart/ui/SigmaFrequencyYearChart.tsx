@@ -35,8 +35,14 @@ const SigmaFrequencyYearChart = ({ rows, year, isDark, label2s, label1s }: Props
   const rowMap = new Map(yearRows.map((r) => [r.date, r]));
 
   const closeData = fullDates.map((d) => rowMap.get(d)?.close ?? null);
-  const buy2sData = fullDates.map((d) => (rowMap.get(d)?.triggered === 'buy-2s' ? rowMap.get(d)!.low : null));
-  const buy1sData = fullDates.map((d) => (rowMap.get(d)?.triggered === 'buy-1s' ? rowMap.get(d)!.low : null));
+  const buy2sData = fullDates.map((d) => {
+    const r = rowMap.get(d);
+    return r?.triggered === 'buy-2s' ? r.close : null;
+  });
+  const buy1sData = fullDates.map((d) => {
+    const r = rowMap.get(d);
+    return r?.triggered === 'buy-1s' ? r.close : null;
+  });
 
   const count2s = buy2sData.filter(Boolean).length;
   const count1s = buy1sData.filter(Boolean).length;
