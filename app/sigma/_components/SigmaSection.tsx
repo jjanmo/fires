@@ -7,7 +7,9 @@ import CardSkeleton from './CardSkeleton';
 
 const SigmaSection = async () => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (user) {
     const symbols = await getWatchlistSymbols(user.id);
