@@ -1,79 +1,72 @@
-import { Suspense } from 'react';
 import type { TickerInfo } from '@/entities/ticker';
 import { buildHistory, buildLatestSignal, buildSignalHistory, fetchCloses, ROLLING_WINDOWS } from '@/entities/sigma';
+import type { RollingWindow } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
-import { SigmaTabContent, DeclinePriceChart } from '@/widgets/sigma-chart';
-import { TickerTabs } from '@/widgets/ticker-tabs';
 import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
 import { createClient } from '@/shared/lib/supabase/server';
-import MddTabLoader from './MddTabLoader';
-import SigmaWarning from './SigmaWarning';
+import SigmaPageShell from './SigmaPageShell';
 
 const getUserContext = async (symbol: string) => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const watchlistSymbols = user ? await getWatchlistSymbols(user.id) : [];
   return { user, isWatchlisted: watchlistSymbols.includes(symbol) };
-}
-
-const TabSkeleton = () => (
-  <div className="space-y-5">
-    <div className="rounded-2xl bg-card border border-edge p-5 animate-pulse">
-      <div className="h-4 w-24 bg-inset rounded mb-4" />
-      <div className="h-40 bg-inset rounded" />
-    </div>
-  </div>
-)
+};
 
 const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
-  const [closes5y, userCtx] = await Promise.all([
-    fetchCloses(ticker.slug, '5y'),
-    getUserContext(ticker.symbol),
-  ]);
+  const [closes5y, userCtx] = await Promise.all([fetchCloses(ticker.slug, '5y'), getUserContext(ticker.symbol)]);
 
-  const history = buildHistory(closes5y);
-
-  const signalsByWindow = Object.fromEntries(
-    ROLLING_WINDOWS.map((w) => [w, buildLatestSignal(closes5y, w)])
-  ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildLatestSignal>>;
+  const signalsByWindow = Object.fromEntries(ROLLING_WINDOWS.map((w) => [w, buildLatestSignal(closes5y, w)])) as Record<
+    RollingWindow,
+    ReturnType<typeof buildLatestSignal>
+  >;
 
   const latestSignal = signalsByWindow[252];
 
   const signalHistoryByWindow = Object.fromEntries(
     ROLLING_WINDOWS.map((w) => [w, signalsByWindow[w] ? buildSignalHistory(closes5y, signalsByWindow[w]!, 30) : []])
-  ) as Record<(typeof ROLLING_WINDOWS)[number], ReturnType<typeof buildSignalHistory>>;
+  ) as Record<RollingWindow, ReturnType<typeof buildSignalHistory>>;
 
-  const sigmaContent = latestSignal == null ? (
-    <SigmaWarning message="σ 계산에 필요한 데이터가 부족합니다 (최소 20거래일). 신규 상장 종목이거나 거래 정지 상태일 수 있습니다." />
-  ) : (
-    <div className="space-y-5">
-      {closes5y.length < 60 && (
-        <SigmaWarning message={`거래 데이터가 ${closes5y.length}일로 충분하지 않아 σ 통계가 불안정할 수 있습니다. 권장 기준(60거래일)에 도달하면 이 메시지는 사라집니다.`} />
-      )}
-      <SigmaTabContent signalsByWindow={signalsByWindow} signalHistoryByWindow={signalHistoryByWindow} symbol={ticker.symbol} availableDays={closes5y.length - 1} />
-      <DeclinePriceChart history={history} symbol={ticker.symbol} />
-    </div>
-  );
+  const historyByWindow = Object.fromEntries(ROLLING_WINDOWS.map((w) => [w, buildHistory(closes5y, w)])) as Record<
+    RollingWindow,
+    ReturnType<typeof buildHistory>
+  >;
+
+  const high52w =
+    closes5y.length >= 252
+      ? Math.max(...closes5y.slice(-252).map((c) => c.price))
+      : Math.max(...closes5y.map((c) => c.price));
+
+  const availableDays = closes5y.length - 1;
+  const insufficientData = latestSignal == null;
+  const insufficientMsg = insufficientData
+    ? 'σ 계산에 필요한 데이터가 부족합니다 (최소 20거래일). 신규 상장 종목이거나 거래 정지 상태일 수 있습니다.'
+    : closes5y.length < 60
+    ? `거래 데이터가 ${closes5y.length}일로 충분하지 않아 σ 통계가 불안정할 수 있습니다. 권장 기준(60거래일)에 도달하면 이 메시지는 사라집니다.`
+    : undefined;
 
   return (
     <>
       <div className="flex items-start justify-between gap-4">
-        <PriceBlock ticker={ticker} latest={latestSignal} />
+        <PriceBlock ticker={ticker} latest={latestSignal} high52w={high52w} />
         <div className="pt-1">
           <WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />
         </div>
       </div>
 
-      <TickerTabs
-        sigmaContent={sigmaContent}
-        mddContent={
-          <Suspense fallback={<TabSkeleton />}>
-            <MddTabLoader slug={ticker.slug} symbol={ticker.symbol} />
-          </Suspense>
-        }
+      <SigmaPageShell
+        signalsByWindow={signalsByWindow}
+        signalHistoryByWindow={signalHistoryByWindow}
+        historyByWindow={historyByWindow}
+        availableDays={availableDays}
+        insufficientData={insufficientData}
+        insufficientMsg={insufficientMsg}
+        symbol={ticker.symbol}
       />
     </>
   );
-}
+};
 
-export default TickerContent
+export default TickerContent;

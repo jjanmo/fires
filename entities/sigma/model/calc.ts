@@ -1,4 +1,4 @@
-import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, MddResult, MddPoint } from './types';
+import type { ClosePrice, SigmaResult, HistoryRow, SignalRow, RollingWindow } from './types';
 
 /** 일간 등락률 배열 계산 (종가 기준) */
 export const calcDailyReturns = (closes: ClosePrice[]): number[] => {
@@ -34,40 +34,6 @@ export const calcRolling252 = (returnsArr: number[], targetIndex: number, window
   };
 }
 
-/** MDD + 수중 곡선 계산 (종가 기준, max range 데이터 권장) */
-export const calcMdd = (closes: ClosePrice[]): MddResult | null => {
-  if (!closes.length) return null;
-
-  // ── 1. ATH ──────────────────────────────────────────────────────
-  let athPrice = closes[0].price;
-  let athHighPrice = closes[0].high;
-  for (const c of closes) {
-    if (c.price > athPrice) athPrice = c.price;
-    if (c.high > athHighPrice) athHighPrice = c.high;
-  }
-
-  // ── 2. 수중 곡선 & MDD ──────────────────────────────────────────
-  let rollingMax = closes[0].price;
-  let mdd = 0;
-  const series: MddPoint[] = closes.map((c) => {
-    if (c.price > rollingMax) rollingMax = c.price;
-    const dd = +(((c.price - rollingMax) / rollingMax) * 100).toFixed(2);
-    if (dd < mdd) mdd = dd;
-    return { date: c.date, dd };
-  });
-
-  const currentDD = series[series.length - 1].dd;
-  const mddRatio = mdd !== 0 ? +((currentDD / mdd) * 100).toFixed(1) : 0;
-
-  return {
-    mdd: +mdd.toFixed(2),
-    currentDD: +currentDD.toFixed(2),
-    mddRatio,
-    athPrice: +athPrice.toFixed(2),
-    athHighPrice: +athHighPrice.toFixed(2),
-    series,
-  };
-}
 
 /** 종가 기준 지정가 계산 */
 export const calcOrderPrices = (
@@ -82,18 +48,20 @@ export const calcOrderPrices = (
 
 /**
  * 전체 히스토리 빌드 — 각 행은 "실행일" 기준
+ * windowSize: 롤링 기간 (기본 252일) — 윈도우별 triggered 계산에 사용
  */
-export const buildHistory = (closes: ClosePrice[]): HistoryRow[] => {
+export const buildHistory = (closes: ClosePrice[], windowSize: RollingWindow = 252): HistoryRow[] => {
   const returns = calcDailyReturns(closes);
   const rows: HistoryRow[] = [];
 
   closes.slice(1).forEach((today, i) => {
     const yesterday = closes[i];
-    const s = calcRolling252(returns, i);
+    const s = calcRolling252(returns, i, windowSize);
     if (!s) return;
 
     const orders = calcOrderPrices(yesterday.price, s);
     const actualReturn: number | null = returns[i] ?? null;
+    const lowReturn = ((today.low - yesterday.price) / yesterday.price) * 100;
 
     rows.push({
       date: today.date,
@@ -104,6 +72,7 @@ export const buildHistory = (closes: ClosePrice[]): HistoryRow[] => {
       ...s,
       ...orders,
       actualReturn,
+      lowReturn: +lowReturn.toFixed(4),
       triggered:
         today.low <= orders.buyPrice
           ? 'buy-2s'
@@ -160,8 +129,10 @@ export const buildLatestSignal = (closes: ClosePrice[], windowSize = 252): Histo
   if (!s) return null;
 
   const latest = closes[N - 1];
+  const prev = closes[N - 2];
   const orders = calcOrderPrices(latest.price, s);
   const actualReturn: number | null = returns[N - 2] ?? null;
+  const lowReturn = prev ? +((latest.low - prev.price) / prev.price * 100).toFixed(4) : 0;
 
   const triggered: HistoryRow['triggered'] =
     latest.low <= orders.buyPrice
@@ -183,6 +154,7 @@ export const buildLatestSignal = (closes: ClosePrice[], windowSize = 252): Histo
     ...s,
     ...orders,
     actualReturn,
+    lowReturn,
     triggered,
   };
 }

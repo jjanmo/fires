@@ -9,6 +9,7 @@ import { cn } from '@/shared/lib/cn';
 interface Props {
   ticker: TickerInfo;
   latest: HistoryRow | null;
+  high52w?: number;
 }
 
 const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
@@ -18,8 +19,9 @@ const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
   CLOSED: { text: '장 마감', cls: 'text-ink-4 bg-inset border-edge' },
 };
 
-const PriceBlock = ({ ticker, latest }: Props) => {
+const PriceBlock = ({ ticker, latest, high52w }: Props) => {
   const { price, change, changePct, marketState, loading } = useLivePrice(ticker.symbol, latest?.close ?? 0);
+  const pct52w = high52w && high52w > 0 ? +((price / high52w - 1) * 100).toFixed(1) : null;
 
   const isPositive = changePct >= 0;
   const badge = MARKET_BADGE[marketState] ?? MARKET_BADGE.CLOSED;
@@ -54,6 +56,15 @@ const PriceBlock = ({ ticker, latest }: Props) => {
           {isPositive ? '+' : ''}
           {changePct.toFixed(2)}%<span className="text-ink-4 ml-1.5">({formatChange(change, ticker.symbol)})</span>
         </p>
+        {pct52w !== null && (
+          <p className="mt-0.5 text-xs font-mono text-ink-4">
+            52주 고가 대비{' '}
+            <span className={pct52w >= 0 ? 'text-gain' : 'text-loss'}>
+              {pct52w >= 0 ? '+' : ''}
+              {pct52w}%
+            </span>
+          </p>
+        )}
       </div>
 
       {latest && (

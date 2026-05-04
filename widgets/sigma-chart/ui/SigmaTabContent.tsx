@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { cn } from '@/shared/lib/cn';
-import type { HistoryRow, SignalRow, RollingWindow } from '@/entities/sigma';
-import { ROLLING_WINDOWS } from '@/entities/sigma';
-import { InfoTooltip } from '@/shared/ui';
+import type { RollingWindow } from '@/entities/sigma';
+import { useSigmaWindow } from '@/app/sigma/[ticker]/_context/SigmaWindowContext';
 import SignalCards from '@/widgets/signal-cards/ui/SignalCards';
 import SigmaChart from './SigmaChart';
 import SignalHistoryChart from './SignalHistoryChart';
+import SigmaWarning from '@/app/sigma/[ticker]/_components/SigmaWarning';
 
 const WINDOW_LABELS: Record<RollingWindow, string> = {
   252: '1년',
@@ -16,34 +14,8 @@ const WINDOW_LABELS: Record<RollingWindow, string> = {
   20: '1개월',
 };
 
-const WINDOW_GUIDE: Record<RollingWindow, { sub: string; desc: string }> = {
-  252: {
-    sub: '252 거래일 · 기본값',
-    desc: '1년치 데이터를 기준으로 삼아 계절 흐름과 시장 사이클을 반영합니다. 평상시 매매 기준으로 가장 안정적입니다.',
-  },
-  120: {
-    sub: '120 거래일',
-    desc: '최근 반년의 흐름을 반영합니다. 금리 변화나 특정 섹터 이슈가 있을 때 유용합니다.',
-  },
-  60: {
-    sub: '60 거래일',
-    desc: '최근 3개월의 주가 흐름을 기준으로 합니다. 분기 실적 발표 전후처럼 중기 변동성을 파악할 때 적합합니다.',
-  },
-  20: {
-    sub: '20 거래일',
-    desc: '최근 한 달의 움직임만 반영합니다. 전쟁·정책 급변처럼 단기 충격이 큰 시기의 현재 상황을 빠르게 파악할 수 있습니다.',
-  },
-};
-
-interface Props {
-  signalsByWindow: Record<RollingWindow, HistoryRow | null>;
-  signalHistoryByWindow: Record<RollingWindow, SignalRow[]>;
-  symbol: string;
-  availableDays: number;
-}
-
 /** 가장 넓은 롤링 기간(252 → 120 → 60 → 20 순)을 기준으로 X축 고정 범위 계산 */
-const calcFixedXRange = (signalsByWindow: Record<RollingWindow, HistoryRow | null>) => {
+const calcFixedXRange = (signalsByWindow: Record<RollingWindow, { mu: number; sigma: number } | null>) => {
   const base = signalsByWindow[252] ?? signalsByWindow[120] ?? signalsByWindow[60] ?? signalsByWindow[20];
   if (!base) return { xMin: undefined, xMax: undefined };
   return {
@@ -52,66 +24,24 @@ const calcFixedXRange = (signalsByWindow: Record<RollingWindow, HistoryRow | nul
   };
 }
 
-const SigmaTabContent = ({ signalsByWindow, signalHistoryByWindow, symbol, availableDays }: Props) => {
-  const isEnabled = (w: RollingWindow) => availableDays >= w;
-  const defaultWindow = ROLLING_WINDOWS.find(isEnabled) ?? ROLLING_WINDOWS[ROLLING_WINDOWS.length - 1];
-  const [selected, setSelected] = useState<RollingWindow>(defaultWindow);
+interface Props {
+  symbol: string;
+  insufficientData: boolean;
+  insufficientMsg?: string;
+}
 
-  const disabledWindows = ROLLING_WINDOWS.filter(w => !isEnabled(w));
-
+const SigmaTabContent = ({ symbol, insufficientData, insufficientMsg }: Props) => {
+  const { selected, signalsByWindow, signalHistoryByWindow } = useSigmaWindow();
   const latest = signalsByWindow[selected];
   const { xMin, xMax } = calcFixedXRange(signalsByWindow);
 
+  if (insufficientData) {
+    return <SigmaWarning message={insufficientMsg ?? 'σ 계산에 필요한 데이터가 부족합니다.'} />;
+  }
+
   return (
     <div className="space-y-5">
-      {/* 롤링 기간 선택 */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-ink-4 uppercase tracking-widest shrink-0">롤링 기간</span>
-          <div className="flex gap-1 bg-inset rounded-lg p-0.5 border border-edge">
-            {ROLLING_WINDOWS.map((w) => {
-              const enabled = isEnabled(w);
-              return (
-                <button
-                  key={w}
-                  onClick={() => enabled && setSelected(w)}
-                  disabled={!enabled}
-                  className={cn(
-                    'px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors duration-150 border',
-                    !enabled
-                      ? 'border-transparent text-ink-4/40 cursor-not-allowed'
-                      : selected === w
-                      ? 'bg-card text-ink-1 shadow-sm border-edge cursor-pointer'
-                      : 'border-transparent text-ink-3 hover:text-ink-2 cursor-pointer'
-                  )}
-                >
-                  {WINDOW_LABELS[w]}
-                </button>
-              );
-            })}
-          </div>
-          <InfoTooltip>
-          <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">롤링 기간 선택 가이드</p>
-          <div className="space-y-3">
-            {ROLLING_WINDOWS.map((w) => (
-              <div key={w}>
-                <p className="text-[12px] font-semibold text-ink-2">
-                  {WINDOW_LABELS[w]}{' '}
-                  <span className="font-normal text-ink-4">— {WINDOW_GUIDE[w].sub}</span>
-                </p>
-                <p className="text-[11px] text-ink-3 leading-relaxed mt-0.5">{WINDOW_GUIDE[w].desc}</p>
-              </div>
-            ))}
-          </div>
-          </InfoTooltip>
-        </div>
-        {disabledWindows.length > 0 && (
-          <p className="text-[11px] text-ink-4 leading-relaxed">
-            사용 가능한 거래 데이터 {availableDays}일 —{' '}
-            {disabledWindows.map(w => WINDOW_LABELS[w]).join(' · ')} 비활성
-          </p>
-        )}
-      </div>
+      {insufficientMsg && <SigmaWarning message={insufficientMsg} />}
 
       {latest == null ? (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
