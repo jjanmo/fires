@@ -114,13 +114,9 @@ const SigmaWindowBar = () => {
 
         {/* 최상단이 아니면 레이아웃에서 제거 — w-0 + 긴 라벨이 줄바꿈되며 행 높이가 비정상적으로 커지는 현상 방지 */}
         <div
-          className={cn(
-            'shrink-0 self-end sm:self-auto sm:translate-y-[4px]',
-            isAtTop ? 'overflow-visible' : 'hidden'
-          )}
+          className={cn('shrink-0 self-end sm:self-auto sm:translate-y-[4px]', isAtTop ? 'overflow-visible' : 'hidden')}
         >
           <RollingGuideModal>
-            <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">롤링 기간 선택 가이드</p>
             <div className="space-y-3">
               {ROLLING_WINDOWS.map((w) => (
                 <div key={w}>
