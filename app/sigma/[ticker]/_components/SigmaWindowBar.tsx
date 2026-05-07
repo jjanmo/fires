@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/shared/lib/cn';
 import type { RollingWindow } from '@/entities/sigma';
 import { ROLLING_WINDOWS } from '@/entities/sigma';
-import { InfoTooltip } from '@/shared/ui';
+import { RollingGuideModal } from '@/shared/ui';
 import { useSigmaWindow } from '../_context/SigmaWindowContext';
 
 const WINDOW_LABELS: Record<RollingWindow, string> = {
@@ -57,7 +57,7 @@ const SigmaWindowBar = () => {
 
   return (
     <div className="sticky top-12 z-10 bg-canvas/95 backdrop-blur-sm border-b border-edge mb-0">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 py-1">
+      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-1">
         <div className="flex min-w-0 items-center gap-3">
           <div className="relative flex shrink-0 bg-inset rounded-lg border border-edge p-1">
             <div
@@ -115,11 +115,11 @@ const SigmaWindowBar = () => {
         {/* 최상단이 아니면 레이아웃에서 제거 — w-0 + 긴 라벨이 줄바꿈되며 행 높이가 비정상적으로 커지는 현상 방지 */}
         <div
           className={cn(
-            'shrink-0 translate-y-[4px]',
+            'shrink-0 self-end sm:self-auto sm:translate-y-[4px]',
             isAtTop ? 'overflow-visible' : 'hidden'
           )}
         >
-          <InfoTooltip placement="left">
+          <RollingGuideModal>
             <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-3">롤링 기간 선택 가이드</p>
             <div className="space-y-3">
               {ROLLING_WINDOWS.map((w) => (
@@ -131,7 +131,7 @@ const SigmaWindowBar = () => {
                 </div>
               ))}
             </div>
-          </InfoTooltip>
+          </RollingGuideModal>
         </div>
       </div>
     </div>
