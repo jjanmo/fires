@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useLivePrice } from '@/shared/hooks';
 import type { HistoryRow } from '@/entities/sigma';
 import type { TickerInfo } from '@/entities/ticker';
@@ -10,6 +11,7 @@ interface Props {
   ticker: TickerInfo;
   latest: HistoryRow | null;
   high52w?: number;
+  action?: ReactNode;
 }
 
 const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
@@ -19,7 +21,7 @@ const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
   CLOSED: { text: '장 마감', cls: 'text-ink-4 bg-inset border-edge' },
 };
 
-const PriceBlock = ({ ticker, latest, high52w }: Props) => {
+const PriceBlock = ({ ticker, latest, high52w, action }: Props) => {
   const { price, change, changePct, marketState, loading } = useLivePrice(ticker.symbol, latest?.close ?? 0);
   const pct52w = high52w && high52w > 0 ? +((price / high52w - 1) * 100).toFixed(1) : null;
 
@@ -27,25 +29,11 @@ const PriceBlock = ({ ticker, latest, high52w }: Props) => {
   const badge = MARKET_BADGE[marketState] ?? MARKET_BADGE.CLOSED;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 w-full">
-      <div>
+    <div className="flex justify-between gap-4 w-full">
+      <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className={cn('text-xs font-semibold tracking-widest uppercase', ticker.accentColor)}>{ticker.name}</span>
           <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full border', badge.cls)}>{badge.text}</span>
-          {latest && marketState === 'REGULAR' && (latest.triggered === 'buy-1s' || latest.triggered === 'buy-2s') && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-buy-badge text-buy-text border border-buy-edge">
-              {latest.triggered === 'buy-2s' ? '2' : '1'}
-              <span className="normal-case">σ</span> 매수 신호
-            </span>
-          )}
-          {latest &&
-            marketState === 'REGULAR' &&
-            (latest.triggered === 'sell-1s' || latest.triggered === 'sell-2s') && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sell-badge text-sell-text border border-sell-edge">
-                {latest.triggered === 'sell-2s' ? '2' : '1'}
-                <span className="normal-case">σ</span> 매도 신호
-              </span>
-            )}
         </div>
 
         <p className={cn('text-4xl sm:text-5xl font-bold tabular-nums text-ink-1 transition-opacity', loading && 'opacity-50')}>
@@ -67,11 +55,9 @@ const PriceBlock = ({ ticker, latest, high52w }: Props) => {
         )}
       </div>
 
-      {latest && (
-        <div className="text-right">
-          <p className="text-[11px] text-ink-3 font-mono">{latest.date} 종가 기준</p>
-        </div>
-      )}
+      <div className="shrink-0">
+        {action}
+      </div>
     </div>
   );
 };

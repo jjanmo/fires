@@ -43,12 +43,12 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4">
-        <PriceBlock ticker={ticker} latest={latestSignal} high52w={high52w} />
-        <div className="pt-1">
-          <WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />
-        </div>
-      </div>
+      <PriceBlock
+        ticker={ticker}
+        latest={latestSignal}
+        high52w={high52w}
+        action={<WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />}
+      />
 
       <SigmaWindowContextProvider
         signalsByWindow={signalsByWindow}

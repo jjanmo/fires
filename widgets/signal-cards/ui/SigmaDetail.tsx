@@ -17,7 +17,7 @@ const SigmaDetail = ({ latest }: Props) => {
 
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
-      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">σ 통계 (Rolling 252일)</p>
+      <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">σ 통계 (롤링 기간 252일)</p>
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
         {items.map(({ key, label, val, color }) => (
           <div key={key}>

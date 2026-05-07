@@ -10,17 +10,7 @@ interface Props {
   error?: string;
 }
 
-const getReturnBadgeClass = (latest: HistoryRow) => {
-  const s1d = latest.mu - latest.sigma;
-  if (latest.actualReturn == null)          return 'text-ink-3 bg-inset';
-  if (latest.actualReturn < latest.s2d)     return 'text-buy-val bg-buy-badge';
-  if (latest.actualReturn < s1d)            return 'text-buy-val bg-buy-badge';
-  if (latest.actualReturn > latest.s2u)     return 'text-sell-val bg-sell-badge';
-  return 'text-ink-3 bg-inset';
-}
-
 const TickerCard = ({ ticker, latest, error }: Props) => {
-  const returnSign = latest?.actualReturn != null ? (latest.actualReturn >= 0 ? '+' : '') : '';
   const s1d = latest ? latest.mu - latest.sigma : 0;
   const s1u = latest ? latest.mu + latest.sigma : 0;
 
@@ -39,11 +29,6 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
           </span>
           <p className="mt-1 text-[11px] text-ink-3 leading-snug max-w-[180px]">{ticker.description}</p>
         </div>
-        {latest && (
-          <span className={cn('text-xs font-mono px-2 py-1 rounded-md', getReturnBadgeClass(latest))}>
-            {latest.actualReturn != null ? `${returnSign}${latest.actualReturn.toFixed(2)}%` : '—'}
-          </span>
-        )}
       </div>
 
       {error || !latest ? (
@@ -57,7 +42,7 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
             </p>
             <div className="flex items-center justify-between mt-1">
               <p className="text-[11px] text-ink-4 font-mono">{latest.date}</p>
-              <span className="text-[10px] text-ink-4 font-mono hidden sm:inline">Rolling 252일</span>
+              <span className="text-[10px] text-ink-4 font-mono hidden sm:inline">롤링 기간 252일</span>
             </div>
           </div>
 
