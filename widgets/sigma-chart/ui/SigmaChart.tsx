@@ -186,7 +186,7 @@ const SigmaChart = ({
     return () => obs.disconnect();
   }, []);
 
-  const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close } = latest;
+  const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close, baseClose } = latest;
   const { changePct, marketState, loading } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
   // 데이터 로드 전(loading)에는 점을 표시하지 않아 초기값 0에서 실제값으로 점프하는 현상 방지
@@ -195,7 +195,7 @@ const SigmaChart = ({
   const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
   const s1u = mu + sigma;
-  const muPrice = +(close * (1 + mu / 100)).toFixed(2);
+  const muPrice = +(baseClose * (1 + mu / 100)).toFixed(2);
 
   // 실제 252일 데이터 기반 구간별 비율 계산
   const total = returns.length;
@@ -320,7 +320,7 @@ const SigmaChart = ({
   return (
     <div className="rounded-2xl bg-card border border-edge p-5">
       <p className="text-[11px] text-ink-3 uppercase tracking-widest mb-4">
-        <span className="normal-case">σ</span> 통계 · 정규분포 (Rolling {windowSize}일)
+        <span className="normal-case">σ</span> 통계 · 정규분포 (롤링 기간 {windowSize}일)
       </p>
 
       <div className="relative h-80">

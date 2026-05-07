@@ -69,6 +69,7 @@ export const buildHistory = (closes: ClosePrice[], windowSize: RollingWindow = 2
       high: today.high,
       low: today.low,
       close: today.price,
+      baseClose: yesterday.price,
       ...s,
       ...orders,
       actualReturn,
@@ -130,7 +131,7 @@ export const buildLatestSignal = (closes: ClosePrice[], windowSize = 252): Histo
 
   const latest = closes[N - 1];
   const prev = closes[N - 2];
-  const orders = calcOrderPrices(latest.price, s);
+  const orders = calcOrderPrices(prev.price, s);
   const actualReturn: number | null = returns[N - 2] ?? null;
   const lowReturn = prev ? +((latest.low - prev.price) / prev.price * 100).toFixed(4) : 0;
 
@@ -151,6 +152,7 @@ export const buildLatestSignal = (closes: ClosePrice[], windowSize = 252): Histo
     high: latest.high,
     low: latest.low,
     close: latest.price,
+    baseClose: prev.price,
     ...s,
     ...orders,
     actualReturn,
