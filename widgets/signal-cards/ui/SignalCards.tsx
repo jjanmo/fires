@@ -1,5 +1,5 @@
 import type { HistoryRow } from '@/entities/sigma';
-import { formatPrice } from '@/shared/lib/ticker';
+import { formatPrice, isKoreanTicker } from '@/shared/lib/ticker';
 
 
 interface Props {
@@ -7,17 +7,27 @@ interface Props {
   symbol: string;
 }
 
-/** 주말을 건너뛴 다음 거래일 — "M월 D일" 형식 */
-const nextTradingDate = (dateStr: string): string => {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + 1);
-  if (d.getDay() === 6) d.setDate(d.getDate() + 2); // 토 → 월
-  if (d.getDay() === 0) d.setDate(d.getDate() + 1); // 일 → 월
-  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+/**
+ * 오늘 날짜(KST) 기준 장중 날짜 계산
+ * 국내: 토/일 → 금요일 (마지막 거래일)
+ * 해외: 토요일은 토요일 그대로, 일요일 → 토요일 (미국 금요일 장이 KST 토요일까지 열리므로)
+ */
+const orderDate = (symbol: string): string => {
+  const now = new Date();
+  const day = now.getDay();
+
+  if (isKoreanTicker(symbol)) {
+    if (day === 6) now.setDate(now.getDate() - 1); // 토 → 금
+    if (day === 0) now.setDate(now.getDate() - 2); // 일 → 금
+  } else {
+    if (day === 0) now.setDate(now.getDate() - 1); // 일 → 토
+  }
+
+  return `${now.getMonth() + 1}월 ${now.getDate()}일`;
 }
 
 const SignalCards = ({ latest, symbol }: Props) => {
-  const dateLabel = nextTradingDate(latest.date);
+  const dateLabel = orderDate(symbol);
   const s1d = latest.mu - latest.sigma;
   const s1u = latest.mu + latest.sigma;
 
