@@ -77,7 +77,7 @@ export const TickerInnerSkeleton = () => {
 
 const TickerLoading = () => (
   <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
-    <div className="max-w-4xl mx-auto space-y-5">
+    <div className="max-w-5xl mx-auto space-y-5">
       <TickerInnerSkeleton />
     </div>
   </main>

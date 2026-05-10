@@ -11,7 +11,7 @@ const AppHeader = async () => {
 
   return (
     <header className="border-b border-edge bg-canvas/80 backdrop-blur-md sticky top-0 z-10">
-      <div className="px-4 sm:px-6 max-w-4xl mx-auto h-12 flex items-center gap-4">
+      <div className="px-4 sm:px-6 max-w-5xl mx-auto h-12 flex items-center gap-4">
         <Link href="/" className="hover:opacity-80 transition-opacity shrink-0">
           <Logo size="sm" />
         </Link>

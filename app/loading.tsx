@@ -114,7 +114,7 @@ export const MacroSectionSkeleton = () => (
 // ── 페이지 전체 로딩 (route 전환 시) ─────────────────────────────────────────
 const HomeLoading = () => (
   <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
-    <div className="max-w-4xl mx-auto space-y-10">
+    <div className="max-w-5xl mx-auto space-y-10">
       <MacroSectionSkeleton />
     </div>
   </main>

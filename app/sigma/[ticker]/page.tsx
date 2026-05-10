@@ -23,7 +23,7 @@ const TickerPage = async ({ params }: { params: Promise<{ ticker: string }> }) =
   return (
     <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">
       <SaveRecentSearch symbol={ticker.symbol} slug={ticker.slug} name={ticker.name} />
-      <div className="max-w-4xl mx-auto space-y-5">
+      <div className="max-w-5xl mx-auto space-y-5">
         <Suspense fallback={<TickerInnerSkeleton />}>
           <TickerContent ticker={ticker} />
         </Suspense>
