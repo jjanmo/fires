@@ -85,7 +85,7 @@ const HeaderSearchContent = () => {
   }
 
   return (
-    <div className="animate-search-expand flex items-center gap-2.5 bg-field border-2 border-edge-hi focus-within:border-ink-3 rounded-lg px-3 h-9 transition-colors">
+    <div className="sm:animate-search-expand flex items-center gap-2.5 bg-field border-2 border-edge-hi focus-within:border-ink-3 rounded-lg px-3 h-9 transition-colors max-sm:absolute max-sm:inset-x-4 max-sm:top-1/2 max-sm:-translate-y-1/2 max-sm:z-10">
       <svg
         width="15"
         height="15"
@@ -109,7 +109,7 @@ const HeaderSearchContent = () => {
         onBlur={handleBlur}
         placeholder="종목명, 티커 심볼, 종목 코드"
         autoComplete="off"
-        className="w-36 sm:w-52 bg-transparent text-sm text-ink-1 placeholder:text-ink-3 focus:outline-none"
+        className="flex-1 min-w-0 sm:flex-none sm:w-52 bg-transparent text-sm text-ink-1 placeholder:text-ink-3 focus:outline-none"
       />
       <button
         onMouseDown={(e) => {
