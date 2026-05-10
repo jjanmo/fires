@@ -10,9 +10,17 @@ interface Props {
   error?: string;
 }
 
+/** 포맷된 가격 문자열 길이에 따라 폰트 크기 클래스 결정 */
+const priceSize = (formatted: string) => formatted.length > 9 ? 'text-xs' : 'text-sm';
+
 const TickerCard = ({ ticker, latest, error }: Props) => {
   const s1d = latest ? latest.mu - latest.sigma : 0;
   const s1u = latest ? latest.mu + latest.sigma : 0;
+
+  const s1BuyFmt  = latest ? formatPrice(latest.s1BuyPrice,  ticker.symbol) : '';
+  const s2BuyFmt  = latest ? formatPrice(latest.buyPrice,    ticker.symbol) : '';
+  const s1SellFmt = latest ? formatPrice(latest.s1SellPrice, ticker.symbol) : '';
+  const s2SellFmt = latest ? formatPrice(latest.sellPrice,   ticker.symbol) : '';
 
   return (
     <Link
@@ -51,8 +59,8 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-sm font-semibold tabular-nums text-buy-val">
-                {formatPrice(latest.s1BuyPrice, ticker.symbol)}
+              <p className={cn('font-semibold tabular-nums text-buy-val', priceSize(s1BuyFmt))}>
+                {s1BuyFmt}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{s1d.toFixed(2)}%</p>
             </div>
@@ -60,8 +68,8 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
               <p className="text-[10px] text-buy-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매수가
               </p>
-              <p className="text-sm font-semibold tabular-nums text-buy-val">
-                {formatPrice(latest.buyPrice, ticker.symbol)}
+              <p className={cn('font-semibold tabular-nums text-buy-val', priceSize(s2BuyFmt))}>
+                {s2BuyFmt}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">{latest.s2d.toFixed(2)}%</p>
             </div>
@@ -72,8 +80,8 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 1<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-sm font-semibold tabular-nums text-sell-val">
-                {formatPrice(latest.s1SellPrice, ticker.symbol)}
+              <p className={cn('font-semibold tabular-nums text-sell-val', priceSize(s1SellFmt))}>
+                {s1SellFmt}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{s1u.toFixed(2)}%</p>
             </div>
@@ -81,8 +89,8 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
               <p className="text-[10px] text-sell-text uppercase tracking-wider mb-1">
                 2<span className="normal-case">σ</span> 매도가
               </p>
-              <p className="text-sm font-semibold tabular-nums text-sell-val">
-                {formatPrice(latest.sellPrice, ticker.symbol)}
+              <p className={cn('font-semibold tabular-nums text-sell-val', priceSize(s2SellFmt))}>
+                {s2SellFmt}
               </p>
               <p className="text-[10px] text-ink-3 font-mono mt-0.5">+{latest.s2u.toFixed(2)}%</p>
             </div>
