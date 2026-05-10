@@ -57,7 +57,7 @@ const SigmaWindowBar = () => {
 
   return (
     <div className="sticky top-12 z-10 bg-canvas/95 backdrop-blur-sm border-b border-edge mb-0">
-      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-1">
+      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-1">
         <div className="flex min-w-0 items-center gap-3">
           <div className="relative flex shrink-0 bg-inset rounded-lg border border-edge p-1">
             <div
@@ -117,13 +117,13 @@ const SigmaWindowBar = () => {
           className={cn('shrink-0 self-end sm:self-auto sm:translate-y-[4px]', isAtTop ? 'overflow-visible' : 'hidden')}
         >
           <RollingGuideModal>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {ROLLING_WINDOWS.map((w) => (
                 <div key={w}>
-                  <p className="text-[12px] font-semibold text-ink-2">
+                  <p className="text-sm font-semibold text-ink-2">
                     {WINDOW_LABELS[w]} <span className="font-normal text-ink-4">— {WINDOW_GUIDE[w].sub}</span>
                   </p>
-                  <p className="text-[11px] text-ink-3 leading-relaxed mt-0.5">{WINDOW_GUIDE[w].desc}</p>
+                  <p className="text-xs text-ink-3 leading-relaxed mt-1">{WINDOW_GUIDE[w].desc}</p>
                 </div>
               ))}
             </div>

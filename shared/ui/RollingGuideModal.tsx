@@ -76,11 +76,11 @@ const RollingGuideModal = ({ children }: Props) => {
               className={cn(
                 'relative z-10 bg-card overflow-y-auto',
                 'w-full h-full',
-                'sm:h-auto sm:w-[420px] sm:max-h-[80vh] sm:rounded-2xl sm:border sm:border-edge sm:shadow-2xl'
+                'sm:h-auto sm:w-[580px] sm:max-h-[80vh] sm:rounded-2xl sm:border sm:border-edge sm:shadow-2xl'
               )}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-edge">
-                <p className="text-[11px] text-ink-3 uppercase tracking-widest">롤링 기간 선택 가이드</p>
+                <p className="text-xs text-ink-3 uppercase tracking-widest">롤링 기간 선택 가이드</p>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
