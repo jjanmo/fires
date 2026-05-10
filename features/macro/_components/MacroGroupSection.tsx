@@ -22,8 +22,8 @@ const MacroGroupSection = ({ group, data }: Props) => {
           className="w-2 h-2 rounded-full shrink-0"
           style={{ backgroundColor: group.color }}
         />
-        <h3 className="text-sm sm:text-base font-semibold text-ink-1">{group.title}</h3>
-        <p className="text-[10px] sm:text-xs text-ink-4">{group.subtitle}</p>
+        <h3 className="text-sm sm:text-lg font-semibold text-ink-1">{group.title}</h3>
+        <p className="text-[10px] sm:text-sm text-ink-4">{group.subtitle}</p>
       </div>
 
       {/* 지표 목록 — full-width 세로 배치 */}

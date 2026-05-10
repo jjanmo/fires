@@ -9,7 +9,7 @@ type Props = {
 const MacroSummaryGrid = ({ data }: Props) => {
   return (
     <div className="rounded-2xl border border-edge bg-card p-4 md:p-5">
-      <p className="text-[11px] font-semibold text-ink-4 uppercase tracking-wide mb-3">매크로 한눈에 보기</p>
+      <p className="text-[11px] sm:text-sm font-semibold text-ink-4 uppercase tracking-wide mb-3">매크로 한눈에 보기</p>
       <div className="space-y-3">
         {GROUPS.map((group) => (
           <div key={group.id} className="flex flex-col sm:flex-row sm:items-start gap-1.5 sm:gap-3">
@@ -21,7 +21,7 @@ const MacroSummaryGrid = ({ data }: Props) => {
                 className="w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ backgroundColor: group.color }}
               />
-              <span className="text-[11px] text-ink-3 group-hover:text-ink-1 transition-colors leading-tight">
+              <span className="text-[11px] sm:text-sm text-ink-3 group-hover:text-ink-1 transition-colors leading-tight">
                 {group.title}
               </span>
             </a>

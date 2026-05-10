@@ -27,7 +27,7 @@ const IndicatorStat = ({ current, prevDay, config, valueSize = 'sm' }: Props) =>
   return (
     <div className="text-right">
       <p
-        className={cn('font-bold tabular-nums leading-none', valueSize === '2xl' ? 'text-xl sm:text-2xl' : 'text-sm')}
+        className={cn('font-bold tabular-nums leading-none', valueSize === '2xl' ? 'text-xl sm:text-3xl' : 'text-sm sm:text-base')}
         style={{ color: config.color }}
       >
         {current !== null ? config.formatValue(current) : '—'}
@@ -35,7 +35,7 @@ const IndicatorStat = ({ current, prevDay, config, valueSize = 'sm' }: Props) =>
       {changeStr !== null && (
         <p
           className={cn(
-            'text-[10px] sm:text-xs font-medium tabular-nums mt-1 leading-none',
+            'text-[10px] sm:text-sm font-medium tabular-nums mt-1 leading-none',
             isUp ? 'text-buy-text' : isDown ? 'text-sell-text' : 'text-ink-4',
           )}
         >

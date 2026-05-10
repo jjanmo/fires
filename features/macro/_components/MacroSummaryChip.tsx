@@ -26,20 +26,20 @@ const MacroSummaryChip = ({ id, data }: Props) => {
         href={`#${id}`}
         className="rounded-lg border border-edge bg-inset p-2 min-w-0 block hover:border-edge-hi transition-colors"
       >
-        <p className="text-[10px] text-ink-4 truncate mb-1.5">{config.title}</p>
+        <p className="text-[10px] sm:text-xs text-ink-4 truncate mb-1.5">{config.title}</p>
         {/* 모바일: 지표+변화율 위, 상태 아래 / 데스크탑: 지표+변화율 좌, 상태 우 */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1.5">
           <div className="flex items-start gap-1.5 sm:flex-1 min-w-0">
             <div className="flex-1 min-w-0">
               <p
-                className="text-[11px] sm:text-xs font-bold tabular-nums leading-none"
+                className="text-xs sm:text-sm font-bold tabular-nums leading-none"
                 style={{ color: signal?.color ?? config.color }}
               >
                 {score !== null ? Math.round(score) : '—'}
               </p>
               <p
                 className={cn(
-                  'text-[9px] tabular-nums mt-1.5 leading-none',
+                  'text-[9px] sm:text-[10px] tabular-nums mt-1.5 leading-none',
                   isUp ? 'text-buy-text' : isDown ? 'text-sell-text' : 'text-ink-4',
                 )}
               >
@@ -48,7 +48,7 @@ const MacroSummaryChip = ({ id, data }: Props) => {
             </div>
             {/* 데스크탑: 상태 우측 */}
             <p
-              className="hidden sm:block text-[10px] sm:text-xs font-semibold leading-tight text-right shrink-0 max-w-[50%] truncate"
+              className="hidden sm:block text-xs sm:text-sm font-semibold leading-tight text-right shrink-0 max-w-[50%] truncate"
               style={{ color: signal?.color ?? '#94a3b8' }}
             >
               {signal?.label ?? '—'}
@@ -87,20 +87,20 @@ const MacroSummaryChip = ({ id, data }: Props) => {
       href={`#${id}`}
       className="rounded-lg border border-edge bg-inset p-2 min-w-0 block hover:border-edge-hi transition-colors"
     >
-      <p className="text-[10px] text-ink-4 truncate mb-1.5">{config.title}</p>
+      <p className="text-[10px] sm:text-xs text-ink-4 truncate mb-1.5">{config.title}</p>
       {/* 모바일: 지표+변화율 위, 상태 아래 / 데스크탑: 지표+변화율 좌, 상태 우 */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:gap-1.5">
         <div className="flex items-start gap-1.5 sm:flex-1 min-w-0">
           <div className="flex-1 min-w-0">
             <p
-              className="text-[11px] sm:text-xs font-bold tabular-nums leading-none"
+              className="text-xs sm:text-sm font-bold tabular-nums leading-none"
               style={{ color: signal?.color ?? config.color }}
             >
               {current !== null ? config.formatValue(current) : '—'}
             </p>
             <p
               className={cn(
-                'text-[9px] tabular-nums mt-1.5 leading-none',
+                'text-[9px] sm:text-[10px] tabular-nums mt-1.5 leading-none',
                 isUp ? 'text-buy-text' : isDown ? 'text-sell-text' : 'text-ink-4',
               )}
             >
@@ -109,7 +109,7 @@ const MacroSummaryChip = ({ id, data }: Props) => {
           </div>
           {/* 데스크탑: 상태 우측 */}
           <p
-            className="hidden sm:block text-[10px] sm:text-xs font-semibold leading-tight text-right shrink-0 max-w-[50%] truncate"
+            className="hidden sm:block text-xs sm:text-sm font-semibold leading-tight text-right shrink-0 max-w-[50%] truncate"
             style={{ color: signal?.color ?? '#94a3b8' }}
           >
             {signal?.label ?? '—'}

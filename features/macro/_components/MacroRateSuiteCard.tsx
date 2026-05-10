@@ -151,7 +151,7 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
       {/* 헤더: 카드 타이틀 + 3개 지표 stat */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="min-w-0">
-          <p className="text-xs sm:text-sm font-semibold text-ink-1">미 금리 & 수익률 곡선</p>
+          <p className="text-xs sm:text-base font-semibold text-ink-1">미 금리 & 수익률 곡선</p>
           <div className="flex items-center gap-1 mt-1 flex-wrap">
             {SUITE_IDS.map((id, i) => {
               const cfg = INDICATOR_CONFIGS[id];
@@ -159,7 +159,7 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
               return sig ? (
                 <span key={id} className="flex items-center gap-1">
                   {i > 0 && <span className="text-ink-4 text-[10px] select-none">·</span>}
-                  <span className="text-[10px] sm:text-xs font-medium leading-none" style={{ color: cfg.color }}>
+                  <span className="text-[10px] sm:text-sm font-medium leading-none" style={{ color: cfg.color }}>
                     {sig.label}
                   </span>
                 </span>
@@ -215,7 +215,7 @@ const MacroRateSuiteCard = ({ longRate, shortRate }: Props) => {
                 key={id}
                 onClick={() => toggleId(id)}
                 className={cn(
-                  'px-2.5 py-1 text-[10px] sm:text-[11px] font-medium rounded-full border transition-colors cursor-pointer',
+                  'px-2.5 py-1 text-[10px] sm:text-xs font-medium rounded-full border transition-colors cursor-pointer',
                   isOn ? 'text-white' : 'border-edge bg-inset text-ink-4 hover:text-ink-2'
                 )}
                 style={isOn ? { backgroundColor: cfg.color, borderColor: cfg.color } : {}}

@@ -25,14 +25,14 @@ const IndicatorInterpretation = ({ config, signal, isUp, isDown, prev3MChange }:
       {/* 자연어 요약 + 역사 비교 */}
       {signal && (
         <div>
-          <p className="text-[10px] sm:text-xs text-ink-3 leading-relaxed">
+          <p className="text-[10px] sm:text-sm text-ink-3 leading-relaxed">
             <span className="font-semibold" style={{ color: signal.color }}>
               {signal.label}:
             </span>{' '}
             {signal.desc}
           </p>
           {prev3MChangeStr !== null && (
-            <p className="text-[10px] sm:text-[11px] text-ink-4 mt-1.5">
+            <p className="text-[10px] sm:text-xs text-ink-4 mt-1.5">
               3개월 전 대비{' '}
               <span
                 className={cn(
@@ -55,10 +55,10 @@ const IndicatorInterpretation = ({ config, signal, isUp, isDown, prev3MChange }:
             isUp ? 'border-buy-edge bg-buy-bg' : 'border-edge bg-inset'
           )}
         >
-          <p className={cn('text-[10px] font-semibold mb-1', isUp ? 'text-buy-text' : 'text-ink-4')}>
+          <p className={cn('text-[10px] sm:text-xs font-semibold mb-1', isUp ? 'text-buy-text' : 'text-ink-4')}>
             ▲ {config.upLabel}
           </p>
-          <p className="text-[10px] sm:text-[11px] text-ink-3 leading-relaxed">{config.upEffect}</p>
+          <p className="text-[10px] sm:text-xs text-ink-3 leading-relaxed">{config.upEffect}</p>
         </div>
         <div
           className={cn(
@@ -66,17 +66,17 @@ const IndicatorInterpretation = ({ config, signal, isUp, isDown, prev3MChange }:
             isDown ? 'border-sell-edge bg-sell-bg' : 'border-edge bg-inset'
           )}
         >
-          <p className={cn('text-[10px] font-semibold mb-1', isDown ? 'text-sell-text' : 'text-ink-4')}>
+          <p className={cn('text-[10px] sm:text-xs font-semibold mb-1', isDown ? 'text-sell-text' : 'text-ink-4')}>
             ▼ {config.downLabel}
           </p>
-          <p className="text-[10px] sm:text-[11px] text-ink-3 leading-relaxed">{config.downEffect}</p>
+          <p className="text-[10px] sm:text-xs text-ink-3 leading-relaxed">{config.downEffect}</p>
         </div>
       </div>
 
       {/* 지표 의미 */}
       <div>
-        <p className="text-[10px] font-semibold text-ink-4 uppercase tracking-wide mb-1.5">지표 의미</p>
-        <p className="text-[10px] sm:text-xs text-ink-3 leading-relaxed">{config.meaning}</p>
+        <p className="text-[10px] sm:text-xs font-semibold text-ink-4 uppercase tracking-wide mb-1.5">지표 의미</p>
+        <p className="text-[10px] sm:text-sm text-ink-3 leading-relaxed">{config.meaning}</p>
       </div>
     </div>
   )

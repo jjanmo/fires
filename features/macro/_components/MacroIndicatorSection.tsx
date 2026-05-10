@@ -19,7 +19,7 @@ const MacroIndicatorSection = async () => {
   return (
     <section className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-4">
-        <h2 className="text-lg sm:text-xl font-bold text-ink-1">매크로 대시보드</h2>
+        <h2 className="text-lg sm:text-2xl font-bold text-ink-1">매크로 대시보드</h2>
 
         {/* 모바일: 타이틀 아래 / 데스크탑: 우측 정렬 */}
         <div className="flex flex-col sm:items-end gap-1.5">

@@ -108,13 +108,13 @@ const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-xs sm:text-sm font-semibold text-ink-1">{config.title}</p>
+            <p className="text-xs sm:text-base font-semibold text-ink-1">{config.title}</p>
             <span className="text-[9px] px-1.5 py-0.5 rounded border border-edge text-ink-4 leading-none shrink-0">
               {SOURCE_LABEL[config.source] ?? config.source}
             </span>
           </div>
           {signal && (
-            <p className="text-[10px] sm:text-xs font-medium mt-1 leading-none" style={{ color: signal.color }}>
+            <p className="text-[10px] sm:text-sm font-medium mt-1 leading-none" style={{ color: signal.color }}>
               {signal.label}
             </p>
           )}
@@ -137,7 +137,7 @@ const MacroIndicatorCard = ({ id, data, secondaryData }: Props) => {
               key={opt.label}
               onClick={() => handleRange(opt)}
               className={cn(
-                'px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer',
+                'px-2.5 py-1 text-[11px] sm:text-xs font-medium rounded-md transition-colors cursor-pointer',
                 activeRange === opt.label ? 'bg-card text-ink-1 shadow-sm' : 'text-ink-4 hover:text-ink-2'
               )}
             >
