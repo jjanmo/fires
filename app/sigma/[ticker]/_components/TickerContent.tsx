@@ -3,7 +3,7 @@ import type { TickerInfo } from '@/entities/ticker';
 import { buildLatestSignal, fetchCloses, ROLLING_WINDOWS } from '@/entities/sigma';
 import type { RollingWindow } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
-import { WatchlistButton, getWatchlistSymbols } from '@/features/watchlist';
+import { FavoriteButton, getFavoriteSymbols } from '@/features/favorite';
 import { createClient } from '@/shared/lib/supabase/server';
 import SigmaDeferredCharts from './SigmaDeferredCharts';
 import SigmaLowerChartsSkeleton from './SigmaLowerChartsSkeleton';
@@ -14,8 +14,8 @@ const getUserContext = async (symbol: string) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const watchlistSymbols = user ? await getWatchlistSymbols(user.id) : [];
-  return { user, isWatchlisted: watchlistSymbols.includes(symbol) };
+  const favoriteSymbols = user ? await getFavoriteSymbols(user.id) : [];
+  return { user, isFavorited: favoriteSymbols.includes(symbol) };
 };
 
 const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
@@ -47,7 +47,7 @@ const TickerContent = async ({ ticker }: { ticker: TickerInfo }) => {
         ticker={ticker}
         latest={latestSignal}
         high52w={high52w}
-        action={<WatchlistButton symbol={ticker.symbol} isWatchlisted={userCtx.isWatchlisted} />}
+        action={<FavoriteButton symbol={ticker.symbol} isFavorited={userCtx.isFavorited} />}
       />
 
       <SigmaWindowContextProvider

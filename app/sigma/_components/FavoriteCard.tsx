@@ -3,7 +3,7 @@ import type { TickerInfo } from '@/entities/ticker';
 import { buildLatestSignal, fetchCloses } from '@/entities/sigma';
 import { getKrStockName } from '@/shared/lib/kr-stocks';
 
-const WatchlistCard = async ({ symbol, index }: { symbol: string; index: number }) => {
+const FavoriteCard = async ({ symbol, index }: { symbol: string; index: number }) => {
   const ticker: TickerInfo = {
     symbol: symbol.toUpperCase(),
     name: getKrStockName(symbol) ?? symbol.toUpperCase(),
@@ -23,6 +23,6 @@ const WatchlistCard = async ({ symbol, index }: { symbol: string; index: number 
   }
 
   return <TickerCard ticker={ticker} latest={latest} error={error} />;
-}
+};
 
-export default WatchlistCard
+export default FavoriteCard;

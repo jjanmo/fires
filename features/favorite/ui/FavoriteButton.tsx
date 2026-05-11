@@ -2,17 +2,17 @@
 
 import { useOptimistic, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { toggleWatchlist } from '../actions'
+import { toggleFavorite } from '../actions'
 import { useAuth } from '@/shared/hooks'
 
 interface Props {
   symbol: string
-  isWatchlisted: boolean
+  isFavorited: boolean
 }
 
-const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
+const FavoriteButton = ({ symbol, isFavorited: initial }: Props) => {
   const user = useAuth()
-  const [isWatchlisted, setOptimistic] = useOptimistic(initial)
+  const [isFavorited, setOptimistic] = useOptimistic(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
   const pathname = usePathname()
@@ -23,8 +23,8 @@ const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
       return
     }
     startTransition(async () => {
-      setOptimistic(!isWatchlisted)
-      await toggleWatchlist(symbol)
+      setOptimistic(!isFavorited)
+      await toggleFavorite(symbol)
       router.refresh()
     })
   }
@@ -32,10 +32,10 @@ const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
   return (
     <button
       onClick={handleClick}
-      title={isWatchlisted ? '관심종목 해제' : '관심종목 추가'}
+      title={isFavorited ? '관심종목 해제' : '관심종목 추가'}
       className="text-xl leading-none hover:scale-110 active:scale-95 transition-all"
     >
-      {isWatchlisted
+      {isFavorited
         ? <span className="text-amber-400">★</span>
         : <span className="text-ink-4 hover:text-amber-400">☆</span>
       }
@@ -43,4 +43,4 @@ const WatchlistButton = ({ symbol, isWatchlisted: initial }: Props) => {
   )
 }
 
-export default WatchlistButton
+export default FavoriteButton
