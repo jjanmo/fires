@@ -15,7 +15,7 @@ interface Props {
 }
 
 const MARKET_BADGE: Record<string, { text: string; cls: string }> = {
-  REGULAR: { text: '● 장중 실시간', cls: 'text-buy-text bg-buy-badge border-buy-edge' },
+  REGULAR: { text: '● 정규장', cls: 'text-buy-text bg-buy-badge border-buy-edge' },
   PRE: { text: '장전 거래', cls: 'text-ink-3 bg-inset border-edge' },
   POST: { text: '장후 거래', cls: 'text-ink-3 bg-inset border-edge' },
   CLOSED: { text: '장 마감', cls: 'text-ink-4 bg-inset border-edge' },
