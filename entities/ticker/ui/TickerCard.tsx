@@ -8,12 +8,13 @@ interface Props {
   ticker: TickerInfo;
   latest: HistoryRow | null;
   error?: string;
+  className?: string;
 }
 
 /** 포맷된 가격 문자열 길이에 따라 폰트 크기 클래스 결정 */
 const priceSize = (formatted: string) => formatted.length > 9 ? 'text-xs' : 'text-sm';
 
-const TickerCard = ({ ticker, latest, error }: Props) => {
+const TickerCard = ({ ticker, latest, error, className }: Props) => {
   const s1d = latest ? latest.mu - latest.sigma : 0;
   const s1u = latest ? latest.mu + latest.sigma : 0;
 
@@ -27,7 +28,8 @@ const TickerCard = ({ ticker, latest, error }: Props) => {
       href={`/sigma/${ticker.slug}`}
       className={cn(
         'group block rounded-2xl border bg-card p-3.5 transition-colors duration-200 hover:bg-white/5',
-        ticker.borderColor
+        ticker.borderColor,
+        className,
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-3">

@@ -1,7 +1,7 @@
 const Sk = ({ h, w }: { h: string; w: string }) => <div className={`sk-bar ${h} ${w}`} />;
 
 const CardSkeleton = () => (
-  <div className="rounded-2xl border border-edge bg-card p-3.5 h-[303px] flex flex-col">
+  <div className="rounded-2xl border border-edge bg-card pt-9 px-3.5 pb-3.5 h-[303px] flex flex-col">
     <div className="flex items-start justify-between gap-2 mb-3">
       <div className="min-w-0 space-y-1">
         <Sk h="h-4" w="w-16" />
