@@ -180,9 +180,11 @@ variant가 많은 공통 컴포넌트(Button 등)로 발전하면 `cva`로 전�
 - 서버 컴포넌트 / Server Action → `shared/lib/supabase/server.ts`의 `createClient()`
 - 브라우저 → `shared/lib/supabase/client.ts`
 
-### adjclose 보정 (fetchCloses)
+### fetchCloses 가격 기준
 
-Yahoo Finance OHLC 데이터에 split/배당 조정 계수(`adjClose / rawClose`)를 곱해 전체 OHLC를 정규화. `entities/sigma/api/fetchCloses.ts` 참고.
+Yahoo Finance raw OHLC 데이터를 그대로 사용한다. adjclose 보정(배당·split 조정)은 적용하지 않는다.
+- 배당은 시그마 전략상 의미가 없으므로 배당락 효과를 제거하지 않는다.
+- 역분할(reverse split)은 현재 252일 롤링 창이 분할 시점을 포함하지 않으면 계산에 영향 없다.
 
 ### 시그마 계산 기준
 

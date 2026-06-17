@@ -39,32 +39,23 @@ export const fetchCloses = async (
   const rawHighs: (number | null)[] = quote.high;
   const rawLows: (number | null)[] = quote.low;
   const rawCloses: (number | null)[] = quote.close;
-  // adjclose: split + 배당 보정된 종가 (기준값)
-  const adjCloses: (number | null)[] =
-    result.indicators.adjclose?.[0]?.adjclose ?? [];
 
   const raw = timestamps
     .map((t, i) => {
-      const rawClose = rawCloses[i];
-      const adjClose = adjCloses[i] ?? null;
+      const open  = rawOpens[i];
+      const high  = rawHighs[i];
+      const low   = rawLows[i];
+      const price = rawCloses[i];
 
-      // adjclose가 없거나 rawClose가 0이면 제외
-      if (rawClose === null || rawClose === 0 || adjClose === null) return null;
-
-      // 조정 비율: split/배당을 반영해 OHLC 전체를 동일한 스케일로 맞춤
-      const factor = adjClose / rawClose;
-
-      const open = rawOpens[i];
-      const high = rawHighs[i];
-      const low = rawLows[i];
+      if (price === null || price === 0) return null;
       if (open === null || high === null || low === null) return null;
 
       return {
         date: new Date(t * 1000).toISOString().slice(0, 10),
-        open: +(open * factor),
-        high: +(high * factor),
-        low: +(low * factor),
-        price: adjClose, // 이미 보정된 값
+        open:  +open,
+        high:  +high,
+        low:   +low,
+        price: +price,
       } satisfies ClosePrice;
     })
     .filter((r): r is ClosePrice => r !== null);
