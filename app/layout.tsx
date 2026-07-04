@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider, AuthProvider } from '@/shared/ui';
-import { createClient } from '@/shared/lib/supabase/server';
+import { getCurrentUser } from '@/shared/lib/supabase/server';
 import AppHeader from './_components/AppHeader';
 import './globals.css';
 
@@ -14,8 +14,7 @@ one spark at a time — until the day you no longer need to work.`,
 };
 
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>) => {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   return (
     <html lang="ko" suppressHydrationWarning>

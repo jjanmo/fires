@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { ReactNode } from 'react'
-import { createClient } from '@/shared/lib/supabase/server'
+import { getCurrentUser } from '@/shared/lib/supabase/server'
 import { getFavoriteTabs, getAllFavoritesByTab } from '@/features/favorite'
 import FavoriteCard from './FavoriteCard'
 import FavoriteTabs from './FavoriteTabs'
@@ -8,10 +8,7 @@ import RecentOrRecommended from './RecentOrRecommended'
 import CardSkeleton from './CardSkeleton'
 
 const SigmaSection = async () => {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) return <RecentOrRecommended />
 

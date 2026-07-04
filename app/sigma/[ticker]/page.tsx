@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import type { TickerInfo } from '@/entities/ticker';
 import { getKrStockName } from '@/shared/lib/kr-stocks';
-import { createClient } from '@/shared/lib/supabase/server';
+import { getCurrentUser } from '@/shared/lib/supabase/server';
 import TickerContent from './_components/TickerContent';
 import { TickerInnerSkeleton } from './loading';
 import SaveRecentSearch from '../_components/SaveRecentSearch';
@@ -21,8 +21,7 @@ const TickerPage = async ({ params }: { params: Promise<{ ticker: string }> }) =
     borderColor: 'border-edge',
   };
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   return (
     <main className="min-h-[calc(100vh-3rem)] bg-canvas px-4 pt-10 pb-40 sm:px-6">

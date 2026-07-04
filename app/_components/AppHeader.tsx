@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { ThemeToggle, Logo, HeaderSearch } from '@/shared/ui';
 import { UserMenu } from '@/features/auth';
-import { createClient } from '@/shared/lib/supabase/server';
+import { getCurrentUser } from '@/shared/lib/supabase/server';
 import NavTabs from './NavTabs';
 import LoginButton from './LoginButton';
 
 const AppHeader = async () => {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   return (
     <header className="border-b border-edge bg-canvas/80 backdrop-blur-md sticky top-0 z-10">

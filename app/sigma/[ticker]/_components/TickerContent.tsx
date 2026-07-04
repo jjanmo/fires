@@ -4,16 +4,13 @@ import { buildLatestSignal, fetchCloses, ROLLING_WINDOWS } from '@/entities/sigm
 import type { RollingWindow } from '@/entities/sigma';
 import { PriceBlock } from '@/widgets/price-block';
 import { FavoriteButton, getFavoriteSymbols, getFavoriteTabs } from '@/features/favorite';
-import { createClient } from '@/shared/lib/supabase/server';
+import { getCurrentUser } from '@/shared/lib/supabase/server';
 import SigmaDeferredCharts from './SigmaDeferredCharts';
 import SigmaLowerChartsSkeleton from './SigmaLowerChartsSkeleton';
 import SigmaWindowContextProvider from './SigmaWindowContextProvider';
 
 const getUserContext = async (symbol: string) => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return { user: null, isFavorited: false, tabs: [] };
 
   const [favoriteSymbols, tabs] = await Promise.all([
