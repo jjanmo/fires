@@ -187,10 +187,12 @@ const SigmaChart = ({
   }, []);
 
   const { buyPrice, sellPrice, s1BuyPrice, s1SellPrice, close, baseClose } = latest;
-  const { changePct, marketState, loading } = useLivePrice(symbol, close);
+  const { price, marketState, loading } = useLivePrice(symbol, close);
   const isRegular = marketState === 'REGULAR';
   // 데이터 로드 전(loading)에는 점을 표시하지 않아 초기값 0에서 실제값으로 점프하는 현상 방지
-  const liveReturn = !loading ? changePct : null;
+  // changePct(Yahoo API 기준 전일 종가)가 아니라 baseClose(σ 경계선과 동일한 기준가) 대비로 직접 계산해야
+  // 곡선과 점이 같은 기준가를 공유해 위치가 어긋나지 않는다.
+  const liveReturn = !loading ? ((price - baseClose) / baseClose) * 100 : null;
 
   const { mu, sigma, s2d, s2u, window: returns } = latest;
   const s1d = mu - sigma;
